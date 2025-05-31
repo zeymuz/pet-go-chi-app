@@ -1,0 +1,101 @@
+import React from 'react';
+import { Image, StyleSheet, Text, TouchableOpacity, View } from 'react-native';
+import  COLORS  from '../constants/colors';
+
+interface StoreItemProps {
+  item: {
+    id: string;
+    name: string;
+    price: number;
+    image: string;
+    owned: boolean;
+    type: string;
+  };
+  onPurchase: () => void;
+  onEquip: () => void;
+  isEquipped: boolean;
+  owned: boolean;
+}
+
+export default function StoreItem({
+  item,
+  onPurchase,
+  onEquip,
+  isEquipped,
+  owned,
+}: StoreItemProps) {
+  return (
+    <View style={styles.container}>
+      <Image source={{ uri: item.image }} style={styles.image} />
+      <Text style={styles.name}>{item.name}</Text>
+      <Text style={styles.price}>{item.price} coins</Text>
+      
+      {!owned ? (
+        <TouchableOpacity style={styles.buyButton} onPress={onPurchase}>
+          <Text style={styles.buttonText}>Buy</Text>
+        </TouchableOpacity>
+      ) : (
+        <TouchableOpacity 
+          style={[styles.equipButton, isEquipped && styles.equippedButton]} 
+          onPress={onEquip}
+        >
+          <Text style={styles.buttonText}>
+            {isEquipped ? 'Equipped' : 'Equip'}
+          </Text>
+        </TouchableOpacity>
+      )}
+    </View>
+  );
+}
+
+const styles = StyleSheet.create({
+  container: {
+    backgroundColor: COLORS.secondary,
+    borderRadius: 8,
+    padding: 12,
+    margin: 8,
+    width: 150,
+    alignItems: 'center',
+  },
+  image: {
+    width: 80,
+    height: 80,
+    resizeMode: 'contain',
+    marginBottom: 8,
+  },
+  name: {
+    fontFamily: 'PressStart2P',
+    fontSize: 10,
+    color: COLORS.text,
+    textAlign: 'center',
+    marginBottom: 4,
+  },
+  price: {
+    fontFamily: 'PressStart2P',
+    fontSize: 8,
+    color: COLORS.text,
+    marginBottom: 8,
+  },
+  buyButton: {
+    backgroundColor: COLORS.primary,
+    padding: 8,
+    borderRadius: 4,
+    width: '100%',
+    alignItems: 'center',
+  },
+  equipButton: {
+    backgroundColor: '#4CAF50',
+    padding: 8,
+    borderRadius: 4,
+    width: '100%',
+    alignItems: 'center',
+  },
+  equippedButton: {
+    backgroundColor: '#FF9800',
+  },
+  buttonText: {
+    fontFamily: 'PressStart2P',
+    fontSize: 8,
+    color: '#fff',
+  },
+});
