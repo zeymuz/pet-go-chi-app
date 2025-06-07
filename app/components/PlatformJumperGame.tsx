@@ -276,7 +276,7 @@ export default function PlatformJumperGame({ onExit }: Props) {
 
       {gameStatus === 'ready' && (
         <View style={styles.overlay}>
-          <Text style={styles.title}>Sky Jump Pou</Text>
+          <Text style={styles.title}>Pet-Jump</Text>
           <Text style={styles.instructions}>
             Drag to move left/right{'\n'}
             Land precisely on GREEN and GOLD platforms!{'\n'}
