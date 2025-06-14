@@ -2,6 +2,7 @@ import React, { useState } from 'react';
 import { StyleSheet, Text, View } from 'react-native';
 import FlappyBirdGame from '../components/FlappyBirdGame';
 import GameButton from '../components/GameButton';
+import MemoryGame from '../components/MemoryGame';
 import PlatformJumperGame from '../components/PlatformJumperGame';
 import COLORS from '../constants/colors';
 
@@ -20,6 +21,8 @@ export default function GamesScreen() {
         return <FlappyBirdGame onClose={() => setActiveGame(null)} />;
       case 'jumper':
         return <PlatformJumperGame onExit={() => setActiveGame(null)} />;
+      case 'memory':
+        return <MemoryGame onClose={() => setActiveGame(null)} />; // Add this case
       default:
         return (
           <View style={styles.gamesContainer}>
