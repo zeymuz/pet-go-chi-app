@@ -35,12 +35,12 @@ const useStore = () => {
   const equipOutfit = (outfitId: string) => {
     const outfit = outfits.find(o => o.id === outfitId);
     if (!outfit || !outfit.owned) return;
-    
     setEquippedOutfit(outfitId);
   };
 
   const earnCoins = (amount: number) => {
     setCoins(prev => prev + amount);
+    return amount;
   };
 
   return {
@@ -52,6 +52,6 @@ const useStore = () => {
     equippedOutfit,
     earnCoins,
   };
-}
+};
 
 export default useStore;
