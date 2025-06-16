@@ -1,6 +1,15 @@
 import { Ionicons } from '@expo/vector-icons';
 import React, { useEffect, useState } from 'react';
-import { Alert, Dimensions, StyleSheet, Text, TouchableOpacity, TouchableWithoutFeedback, View } from 'react-native';
+import {
+  Alert,
+  Animated,
+  Dimensions,
+  StyleSheet,
+  Text,
+  TouchableOpacity,
+  TouchableWithoutFeedback,
+  View,
+} from 'react-native';
 import COLORS from '../constants/colors';
 
 const { width } = Dimensions.get('window');
@@ -18,7 +27,6 @@ const ALL_ICONS = [
 interface Card {
   id: number;
   icon: string;
-  isFlipped: boolean;
   isMatched: boolean;
 }
 
@@ -27,9 +35,8 @@ export default function MemoryGame({ onClose }: MemoryGameProps) {
   const [cards, setCards] = useState<Card[]>([]);
   const [flippedCards, setFlippedCards] = useState<number[]>([]);
   const [moves, setMoves] = useState(0);
-  const [gameComplete, setGameComplete] = useState(false);
-  const [time, setTime] = useState(0);
   const [gameStarted, setGameStarted] = useState(false);
+  const [animations, setAnimations] = useState<Animated.Value[]>([]);
 
   const pairs = Math.min(4 + (level - 1) * 2, 6);
 
@@ -39,58 +46,67 @@ export default function MemoryGame({ onClose }: MemoryGameProps) {
 
   const initializeGame = () => {
     const selectedIcons = [...ALL_ICONS].sort(() => 0.5 - Math.random()).slice(0, pairs);
-    
     const cardPairs = [...selectedIcons, ...selectedIcons]
       .map((icon, index) => ({
         id: index,
         icon,
-        isFlipped: false,
         isMatched: false,
       }))
       .sort(() => 0.5 - Math.random());
-    
+
     setCards(cardPairs);
     setFlippedCards([]);
     setMoves(0);
-    setTime(0);
-    setGameComplete(false);
     setGameStarted(false);
+
+    const anims = cardPairs.map(() => new Animated.Value(0));
+    setAnimations(anims);
   };
 
   const startGame = () => {
     setGameStarted(true);
   };
 
+  const flipToFront = (index: number) => {
+    Animated.timing(animations[index], {
+      toValue: 180,
+      duration: 300,
+      useNativeDriver: true,
+    }).start();
+  };
+
+  const flipToBack = (index: number) => {
+    Animated.timing(animations[index], {
+      toValue: 0,
+      duration: 300,
+      useNativeDriver: true,
+    }).start();
+  };
+
   const handleCardPress = (id: number) => {
-    if (!gameStarted) return;
+    if (!gameStarted || flippedCards.length >= 2) return;
 
-    const card = cards.find(c => c.id === id);
-    if (!card || card.isFlipped || card.isMatched || flippedCards.length >= 2) {
-      return;
-    }
+    const index = cards.findIndex(c => c.id === id);
+    if (flippedCards.includes(id) || cards[index].isMatched) return;
 
-    const newCards = cards.map(card => 
-      card.id === id ? { ...card, isFlipped: true } : card
-    );
-    
-    setCards(newCards);
-    setFlippedCards([...flippedCards, id]);
+    flipToFront(index);
+    setFlippedCards(prev => [...prev, id]);
 
     if (flippedCards.length === 1) {
-      setMoves(moves + 1);
-      const [firstId] = flippedCards;
+      setMoves(prev => prev + 1);
+      const firstId = flippedCards[0];
+      const secondId = id;
       const firstCard = cards.find(c => c.id === firstId);
-      const secondCard = cards.find(c => c.id === id);
-      
+      const secondCard = cards.find(c => c.id === secondId);
+
       if (firstCard?.icon === secondCard?.icon) {
+        const updated = cards.map(c =>
+          c.id === firstId || c.id === secondId ? { ...c, isMatched: true } : c
+        );
         setTimeout(() => {
-          const matchedCards = newCards.map(card => 
-            card.id === firstId || card.id === id 
-              ? { ...card, isMatched: true } 
-              : card
-          );
-          setCards(matchedCards);
+          setCards(updated);
           setFlippedCards([]);
+<<<<<<< HEAD
           
           if (matchedCards.every(card => card.isMatched)) {
             setGameComplete(true);
@@ -98,6 +114,12 @@ export default function MemoryGame({ onClose }: MemoryGameProps) {
             Alert.alert(
               `Level Complete!`,
               `Completed in ${moves + 1} moves!\nEarned ${coinsEarned} coins!`,
+=======
+          if (updated.every(c => c.isMatched)) {
+            Alert.alert(
+              'Level Complete!',
+              `Completed in ${moves + 1} moves!`,
+>>>>>>> 1afc59783321e9a2fba9296d45f9210cc686d596
               [
                 { 
                   text: 'Next Level', 
@@ -116,12 +138,10 @@ export default function MemoryGame({ onClose }: MemoryGameProps) {
         }, 500);
       } else {
         setTimeout(() => {
-          const resetCards = newCards.map(card => 
-            card.id === firstId || card.id === id 
-              ? { ...card, isFlipped: false } 
-              : card
-          );
-          setCards(resetCards);
+          const firstIdx = cards.findIndex(c => c.id === firstId);
+          const secondIdx = cards.findIndex(c => c.id === secondId);
+          flipToBack(firstIdx);
+          flipToBack(secondIdx);
           setFlippedCards([]);
         }, 1000);
       }
@@ -138,30 +158,51 @@ export default function MemoryGame({ onClose }: MemoryGameProps) {
       <Text style={styles.stats}>Moves: {moves} | Pairs: {pairs}</Text>
 
       <View style={styles.gameArea}>
-        {cards.map(card => (
-          <TouchableOpacity
-            key={card.id}
-            style={[
-              styles.card,
-              card.isFlipped || card.isMatched ? styles.cardFlipped : styles.cardBack,
-            ]}
-            onPress={() => handleCardPress(card.id)}
-            activeOpacity={0.7}
-          >
-            <Ionicons 
-              name={card.isFlipped || card.isMatched ? (card.icon as any) : "md-help-circle"} 
-              size={28} 
-              color={card.isFlipped || card.isMatched ? COLORS.primary : "white"} 
-            />
-          </TouchableOpacity>
-        ))}
+        {cards.map((card, index) => {
+          const flip = animations[index]?.interpolate({
+            inputRange: [0, 180],
+            outputRange: ['0deg', '180deg'],
+          });
+
+          const opacityFront = animations[index]?.interpolate({
+            inputRange: [89, 90],
+            outputRange: [0, 1],
+            extrapolate: 'clamp',
+          });
+
+          const opacityBack = animations[index]?.interpolate({
+            inputRange: [89, 90],
+            outputRange: [1, 0],
+            extrapolate: 'clamp',
+          });
+
+          return (
+            <TouchableOpacity
+              key={card.id}
+              onPress={() => handleCardPress(card.id)}
+              activeOpacity={1}
+            >
+              <Animated.View
+                style={[
+                  styles.card,
+                  { transform: [{ perspective: 1000 }, { rotateY: flip }] },
+                ]}
+              >
+                <Animated.View style={[styles.cardFace, styles.cardBack, { opacity: opacityBack }]}>
+                  <Ionicons name="md-help-circle" size={28} color="white" />
+                </Animated.View>
+
+                <Animated.View style={[styles.cardFace, styles.cardFront, { opacity: opacityFront }]}>
+                  <Ionicons name={card.icon as any} size={28} color={COLORS.primary} />
+                </Animated.View>
+              </Animated.View>
+            </TouchableOpacity>
+          );
+        })}
       </View>
 
       {!gameStarted && (
-        <TouchableWithoutFeedback 
-          style={StyleSheet.absoluteFill} 
-          onPress={startGame}
-        >
+        <TouchableWithoutFeedback onPress={startGame}>
           <View style={styles.startOverlay}>
             <Text style={styles.startText}>TAP ANYWHERE TO START</Text>
           </View>
@@ -214,14 +255,22 @@ const styles = StyleSheet.create({
     width: width / 4 - 20,
     height: width / 4 - 20,
     margin: 6,
+  },
+  cardFace: {
+    position: 'absolute',
+    top: 0,
+    left: 0,
+    width: '100%',
+    height: '100%',
     borderRadius: 8,
     alignItems: 'center',
     justifyContent: 'center',
+    backfaceVisibility: 'hidden',
   },
   cardBack: {
     backgroundColor: COLORS.secondary,
   },
-  cardFlipped: {
+  cardFront: {
     backgroundColor: COLORS.accent,
   },
   startOverlay: {
