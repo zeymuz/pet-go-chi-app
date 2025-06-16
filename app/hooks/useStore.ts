@@ -27,15 +27,15 @@ const useStore = () => {
   const equipOutfit = (outfitId: string) => {
     const outfit = outfits.find(o => o.id === outfitId);
     if (!outfit || !outfit.owned) return;
-<<<<<<< HEAD
+
     
     setEquippedOutfits(prev => ({
       ...prev,
       [outfit.type]: outfitId,
     }));
-=======
-    setEquippedOutfit(outfitId);
->>>>>>> 1afc59783321e9a2fba9296d45f9210cc686d596
+
+    setEquippedOutfits(outfitId);
+
   };
 
   const earnCoins = (amount: number) => {
