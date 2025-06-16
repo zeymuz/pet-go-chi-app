@@ -36,12 +36,11 @@ type Cloud = { id: string; x: number; y: number; speed: number };
 type Star = { id: string; x: number; y: number; size: number; opacity: number };
 type BigStar = { id: string; x: number; y: number; size: number };
 
-type Props = { 
-  onExit: () => void;
-  monsterImage?: any; // Add this prop for custom monster image
-};
+interface PlatformJumperGameProps {
+  onExit: (score: number) => void;
+}
 
-export default function PlatformJumperGame({ onExit, monsterImage }: Props) {
+export default function PlatformJumperGame({ onExit }: PlatformJumperGameProps) {
   // Game state refs
   const playerX = useRef(screenWidth / 2 - PLAYER_SIZE / 2);
   const playerY = useRef(screenHeight - PLAYER_SIZE - 100);
@@ -66,6 +65,7 @@ export default function PlatformJumperGame({ onExit, monsterImage }: Props) {
   const [highScoreUI, setHighScoreUI] = useState(0);
   const [gameStatus, setGameStatus] = useState<'ready' | 'playing' | 'gameover'>('ready');
   const [backgroundMode, setBackgroundMode] = useState<'sky' | 'space' | 'sun' | 'galaxy' | 'monster'>('sky');
+  const [coinsEarned, setCoinsEarned] = useState(0);
 
   // Animations
   const spaceFadeAnim = useRef(new Animated.Value(0)).current;
@@ -137,6 +137,7 @@ export default function PlatformJumperGame({ onExit, monsterImage }: Props) {
     velocityY.current = 0;
     isJumping.current = false;
     score.current = 0;
+    setCoinsEarned(0);
     setBackgroundMode('sky');
     
     // Reset animations
@@ -197,11 +198,17 @@ export default function PlatformJumperGame({ onExit, monsterImage }: Props) {
 
   const endGame = useCallback(() => {
     setGameStatus('gameover');
+    const coins = Math.floor(score.current / 10);
+    setCoinsEarned(coins);
     if (score.current > highScore.current) {
       highScore.current = score.current;
       setHighScoreUI(highScore.current);
     }
   }, []);
+
+  const handleExit = useCallback(() => {
+    onExit(coinsEarned);
+  }, [coinsEarned, onExit]);
 
   // Optimized game loop
   const gameTick = useCallback((timestamp: number) => {
@@ -252,7 +259,11 @@ export default function PlatformJumperGame({ onExit, monsterImage }: Props) {
         clouds.current = clouds.current.filter(c => c.y < screenHeight + CLOUD_HEIGHT);
 
         score.current += Math.floor(diff);
-        setScoreUI(prev => Math.floor(diff) + prev);
+        setScoreUI(prev => {
+          const newScore = prev + Math.floor(diff);
+          setCoinsEarned(Math.floor(newScore / 10));
+          return newScore;
+        });
       }
 
       // Move clouds
@@ -523,7 +534,7 @@ export default function PlatformJumperGame({ onExit, monsterImage }: Props) {
       ]}
     >
       <Image
-        source={'../../assets/images/tumblr_mvfxqfzlbo1snpxrbo3_400.png'} // Replace with your galaxy image
+        source={require('../../assets/images/favicon.png')}
         style={styles.galaxyImage}
         resizeMode="contain"
       />
@@ -546,17 +557,13 @@ export default function PlatformJumperGame({ onExit, monsterImage }: Props) {
         ]
       }
     ]}>
-      {monsterImage ? (
-        <Image
-          source={monsterImage}
-          style={styles.monsterImage}
-          resizeMode="contain"
-        />
-      ) : (
-        <View style={styles.defaultMonster} />
-      )}
+      <Image
+        source={require('../../assets/images/favicon.png')}
+        style={styles.monsterImage}
+        resizeMode="contain"
+      />
     </Animated.View>
-  ), [monsterFadeAnim, monsterPulseAnim, monsterSwayAnim, monsterImage]);
+  ), [monsterFadeAnim, monsterPulseAnim, monsterSwayAnim]);
 
   const renderPlatforms = useCallback(() => (
     <>
@@ -582,7 +589,7 @@ export default function PlatformJumperGame({ onExit, monsterImage }: Props) {
     <SafeAreaView style={styles.container} {...panResponder.panHandlers}>
       <View style={[StyleSheet.absoluteFill, getBackgroundStyle()]} />
 
-      <TouchableOpacity style={styles.exitButton} onPress={onExit}>
+      <TouchableOpacity style={styles.exitButton} onPress={handleExit}>
         <Text style={styles.exitButtonText}>✕</Text>
       </TouchableOpacity>
 
@@ -605,6 +612,7 @@ export default function PlatformJumperGame({ onExit, monsterImage }: Props) {
       <View style={styles.scoreContainer}>
         <Text style={styles.score}>Score: {scoreUI}</Text>
         <Text style={styles.highScore}>High Score: {highScoreUI}</Text>
+        <Text style={styles.coins}>Coins: {coinsEarned}</Text>
       </View>
 
       {gameStatus === 'ready' && (
@@ -617,7 +625,8 @@ export default function PlatformJumperGame({ onExit, monsterImage }: Props) {
             Reach 5,000 for space{'\n'}
             10,000 for sun{'\n'}
             15,000 for galaxy{'\n'}
-            20,000 for... something else
+            20,000 for... something else{'\n\n'}
+            Earn coins based on your score!
           </Text>
           <TouchableOpacity style={styles.button} onPress={startGame}>
             <Text style={styles.buttonText}>Start Game</Text>
@@ -629,6 +638,7 @@ export default function PlatformJumperGame({ onExit, monsterImage }: Props) {
         <View style={styles.overlay}>
           <Text style={styles.title}>Game Over</Text>
           <Text style={styles.score}>Final Score: {scoreUI}</Text>
+          <Text style={styles.coins}>Coins Earned: {coinsEarned}</Text>
           {scoreUI >= 20000 && (
             <Text style={styles.monsterWarning}>You awakened the ancient one!</Text>
           )}
@@ -639,7 +649,7 @@ export default function PlatformJumperGame({ onExit, monsterImage }: Props) {
               setGameStatus('playing');
             }}
           >
-            <Text style={styles.buttonText}>Restart</Text>
+            <Text style={styles.buttonText}>Play Again</Text>
           </TouchableOpacity>
         </View>
       )}
@@ -731,12 +741,6 @@ const styles = StyleSheet.create({
     width: '100%',
     height: '100%',
   },
-  defaultMonster: {
-    width: '100%',
-    height: '100%',
-    backgroundColor: '#1e3a1e',
-    borderRadius: 150,
-  },
   platform: {
     position: 'absolute',
     width: PLATFORM_WIDTH,
@@ -766,6 +770,11 @@ const styles = StyleSheet.create({
   highScore: {
     fontSize: 16,
     color: '#fff',
+  },
+  coins: {
+    fontSize: 16,
+    color: 'gold',
+    fontWeight: 'bold',
   },
   monsterWarning: {
     fontSize: 14,

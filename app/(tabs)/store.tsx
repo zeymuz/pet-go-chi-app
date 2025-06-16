@@ -5,7 +5,7 @@ import COLORS from '../constants/colors';
 import useStore from './../hooks/useStore';
 
 export default function StoreScreen() {
-  const { outfits, pets, coins, purchaseItem, equippedOutfit, equipOutfit } = useStore();
+  const { outfits, coins, purchaseItem, equippedOutfits, equipOutfit } = useStore();
 
   return (
     <View style={styles.container}>
@@ -14,32 +14,14 @@ export default function StoreScreen() {
         <Text style={styles.coins}>Coins: {coins}</Text>
       </View>
 
-      <Text style={styles.sectionTitle}>Outfits</Text>
       <FlatList
         data={outfits}
         renderItem={({ item }) => (
           <StoreItem
             item={item}
-            onPurchase={() => purchaseItem(item.id, 'outfit')}
+            onPurchase={() => purchaseItem(item.id)}
             onEquip={() => equipOutfit(item.id)}
-            isEquipped={equippedOutfit === item.id}
-            owned={item.owned}
-          />
-        )}
-        keyExtractor={(item) => item.id}
-        numColumns={2}
-        contentContainerStyle={styles.listContent}
-      />
-
-      <Text style={styles.sectionTitle}>Pets</Text>
-      <FlatList
-        data={pets}
-        renderItem={({ item }) => (
-          <StoreItem
-            item={item}
-            onPurchase={() => purchaseItem(item.id, 'pet')}
-            onEquip={() => {}}
-            isEquipped={false}
+            isEquipped={equippedOutfits[item.type] === item.id}
             owned={item.owned}
           />
         )}
@@ -72,12 +54,6 @@ const styles = StyleSheet.create({
     fontFamily: 'PressStart2P',
     fontSize: 16,
     color: COLORS.text,
-  },
-  sectionTitle: {
-    fontFamily: 'PressStart2P',
-    fontSize: 18,
-    color: COLORS.text,
-    marginVertical: 10,
   },
   listContent: {
     paddingBottom: 20,

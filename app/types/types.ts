@@ -1,4 +1,3 @@
-// Just declare the interfaces - no exports here
 interface StoreItem {
   id: string;
   name: string;
@@ -7,15 +6,10 @@ interface StoreItem {
   owned: boolean;
 }
 
-interface Pet extends StoreItem {
-  unlockedAtLevel: number;
-}
-
 interface Outfit extends StoreItem {
-  type: 'hat' | 'shirt' | 'glasses' | 'other';
+  type: 'hat' | 'jacket' | 'shirt' | 'pants' | 'shoes';
 }
 
-// Single export statement
-export type { StoreItem, Pet, Outfit };
+export type { Outfit, StoreItem };
 
 export default () => null;

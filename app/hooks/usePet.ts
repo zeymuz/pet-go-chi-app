@@ -1,16 +1,13 @@
-import { useState, useEffect } from 'react';
-import { Pet } from '../types/types';
-import { PETS } from '../constants/pets';
+import { useEffect, useState } from 'react';
 
 const usePet = () => {
-  const [pet, setPet] = useState<Pet>(PETS[0]);
   const [happiness, setHappiness] = useState(70);
   const [hunger, setHunger] = useState(30);
   const [energy, setEnergy] = useState(80);
   const [cleanliness, setCleanliness] = useState(90);
   const [level, setLevel] = useState(1);
   const [experience, setExperience] = useState(0);
-  const [equippedOutfit, setEquippedOutfit] = useState<string | null>(null);
+  const [showOutfits, setShowOutfits] = useState(false);
 
   // Decrease stats over time
   useEffect(() => {
@@ -29,11 +26,6 @@ const usePet = () => {
     if (experience >= level * 100) {
       setLevel(prev => prev + 1);
       setExperience(0);
-      // Unlock new pet skin every 10 levels
-      if (level % 10 === 0) {
-        const newPetIndex = Math.min(Math.floor(level / 10), PETS.length - 1);
-        setPet(PETS[newPetIndex]);
-      }
     }
   }, [experience, level]);
 
@@ -62,12 +54,7 @@ const usePet = () => {
     setExperience(prev => prev + 5);
   };
 
-  const equipOutfit = (outfitId: string) => {
-    setEquippedOutfit(outfitId);
-  };
-
   return {
-    pet,
     feed,
     play,
     sleep,
@@ -78,8 +65,8 @@ const usePet = () => {
     cleanliness,
     level,
     experience,
-    equippedOutfit,
-    equipOutfit,
+    showOutfits,
+    setShowOutfits,
   };
 }
 

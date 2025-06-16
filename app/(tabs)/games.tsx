@@ -5,9 +5,13 @@ import GameButton from '../components/GameButton';
 import MemoryGame from '../components/MemoryGame';
 import PlatformJumperGame from '../components/PlatformJumperGame';
 import COLORS from '../constants/colors';
+import usePet from '../hooks/usePet';
+import useStore from '../hooks/useStore';
 
 export default function GamesScreen() {
   const [activeGame, setActiveGame] = useState<string | null>(null);
+  const { energy, play } = usePet();
+  const { earnCoins } = useStore();
 
   const games = [
     { id: 'flappy', name: 'Flappy Pet', icon: 'game-controller' },
@@ -15,14 +19,29 @@ export default function GamesScreen() {
     { id: 'memory', name: 'Memory Game', icon: 'game-controller' },
   ];
 
+  const handleGameStart = (gameId: string) => {
+    if (energy < 10) {
+      alert('Your pet is too tired to play!');
+      return;
+    }
+    play(); // Decrease energy
+    setActiveGame(gameId);
+  };
+
+  const handleGameEnd = (score: number) => {
+    const coinsEarned = Math.floor(score / 10);
+    earnCoins(coinsEarned);
+    setActiveGame(null);
+  };
+
   const renderGame = () => {
     switch (activeGame) {
       case 'flappy':
-        return <FlappyBirdGame onClose={() => setActiveGame(null)} />;
+        return <FlappyBirdGame onClose={(score) => handleGameEnd(score)} />;
       case 'jumper':
-        return <PlatformJumperGame onExit={() => setActiveGame(null)} />;
+        return <PlatformJumperGame onExit={(score) => handleGameEnd(score)} />;
       case 'memory':
-        return <MemoryGame onClose={() => setActiveGame(null)} />; // Add this case
+        return <MemoryGame onClose={(score) => handleGameEnd(score)} />;
       default:
         return (
           <View style={styles.gamesContainer}>
@@ -31,7 +50,7 @@ export default function GamesScreen() {
                 key={game.id}
                 icon={game.icon}
                 text={game.name}
-                onPress={() => setActiveGame(game.id)}
+                onPress={() => handleGameStart(game.id)}
               />
             ))}
           </View>

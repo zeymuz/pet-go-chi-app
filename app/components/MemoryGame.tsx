@@ -6,7 +6,7 @@ import COLORS from '../constants/colors';
 const { width } = Dimensions.get('window');
 
 interface MemoryGameProps {
-  onClose: () => void;
+  onClose: (score: number) => void;
 }
 
 const ALL_ICONS = [
@@ -94,12 +94,22 @@ export default function MemoryGame({ onClose }: MemoryGameProps) {
           
           if (matchedCards.every(card => card.isMatched)) {
             setGameComplete(true);
+            const coinsEarned = level * 10;
             Alert.alert(
               `Level Complete!`,
-              `Completed in ${moves + 1} moves!`,
+              `Completed in ${moves + 1} moves!\nEarned ${coinsEarned} coins!`,
               [
-                { text: 'Next Level', onPress: () => setLevel(prev => prev + 1) },
-                { text: 'Quit', onPress: onClose }
+                { 
+                  text: 'Next Level', 
+                  onPress: () => {
+                    setLevel(prev => prev + 1);
+                    onClose(coinsEarned);
+                  } 
+                },
+                { 
+                  text: 'Quit', 
+                  onPress: () => onClose(coinsEarned) 
+                }
               ]
             );
           }
@@ -120,7 +130,7 @@ export default function MemoryGame({ onClose }: MemoryGameProps) {
 
   return (
     <View style={styles.container}>
-      <TouchableOpacity style={styles.closeButton} onPress={onClose}>
+      <TouchableOpacity style={styles.closeButton} onPress={() => onClose(0)}>
         <Ionicons name="close" size={24} color="white" />
       </TouchableOpacity>
 

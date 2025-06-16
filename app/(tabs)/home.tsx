@@ -1,14 +1,14 @@
 import React, { useState } from 'react';
-import { StyleSheet, Text, View } from 'react-native';
+import { FlatList, StyleSheet, Text, TouchableOpacity, View } from 'react-native';
 import Button from '../components/Button';
 import PixelPet from '../components/PixelPet';
 import StatusBar from '../components/StatusBar';
 import COLORS from '../constants/colors';
 import usePet from './../hooks/usePet';
+import useStore from './../hooks/useStore';
 
 export default function HomeScreen() {
   const {
-    pet,
     feed,
     play,
     sleep,
@@ -19,8 +19,15 @@ export default function HomeScreen() {
     cleanliness,
     level,
     experience,
-    equippedOutfit,
+    showOutfits,
+    setShowOutfits,
   } = usePet();
+  
+  const {
+    outfits,
+    equippedOutfits,
+    equipOutfit,
+  } = useStore();
 
   const [activeAction, setActiveAction] = useState<string | null>(null);
 
@@ -53,9 +60,8 @@ export default function HomeScreen() {
 
       <View style={styles.petContainer}>
         <PixelPet 
-          pet={pet} 
           activeAction={activeAction} 
-          equippedOutfit={equippedOutfit} 
+          equippedOutfits={equippedOutfits}
         />
       </View>
 
@@ -76,7 +82,39 @@ export default function HomeScreen() {
           <Button icon="bed" text="Sleep" onPress={() => handleAction('sleep')} />
           <Button icon="shower" text="Clean" onPress={() => handleAction('clean')} />
         </View>
+        <TouchableOpacity 
+          style={styles.outfitsButton}
+          onPress={() => setShowOutfits(!showOutfits)}
+        >
+          <Text style={styles.outfitsButtonText}>Outfits</Text>
+        </TouchableOpacity>
       </View>
+
+      {showOutfits && (
+        <View style={styles.outfitsContainer}>
+          <FlatList
+            data={outfits.filter(o => o.owned)}
+            numColumns={3}
+            keyExtractor={(item) => item.id}
+            renderItem={({ item }) => (
+              <TouchableOpacity
+                style={[
+                  styles.outfitItem,
+                  equippedOutfits[item.type] === item.id && styles.equippedOutfit
+                ]}
+                onPress={() => equipOutfit(item.id)}
+              >
+                <Image 
+                  source={{ uri: item.image }} 
+                  style={styles.outfitImage} 
+                  resizeMode="contain"
+                />
+                <Text style={styles.outfitName}>{item.name}</Text>
+              </TouchableOpacity>
+            )}
+          />
+        </View>
+      )}
     </View>
   );
 }
@@ -115,5 +153,53 @@ const styles = StyleSheet.create({
     flexDirection: 'row',
     justifyContent: 'space-around',
     marginBottom: 16,
+  },
+  outfitsButton: {
+    backgroundColor: COLORS.primary,
+    padding: 10,
+    borderRadius: 8,
+    alignItems: 'center',
+    marginTop: 10,
+  },
+  outfitsButtonText: {
+    fontFamily: 'PressStart2P',
+    fontSize: 12,
+    color: 'white',
+  },
+  outfitsContainer: {
+    position: 'absolute',
+    bottom: 100,
+    left: 20,
+    right: 20,
+    backgroundColor: 'white',
+    borderRadius: 10,
+    padding: 10,
+    maxHeight: 200,
+    elevation: 5,
+  },
+  outfitItem: {
+    width: 80,
+    height: 80,
+    margin: 5,
+    alignItems: 'center',
+    justifyContent: 'center',
+    backgroundColor: COLORS.secondary,
+    borderRadius: 8,
+    padding: 5,
+  },
+  equippedOutfit: {
+    borderWidth: 2,
+    borderColor: COLORS.primary,
+  },
+  outfitImage: {
+    width: 50,
+    height: 50,
+  },
+  outfitName: {
+    fontFamily: 'PressStart2P',
+    fontSize: 8,
+    color: COLORS.text,
+    textAlign: 'center',
+    marginTop: 5,
   },
 });

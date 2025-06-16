@@ -1,42 +1,37 @@
 import { useState } from 'react';
-import { OUTFITS, PETS } from '../constants/pets';
-import { Outfit, Pet, StoreItem } from '../types/types';
+import { OUTFITS } from '../constants/pets';
+import { Outfit } from '../types/types';
 
 const useStore = () => {
   const [coins, setCoins] = useState(100);
   const [outfits, setOutfits] = useState<Outfit[]>(OUTFITS);
-  const [pets, setPets] = useState<Pet[]>(PETS);
-  const [equippedOutfit, setEquippedOutfit] = useState<string | null>(null);
+  const [equippedOutfits, setEquippedOutfits] = useState<Record<string, string | null>>({
+    hat: null,
+    jacket: null,
+    shirt: null,
+    pants: null,
+    shoes: null,
+  });
 
-  const purchaseItem = (itemId: string, type: 'outfit' | 'pet') => {
-    let item: StoreItem | undefined;
-    
-    if (type === 'outfit') {
-      item = outfits.find(o => o.id === itemId);
-    } else {
-      item = pets.find(p => p.id === itemId);
-    }
+  const purchaseItem = (itemId: string) => {
+    const item = outfits.find(o => o.id === itemId);
     
     if (!item || item.owned || coins < item.price) return;
     
     setCoins(prev => prev - item.price);
-    
-    if (type === 'outfit') {
-      setOutfits(prev => 
-        prev.map(o => o.id === itemId ? { ...o, owned: true } : o)
-      );
-    } else {
-      setPets(prev => 
-        prev.map(p => p.id === itemId ? { ...p, owned: true } : p)
-      );
-    }
+    setOutfits(prev => 
+      prev.map(o => o.id === itemId ? { ...o, owned: true } : o)
+    );
   };
 
   const equipOutfit = (outfitId: string) => {
     const outfit = outfits.find(o => o.id === outfitId);
     if (!outfit || !outfit.owned) return;
     
-    setEquippedOutfit(outfitId);
+    setEquippedOutfits(prev => ({
+      ...prev,
+      [outfit.type]: outfitId,
+    }));
   };
 
   const earnCoins = (amount: number) => {
@@ -45,11 +40,10 @@ const useStore = () => {
 
   return {
     outfits,
-    pets,
     coins,
     purchaseItem,
     equipOutfit,
-    equippedOutfit,
+    equippedOutfits,
     earnCoins,
   };
 }

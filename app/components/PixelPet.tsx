@@ -1,14 +1,12 @@
 import React, { useEffect, useRef } from 'react';
-import { Animated, Easing, Image, StyleSheet, View } from 'react-native';
-import { Pet } from '../types/types';
+import { Animated, Image, StyleSheet, View } from 'react-native';
 
 interface PixelPetProps {
-  pet: Pet;
   activeAction: string | null;
-  equippedOutfit: string | null;
+  equippedOutfits: Record<string, string | null>;
 }
 
-export default function PixelPet({ pet, activeAction, equippedOutfit }: PixelPetProps) {
+export default function PixelPet({ activeAction, equippedOutfits }: PixelPetProps) {
   const bounceAnim = useRef(new Animated.Value(0)).current;
 
   useEffect(() => {
@@ -30,21 +28,43 @@ export default function PixelPet({ pet, activeAction, equippedOutfit }: PixelPet
     }
   }, [activeAction]);
 
-  const getPetImage = () => {
-    if (pet.happiness < 30) return require('../../assets/images/adaptive-icon.png');
-    if (pet.hunger > 70) return require('../../assets/images/adaptive-icon.png');
-    if (pet.energy < 30) return require('../../assets/images/adaptive-icon.png');
-    return require('../../assets/images/adaptive-icon.png');
-  };
-
   return (
     <View style={styles.container}>
       <Animated.View style={{ transform: [{ translateY: bounceAnim }] }}>
-        <Image source={getPetImage()} style={styles.petImage} />
-        {equippedOutfit && (
+        <Image 
+          source={require('../../assets/images/adaptive-icon.png')} 
+          style={styles.petImage} 
+        />
+        
+        {/* Render equipped outfits */}
+        {equippedOutfits.hat && (
           <Image 
-            source={{ uri: `../assets/images/outfits/${equippedOutfit}.png` }} 
-            style={styles.outfitImage}
+            source={{ uri: `../assets/images/outfits/${equippedOutfits.hat}.png` }}
+            style={[styles.outfitImage, styles.hat]}
+          />
+        )}
+        {equippedOutfits.jacket && (
+          <Image 
+            source={{ uri: `../assets/images/outfits/${equippedOutfits.jacket}.png` }}
+            style={[styles.outfitImage, styles.jacket]}
+          />
+        )}
+        {equippedOutfits.shirt && (
+          <Image 
+            source={{ uri: `../assets/images/outfits/${equippedOutfits.shirt}.png` }}
+            style={[styles.outfitImage, styles.shirt]}
+          />
+        )}
+        {equippedOutfits.pants && (
+          <Image 
+            source={{ uri: `../assets/images/outfits/${equippedOutfits.pants}.png` }}
+            style={[styles.outfitImage, styles.pants]}
+          />
+        )}
+        {equippedOutfits.shoes && (
+          <Image 
+            source={{ uri: `../assets/images/outfits/${equippedOutfits.shoes}.png` }}
+            style={[styles.outfitImage, styles.shoes]}
           />
         )}
       </Animated.View>
@@ -67,7 +87,25 @@ const styles = StyleSheet.create({
     width: 100,
     height: 100,
     resizeMode: 'contain',
+  },
+  hat: {
+    top: -10,
+    left: 0,
+  },
+  jacket: {
     top: 0,
+    left: 0,
+  },
+  shirt: {
+    top: 20,
+    left: 0,
+  },
+  pants: {
+    top: 50,
+    left: 0,
+  },
+  shoes: {
+    top: 80,
     left: 0,
   },
 });
