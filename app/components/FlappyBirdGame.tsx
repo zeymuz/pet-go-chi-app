@@ -1,3 +1,4 @@
+// FlappyBirdGame.tsx
 import React, { useEffect, useRef, useState } from 'react';
 import { Dimensions, Image, StyleSheet, Text, TouchableOpacity, View } from 'react-native';
 
@@ -9,17 +10,18 @@ const GRAVITY = 0.5;
 const JUMP_FORCE = -8;
 const PIPE_GAP = 180;
 const PIPE_SPEED = 3;
-const PIPE_SPAWN_RATE = 1500; // milliseconds
+const PIPE_SPAWN_RATE = 1500;
 const COLLISION_MARGIN = 6;
 
 interface FlappyBirdGameProps {
-  onClose: () => void;
+  onClose: (score: number) => void;
 }
 
 export default function FlappyBirdGame({ onClose }: FlappyBirdGameProps) {
   const [birdPosition, setBirdPosition] = useState(height / 2);
   const [gameStarted, setGameStarted] = useState(false);
   const [score, setScore] = useState(0);
+  const [coinsEarned, setCoinsEarned] = useState(0);
   const [pipes, setPipes] = useState<{ x: number; topHeight: number; passed: boolean }[]>([]);
   const [gameOver, setGameOver] = useState(false);
 
@@ -39,6 +41,7 @@ export default function FlappyBirdGame({ onClose }: FlappyBirdGameProps) {
   const startGame = () => {
     setPipes([]);
     setScore(0);
+    setCoinsEarned(0);
     setBirdPosition(height / 2);
     setGameOver(false);
     birdVelocityRef.current = 0;
@@ -72,17 +75,16 @@ export default function FlappyBirdGame({ onClose }: FlappyBirdGameProps) {
           .filter(pipe => pipe.x > -PIPE_WIDTH);
 
         if (movedPipes.length === 0 || movedPipes[movedPipes.length - 1].x < width - 300) {
-  const MIN_PIPE_TOP = 100;
-  const MAX_PIPE_TOP = height - PIPE_GAP - 200;
-  const safeTopHeight = Math.random() * (MAX_PIPE_TOP - MIN_PIPE_TOP) + MIN_PIPE_TOP;
+          const MIN_PIPE_TOP = 100;
+          const MAX_PIPE_TOP = height - PIPE_GAP - 200;
+          const safeTopHeight = Math.random() * (MAX_PIPE_TOP - MIN_PIPE_TOP) + MIN_PIPE_TOP;
 
-  movedPipes.push({
-    x: width,
-    topHeight: safeTopHeight,
-    passed: false,
-  });
-}
-
+          movedPipes.push({
+            x: width,
+            topHeight: safeTopHeight,
+            passed: false,
+          });
+        }
 
         const birdX = width / 3;
         const birdY = latestBirdY;
@@ -104,7 +106,12 @@ export default function FlappyBirdGame({ onClose }: FlappyBirdGameProps) {
           }
 
           if (!pipe.passed && pipe.x + PIPE_WIDTH < birdX - BIRD_WIDTH / 2) {
-            setScore(prev => prev + 1);
+            const newScore = score + 1;
+            setScore(newScore);
+            // Give 1 coin every 5 points
+            if (newScore % 5 === 0) {
+              setCoinsEarned(prev => prev + 1);
+            }
             pipe.passed = true;
           }
         });
@@ -129,11 +136,12 @@ export default function FlappyBirdGame({ onClose }: FlappyBirdGameProps) {
 
   return (
     <View style={styles.container}>
-      <TouchableOpacity style={styles.closeButton} onPress={onClose}>
+      <TouchableOpacity style={styles.closeButton} onPress={() => onClose(coinsEarned)}>
         <Text style={styles.closeButtonText}>X</Text>
       </TouchableOpacity>
 
       <Text style={styles.score}>Score: {score}</Text>
+      <Text style={styles.coins}>Coins: {coinsEarned}</Text>
 
       {!gameStarted && !gameOver && (
         <View style={styles.startContainer}>
@@ -145,6 +153,7 @@ export default function FlappyBirdGame({ onClose }: FlappyBirdGameProps) {
         <View style={styles.gameOverContainer}>
           <Text style={styles.gameOverText}>Game Over!</Text>
           <Text style={styles.finalScore}>Score: {score}</Text>
+          <Text style={styles.coinsEarned}>Coins Earned: {coinsEarned}</Text>
           <TouchableOpacity style={styles.restartButton} onPress={startGame}>
             <Text style={styles.restartButtonText}>Play Again</Text>
           </TouchableOpacity>
@@ -222,6 +231,15 @@ const styles = StyleSheet.create({
     color: '#fff',
     fontWeight: 'bold',
   },
+  coins: {
+    position: 'absolute',
+    top: 70,
+    left: 20,
+    zIndex: 10,
+    fontSize: 20,
+    color: 'gold',
+    fontWeight: 'bold',
+  },
   startContainer: {
     position: 'absolute',
     top: '40%',
@@ -291,6 +309,12 @@ const styles = StyleSheet.create({
   finalScore: {
     fontSize: 20,
     color: '#fff',
+    marginBottom: 10,
+    fontWeight: 'bold',
+  },
+  coinsEarned: {
+    fontSize: 18,
+    color: 'gold',
     marginBottom: 20,
     fontWeight: 'bold',
   },

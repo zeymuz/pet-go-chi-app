@@ -1,21 +1,34 @@
-import React from 'react';
+import { useIsFocused } from '@react-navigation/native';
+import React, { useEffect } from 'react';
 import { FlatList, StyleSheet, Text, View } from 'react-native';
 import StoreItem from '../components/StoreItem';
 import COLORS from '../constants/colors';
-import useStore from './../hooks/useStore';
+import useStore from '../hooks/useStore';
 
 export default function StoreScreen() {
-  const { outfits, coins, purchaseItem, equippedOutfits, equipOutfit } = useStore();
+  const isFocused = useIsFocused();
+  const { coins, outfits, foods, purchaseItem, equippedOutfits, equipOutfit } = useStore();
+
+  // Debug logs
+  useEffect(() => {
+    if (isFocused) {
+      console.log('StoreScreen focused, current coins:', coins);
+    }
+  }, [isFocused, coins]);
+
+  const storeItems = [...outfits, ...foods];
 
   return (
     <View style={styles.container}>
       <View style={styles.header}>
         <Text style={styles.title}>Store</Text>
-        <Text style={styles.coins}>Coins: {coins}</Text>
+        <Text style={styles.coins} testID="coins-display">
+          Coins: {coins}
+        </Text>
       </View>
 
       <FlatList
-        data={outfits}
+        data={storeItems}
         renderItem={({ item }) => (
           <StoreItem
             item={item}

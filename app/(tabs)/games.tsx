@@ -1,5 +1,6 @@
+// games.tsx
 import React, { useState } from 'react';
-import { StyleSheet, Text, View } from 'react-native';
+import { Alert, StyleSheet, Text, View } from 'react-native';
 import FlappyBirdGame from '../components/FlappyBirdGame';
 import GameButton from '../components/GameButton';
 import MemoryGame from '../components/MemoryGame';
@@ -10,7 +11,7 @@ import useStore from '../hooks/useStore';
 
 export default function GamesScreen() {
   const [activeGame, setActiveGame] = useState<string | null>(null);
-  const { energy, play } = usePet();
+  const { energy, play, hunger } = usePet();
   const { earnCoins } = useStore();
 
   const games = [
@@ -20,17 +21,25 @@ export default function GamesScreen() {
   ];
 
   const handleGameStart = (gameId: string) => {
-    if (energy < 10) {
-      alert('Your pet is too tired to play!');
+    if (energy < 15) {
+      Alert.alert('Too Tired', 'Your pet is too tired to play! Energy must be above 15%');
       return;
     }
-    play(); // Decrease energy
+    if (hunger > 85) {
+      Alert.alert('Too Hungry', 'Your pet is too hungry to play! Feed your pet first.');
+      return;
+    }
+    play();
     setActiveGame(gameId);
   };
 
   const handleGameEnd = (score: number) => {
     const coinsEarned = Math.floor(score / 10);
-    earnCoins(coinsEarned);
+    if (coinsEarned > 0) {
+      const actualEarned = earnCoins(coinsEarned);
+      Alert.alert('Game Over', `You earned ${actualEarned} coins!`);
+      console.log(`Earned ${actualEarned} coins from game`);
+    }
     setActiveGame(null);
   };
 

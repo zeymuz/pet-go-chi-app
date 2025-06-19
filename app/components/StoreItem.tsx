@@ -1,6 +1,7 @@
+// StoreItem.tsx
 import React from 'react';
 import { Image, StyleSheet, Text, TouchableOpacity, View } from 'react-native';
-import  COLORS  from '../constants/colors';
+import COLORS from '../constants/colors';
 
 interface StoreItemProps {
   item: {
@@ -10,6 +11,7 @@ interface StoreItemProps {
     image: string;
     owned: boolean;
     type: string;
+    hungerRestore?: number;
   };
   onPurchase: () => void;
   onEquip: () => void;
@@ -29,11 +31,16 @@ export default function StoreItem({
       <Image source={{ uri: item.image }} style={styles.image} />
       <Text style={styles.name}>{item.name}</Text>
       <Text style={styles.price}>{item.price} coins</Text>
+      {item.type === 'food' && item.hungerRestore && (
+        <Text style={styles.hungerRestore}>Restores: {item.hungerRestore}%</Text>
+      )}
       
       {!owned ? (
         <TouchableOpacity style={styles.buyButton} onPress={onPurchase}>
           <Text style={styles.buttonText}>Buy</Text>
         </TouchableOpacity>
+      ) : item.type === 'food' ? (
+        <Text style={styles.ownedText}>Owned</Text>
       ) : (
         <TouchableOpacity 
           style={[styles.equipButton, isEquipped && styles.equippedButton]} 
@@ -97,5 +104,17 @@ const styles = StyleSheet.create({
     fontFamily: 'PressStart2P',
     fontSize: 8,
     color: '#fff',
+  },
+  hungerRestore: {
+    fontFamily: 'PressStart2P',
+    fontSize: 8,
+    color: COLORS.hunger,
+    marginBottom: 4,
+  },
+  ownedText: {
+    fontFamily: 'PressStart2P',
+    fontSize: 8,
+    color: '#4CAF50',
+    padding: 8,
   },
 });

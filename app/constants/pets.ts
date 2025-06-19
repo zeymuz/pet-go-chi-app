@@ -1,4 +1,4 @@
-import { Outfit } from '../types/types';
+import { Food, Outfit } from '../types/types';
 
 const OUTFITS: Outfit[] = [
   // Hats
@@ -208,6 +208,54 @@ const OUTFITS: Outfit[] = [
   },
 ];
 
-export { OUTFITS };
+const FOODS: Food[] = [
+  {
+    id: 'food1',
+    name: 'Apple',
+    price: 10,
+    owned: false,
+    image: 'https://example.com/apple.png',
+    type: 'food',
+    hungerRestore: 15
+  },
+  {
+    id: 'food2',
+    name: 'Pizza',
+    price: 30,
+    owned: false,
+    image: 'https://example.com/pizza.png',
+    type: 'food',
+    hungerRestore: 40
+  },
+  {
+    id: 'food3',
+    name: 'Burger',
+    price: 25,
+    owned: false,
+    image: 'https://example.com/burger.png',
+    type: 'food',
+    hungerRestore: 35
+  },
+  {
+    id: 'food4',
+    name: 'Salad',
+    price: 15,
+    owned: false,
+    image: 'https://example.com/salad.png',
+    type: 'food',
+    hungerRestore: 20
+  },
+  {
+    id: 'food5',
+    name: 'Steak',
+    price: 50,
+    owned: false,
+    image: 'https://example.com/steak.png',
+    type: 'food',
+    hungerRestore: 60
+  }
+];
+
+export { FOODS, OUTFITS };
 
 export default () => null;

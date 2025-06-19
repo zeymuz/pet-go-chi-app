@@ -635,24 +635,24 @@ export default function PlatformJumperGame({ onExit }: PlatformJumperGameProps) 
       )}
 
       {gameStatus === 'gameover' && (
-        <View style={styles.overlay}>
-          <Text style={styles.title}>Game Over</Text>
-          <Text style={styles.score}>Final Score: {scoreUI}</Text>
-          <Text style={styles.coins}>Coins Earned: {coinsEarned}</Text>
-          {scoreUI >= 20000 && (
-            <Text style={styles.monsterWarning}>You awakened the ancient one!</Text>
-          )}
-          <TouchableOpacity
-            style={styles.button}
-            onPress={() => {
-              resetGame();
-              setGameStatus('playing');
-            }}
-          >
-            <Text style={styles.buttonText}>Play Again</Text>
-          </TouchableOpacity>
-        </View>
-      )}
+  <View style={styles.overlay}>
+    <Text style={styles.title}>Game Over</Text>
+    <Text style={styles.score}>Final Score: {scoreUI}</Text>
+    <Text style={styles.coins}>+{coinsEarned} coins</Text>
+    {scoreUI >= 20000 && (
+      <Text style={styles.monsterWarning}>You awakened the ancient one!</Text>
+    )}
+    <TouchableOpacity
+      style={styles.button}
+      onPress={() => {
+        resetGame();
+        setGameStatus('playing');
+      }}
+    >
+      <Text style={styles.buttonText}>Play Again</Text>
+    </TouchableOpacity>
+  </View>
+)}
     </SafeAreaView>
   );
 }

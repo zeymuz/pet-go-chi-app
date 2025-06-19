@@ -1,3 +1,4 @@
+// types.ts
 interface StoreItem {
   id: string;
   name: string;
@@ -10,6 +11,11 @@ interface Outfit extends StoreItem {
   type: 'hat' | 'jacket' | 'shirt' | 'pants' | 'shoes';
 }
 
-export type { Outfit, StoreItem };
+interface Food extends StoreItem {
+  type: 'food';
+  hungerRestore: number;
+}
+
+export type { Food, Outfit, StoreItem };
 
 export default () => null;
