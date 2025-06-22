@@ -1,4 +1,3 @@
-// FlappyBirdGame.tsx - COMPLETE AND UNCHANGED
 import React, { useEffect, useRef, useState } from 'react';
 import { Dimensions, Image, StyleSheet, Text, TouchableOpacity, View } from 'react-native';
 
@@ -29,6 +28,7 @@ export default function FlappyBirdGame({ onClose }: FlappyBirdGameProps) {
   const pipeLoopRef = useRef<NodeJS.Timeout>();
   const birdVelocityRef = useRef(0);
   const scoreRef = useRef(0);
+  const coinsEarnedRef = useRef(0);
 
   const jump = () => {
     if (!gameStarted) {
@@ -45,6 +45,7 @@ export default function FlappyBirdGame({ onClose }: FlappyBirdGameProps) {
     setScore(0);
     scoreRef.current = 0;
     setCoinsEarned(0);
+    coinsEarnedRef.current = 0;
     setBirdPosition(height / 2);
     setGameOver(false);
     birdVelocityRef.current = 0;
@@ -111,10 +112,12 @@ export default function FlappyBirdGame({ onClose }: FlappyBirdGameProps) {
           if (!pipe.passed && pipe.x + PIPE_WIDTH < birdX - BIRD_WIDTH / 2) {
             pipe.passed = true;
             scoreRef.current += 1;
-            setScore(scoreRef.current);
-            if (scoreRef.current % 10 === 0) {
-              setCoinsEarned(prev => prev + 1);
+            const newCoins = Math.floor(scoreRef.current / 10);
+            if (newCoins > coinsEarnedRef.current) {
+              coinsEarnedRef.current = newCoins;
+              setCoinsEarned(newCoins);
             }
+            setScore(scoreRef.current);
           }
         });
 
@@ -126,7 +129,15 @@ export default function FlappyBirdGame({ onClose }: FlappyBirdGameProps) {
   const endGame = () => {
     clearInterval(gameLoopRef.current);
     clearInterval(pipeLoopRef.current);
-    setGameOver(true);
+    setGameOver(true); // Only set game over state here
+  };
+
+  const handleExit = () => {
+    clearInterval(gameLoopRef.current);
+    clearInterval(pipeLoopRef.current);
+    setTimeout(() => {
+      onClose(scoreRef.current);
+    }, 0);
   };
 
   useEffect(() => {
@@ -138,7 +149,7 @@ export default function FlappyBirdGame({ onClose }: FlappyBirdGameProps) {
 
   return (
     <View style={styles.container}>
-      <TouchableOpacity style={styles.closeButton} onPress={() => onClose(coinsEarned)}>
+      <TouchableOpacity style={styles.closeButton} onPress={handleExit}>
         <Text style={styles.closeButtonText}>X</Text>
       </TouchableOpacity>
 
@@ -156,9 +167,14 @@ export default function FlappyBirdGame({ onClose }: FlappyBirdGameProps) {
           <Text style={styles.gameOverText}>Game Over!</Text>
           <Text style={styles.finalScore}>Score: {score}</Text>
           <Text style={styles.coinsEarned}>Coins Earned: {coinsEarned}</Text>
-          <TouchableOpacity style={styles.restartButton} onPress={startGame}>
-            <Text style={styles.restartButtonText}>Play Again</Text>
-          </TouchableOpacity>
+          <View style={styles.buttonRow}>
+            <TouchableOpacity style={styles.restartButton} onPress={startGame}>
+              <Text style={styles.restartButtonText}>Play Again</Text>
+            </TouchableOpacity>
+            <TouchableOpacity style={styles.exitButton} onPress={handleExit}>
+              <Text style={styles.exitButtonText}>Exit</Text>
+            </TouchableOpacity>
+          </View>
         </View>
       )}
 
@@ -293,9 +309,9 @@ const styles = StyleSheet.create({
   },
   gameOverContainer: {
     position: 'absolute',
-    top: '40%',
-    left: '20%',
-    width: '60%',
+    top: '30%',
+    left: '10%',
+    right: '10%',
     backgroundColor: 'rgba(0, 0, 0, 0.8)',
     padding: 20,
     borderRadius: 10,
@@ -320,12 +336,33 @@ const styles = StyleSheet.create({
     marginBottom: 20,
     fontWeight: 'bold',
   },
+  buttonRow: {
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    width: '100%',
+  },
   restartButton: {
+    backgroundColor: '#4CAF50',
+    padding: 15,
+    borderRadius: 10,
+    flex: 1,
+    marginRight: 10,
+    alignItems: 'center',
+  },
+  exitButton: {
     backgroundColor: '#ff5a5f',
     padding: 15,
     borderRadius: 10,
+    flex: 1,
+    marginLeft: 10,
+    alignItems: 'center',
   },
   restartButtonText: {
+    fontSize: 18,
+    color: '#fff',
+    fontWeight: 'bold',
+  },
+  exitButtonText: {
     fontSize: 18,
     color: '#fff',
     fontWeight: 'bold',

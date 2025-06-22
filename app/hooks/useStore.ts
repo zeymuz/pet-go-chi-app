@@ -1,5 +1,8 @@
+import AsyncStorage from '@react-native-async-storage/async-storage';
 import { useEffect, useState } from 'react';
 import { FOODS, OUTFITS } from '../constants/pets';
+
+const STORAGE_KEY = 'pet_store_data';
 
 // Global store instance
 let globalStore = {
@@ -15,17 +18,40 @@ let globalStore = {
   }
 };
 
+// Load saved data on initialization
+(async () => {
+  try {
+    const savedData = await AsyncStorage.getItem(STORAGE_KEY);
+    if (savedData) {
+      Object.assign(globalStore, JSON.parse(savedData));
+    }
+  } catch (error) {
+    console.log('Error loading store data:', error);
+  }
+})();
+
 const listeners = new Set<() => void>();
 
 const notifyListeners = () => {
   listeners.forEach(listener => listener());
 };
 
+const saveStore = async () => {
+  try {
+    await AsyncStorage.setItem(STORAGE_KEY, JSON.stringify(globalStore));
+  } catch (error) {
+    console.log('Error saving store data:', error);
+  }
+};
+
 const useStore = () => {
   const [state, setState] = useState(globalStore);
 
   useEffect(() => {
-    const listener = () => setState(globalStore);
+    const listener = () => {
+      setState({...globalStore});
+      saveStore();
+    };
     listeners.add(listener);
     return () => {
       listeners.delete(listener);

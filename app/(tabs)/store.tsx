@@ -1,5 +1,5 @@
 import { useIsFocused } from '@react-navigation/native';
-import React, { useEffect } from 'react';
+import React, { useEffect, useState } from 'react';
 import { FlatList, StyleSheet, Text, View } from 'react-native';
 import StoreItem from '../components/StoreItem';
 import COLORS from '../constants/colors';
@@ -8,11 +8,12 @@ import useStore from '../hooks/useStore';
 export default function StoreScreen() {
   const isFocused = useIsFocused();
   const { coins, outfits, foods, purchaseItem, equippedOutfits, equipOutfit } = useStore();
+  const [displayCoins, setDisplayCoins] = useState(coins);
 
-  // Debug logs
   useEffect(() => {
     if (isFocused) {
-      console.log('StoreScreen focused, current coins:', coins);
+      setDisplayCoins(coins);
+      console.log('StoreScreen updated, current coins:', coins);
     }
   }, [isFocused, coins]);
 
@@ -23,7 +24,7 @@ export default function StoreScreen() {
       <View style={styles.header}>
         <Text style={styles.title}>Store</Text>
         <Text style={styles.coins} testID="coins-display">
-          Coins: {coins}
+          Coins: {displayCoins}
         </Text>
       </View>
 

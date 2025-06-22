@@ -1,4 +1,3 @@
-// games.tsx
 import React, { useState } from 'react';
 import { Alert, StyleSheet, Text, View } from 'react-native';
 import FlappyBirdGame from '../components/FlappyBirdGame';
@@ -33,12 +32,13 @@ export default function GamesScreen() {
     setActiveGame(gameId);
   };
 
-  const handleGameEnd = (score: number) => {
+  const handleGameEnd = async (score: number) => {
     const coinsEarned = Math.floor(score / 10);
     if (coinsEarned > 0) {
       const actualEarned = earnCoins(coinsEarned);
-      Alert.alert('Game Over', `You earned ${actualEarned} coins!`);
       console.log(`Earned ${actualEarned} coins from game`);
+      await new Promise(resolve => setTimeout(resolve, 100));
+      Alert.alert('Game Over', `You earned ${actualEarned} coins!`);
     }
     setActiveGame(null);
   };
