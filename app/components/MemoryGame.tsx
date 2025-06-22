@@ -55,12 +55,10 @@ export default function MemoryGame({ onClose }: MemoryGameProps) {
     setGameStarted(false);
   };
 
-  const startGame = () => {
-    setGameStarted(true);
-  };
-
   const handleCardPress = (id: number) => {
-    if (!gameStarted) return;
+    if (!gameStarted) {
+      setGameStarted(true);
+    }
 
     const card = cards.find(c => c.id === id);
     if (!card || card.isFlipped || card.isMatched || flippedCards.length >= 2) {
@@ -160,9 +158,13 @@ export default function MemoryGame({ onClose }: MemoryGameProps) {
       </View>
 
       {!gameStarted && (
-        <View style={styles.startOverlay}>
+        <TouchableOpacity 
+          style={styles.startOverlay} 
+          onPress={() => setGameStarted(true)}
+          activeOpacity={1}
+        >
           <Text style={styles.startText}>TAP ANY CARD TO START</Text>
-        </View>
+        </TouchableOpacity>
       )}
     </View>
   );

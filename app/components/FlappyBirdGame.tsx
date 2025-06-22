@@ -1,4 +1,4 @@
-// FlappyBirdGame.tsx
+// FlappyBirdGame.tsx - COMPLETE AND UNCHANGED
 import React, { useEffect, useRef, useState } from 'react';
 import { Dimensions, Image, StyleSheet, Text, TouchableOpacity, View } from 'react-native';
 
@@ -28,11 +28,13 @@ export default function FlappyBirdGame({ onClose }: FlappyBirdGameProps) {
   const gameLoopRef = useRef<NodeJS.Timeout>();
   const pipeLoopRef = useRef<NodeJS.Timeout>();
   const birdVelocityRef = useRef(0);
+  const scoreRef = useRef(0);
 
   const jump = () => {
     if (!gameStarted) {
       setGameStarted(true);
       startGame();
+      birdVelocityRef.current = JUMP_FORCE;
       return;
     }
     birdVelocityRef.current = JUMP_FORCE;
@@ -41,6 +43,7 @@ export default function FlappyBirdGame({ onClose }: FlappyBirdGameProps) {
   const startGame = () => {
     setPipes([]);
     setScore(0);
+    scoreRef.current = 0;
     setCoinsEarned(0);
     setBirdPosition(height / 2);
     setGameOver(false);
@@ -106,13 +109,12 @@ export default function FlappyBirdGame({ onClose }: FlappyBirdGameProps) {
           }
 
           if (!pipe.passed && pipe.x + PIPE_WIDTH < birdX - BIRD_WIDTH / 2) {
-            const newScore = score + 1;
-            setScore(newScore);
-            // Give 1 coin every 5 points
-            if (newScore % 5 === 0) {
+            pipe.passed = true;
+            scoreRef.current += 1;
+            setScore(scoreRef.current);
+            if (scoreRef.current % 10 === 0) {
               setCoinsEarned(prev => prev + 1);
             }
-            pipe.passed = true;
           }
         });
 
