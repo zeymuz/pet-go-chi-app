@@ -1,5 +1,6 @@
+// home.tsx
 import React, { useState } from 'react';
-import { FlatList, StyleSheet, Text, TouchableOpacity, View } from 'react-native';
+import { FlatList, Image, StyleSheet, Text, TouchableOpacity, View } from 'react-native';
 import Button from '../components/Button';
 import PixelPet from '../components/PixelPet';
 import StatusBar from '../components/StatusBar';
@@ -21,12 +22,15 @@ export default function HomeScreen() {
     experience,
     showOutfits,
     setShowOutfits,
+    showFood,
+    setShowFood,
   } = usePet();
   
   const {
     outfits,
     equippedOutfits,
     equipOutfit,
+    foods,
   } = useStore();
 
   const [activeAction, setActiveAction] = useState<string | null>(null);
@@ -37,10 +41,10 @@ export default function HomeScreen() {
     
     switch (action) {
       case 'feed':
-        feed();
+        setShowFood(!showFood);
         break;
       case 'play':
-        play();
+        // This will now navigate to games screen
         break;
       case 'sleep':
         sleep();
@@ -74,14 +78,14 @@ export default function HomeScreen() {
       />
 
       <View style={styles.buttonsContainer}>
-        <View style={styles.buttonRow}>
-          <Button icon="fast-food" text="Feed" onPress={() => handleAction('feed')} />
-          <Button icon="gamepad" text="Play" onPress={() => handleAction('play')} />
-        </View>
-        <View style={styles.buttonRow}>
-          <Button icon="bed" text="Sleep" onPress={() => handleAction('sleep')} />
-          <Button icon="shower" text="Clean" onPress={() => handleAction('clean')} />
-        </View>
+<View style={styles.buttonRow}>
+  <Button icon="fast-food" text="Feed" onPress={() => handleAction('feed')} />
+  <Button icon="game-controller" text="Play" onPress={() => handleAction('play')} />
+</View>
+<View style={styles.buttonRow}>
+  <Button icon="moon" text="Sleep" onPress={() => handleAction('sleep')} />
+  <Button icon="water" text="Clean" onPress={() => handleAction('clean')} />
+</View>
         <TouchableOpacity 
           style={styles.outfitsButton}
           onPress={() => setShowOutfits(!showOutfits)}
@@ -110,6 +114,33 @@ export default function HomeScreen() {
                   resizeMode="contain"
                 />
                 <Text style={styles.outfitName}>{item.name}</Text>
+              </TouchableOpacity>
+            )}
+          />
+        </View>
+      )}
+
+      {showFood && (
+        <View style={styles.foodContainer}>
+          <FlatList
+            data={foods.filter(f => f.owned)}
+            numColumns={2}
+            keyExtractor={(item) => item.id}
+            renderItem={({ item }) => (
+              <TouchableOpacity
+                style={styles.foodItem}
+                onPress={() => {
+                  feed(item);
+                  setShowFood(false);
+                }}
+              >
+                <Image 
+                  source={{ uri: item.image }} 
+                  style={styles.foodImage} 
+                  resizeMode="contain"
+                />
+                <Text style={styles.foodName}>{item.name}</Text>
+                <Text style={styles.foodRestore}>Restores: {item.hungerRestore}%</Text>
               </TouchableOpacity>
             )}
           />
@@ -201,5 +232,43 @@ const styles = StyleSheet.create({
     color: COLORS.text,
     textAlign: 'center',
     marginTop: 5,
+  },
+  foodContainer: {
+    position: 'absolute',
+    bottom: 100,
+    left: 20,
+    right: 20,
+    backgroundColor: 'white',
+    borderRadius: 10,
+    padding: 10,
+    maxHeight: 200,
+    elevation: 5,
+  },
+  foodItem: {
+    width: 120,
+    height: 120,
+    margin: 5,
+    alignItems: 'center',
+    justifyContent: 'center',
+    backgroundColor: COLORS.secondary,
+    borderRadius: 8,
+    padding: 5,
+  },
+  foodImage: {
+    width: 60,
+    height: 60,
+  },
+  foodName: {
+    fontFamily: 'PressStart2P',
+    fontSize: 10,
+    color: COLORS.text,
+    textAlign: 'center',
+    marginTop: 5,
+  },
+  foodRestore: {
+    fontFamily: 'PressStart2P',
+    fontSize: 8,
+    color: COLORS.hunger,
+    textAlign: 'center',
   },
 });

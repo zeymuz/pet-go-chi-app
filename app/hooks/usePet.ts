@@ -67,7 +67,6 @@ const usePet = () => {
       setHappiness(prev => Math.min(100, prev + 5));
       setExperience(prev => prev + 10);
     }
-    setShowFood(!showFood);
   };
 
   const play = () => {
@@ -90,7 +89,7 @@ const usePet = () => {
   };
 
   const clean = () => {
-    setCleanliness(prev => Math.min(100, prev + 30));
+    setCleanliness(100);
     setHappiness(prev => Math.min(100, prev + 10));
     setExperience(prev => prev + 5);
   };

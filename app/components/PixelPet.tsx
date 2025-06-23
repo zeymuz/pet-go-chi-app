@@ -1,5 +1,6 @@
+// PixelPet.tsx
 import React, { useEffect, useRef } from 'react';
-import { Animated, Image, StyleSheet, View } from 'react-native';
+import { Animated, Easing, Image, StyleSheet, View } from 'react-native';
 
 interface PixelPetProps {
   activeAction: string | null;
