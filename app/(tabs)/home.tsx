@@ -1,7 +1,8 @@
 // home.tsx
+import { Ionicons } from '@expo/vector-icons';
 import { useNavigation } from '@react-navigation/native';
 import React, { useRef, useState } from 'react';
-import { Animated, FlatList, Image, StyleSheet, Text, TouchableOpacity, View } from 'react-native';
+import { Animated, Easing, FlatList, Image, StyleSheet, Text, TouchableOpacity, View } from 'react-native';
 import Button from '../components/Button';
 import PixelPet from '../components/PixelPet';
 import StatusBar from '../components/StatusBar';
@@ -40,6 +41,7 @@ export default function HomeScreen() {
   const navigation = useNavigation();
   const outfitsHeight = useRef(new Animated.Value(0)).current;
   const foodHeight = useRef(new Animated.Value(0)).current;
+  const buttonsOpacity = useRef(new Animated.Value(1)).current;
   const [lastCleanTime, setLastCleanTime] = useState<number | null>(null);
   const [canClean, setCanClean] = useState(true);
 
@@ -71,22 +73,77 @@ export default function HomeScreen() {
   };
 
   const toggleOutfitsMenu = () => {
+    const toValue = showOutfits ? 0 : 250;
     setShowOutfits(!showOutfits);
-    Animated.timing(outfitsHeight, {
-      toValue: showOutfits ? 0 : 200,
-      duration: 300,
-      useNativeDriver: false,
-    }).start();
+    
+    Animated.parallel([
+      Animated.timing(outfitsHeight, {
+        toValue,
+        duration: 500,
+        easing: Easing.bezier(0.4, 0, 0.2, 1),
+        useNativeDriver: false,
+      }),
+      Animated.timing(buttonsOpacity, {
+        toValue: showOutfits ? 1 : 0,
+        duration: 300,
+        useNativeDriver: true,
+      })
+    ]).start();
   };
 
   const toggleFoodMenu = () => {
+    const toValue = showFood ? 0 : 250;
     setShowFood(!showFood);
-    Animated.timing(foodHeight, {
-      toValue: showFood ? 0 : 200,
-      duration: 300,
-      useNativeDriver: false,
-    }).start();
+    
+    Animated.parallel([
+      Animated.timing(foodHeight, {
+        toValue,
+        duration: 500,
+        easing: Easing.bezier(0.4, 0, 0.2, 1),
+        useNativeDriver: false,
+      }),
+      Animated.timing(buttonsOpacity, {
+        toValue: showFood ? 1 : 0,
+        duration: 300,
+        useNativeDriver: true,
+      })
+    ]).start();
   };
+
+  const renderOutfitItem = ({ item }: { item: any }) => (
+    <TouchableOpacity
+      style={[
+        styles.outfitItem,
+        equippedOutfits[item.type] === item.id && styles.equippedOutfit
+      ]}
+      onPress={() => equipOutfit(item.id)}
+    >
+      <Image 
+        source={{ uri: item.image }} 
+        style={styles.outfitImage} 
+        resizeMode="contain"
+      />
+      <Text style={styles.outfitName}>{item.name}</Text>
+    </TouchableOpacity>
+  );
+
+  const renderFoodItem = ({ item }: { item: any }) => (
+    <TouchableOpacity
+      style={styles.foodItem}
+      onPress={() => {
+        feed(item);
+        toggleFoodMenu();
+      }}
+    >
+      <Image 
+        source={{ uri: item.image }} 
+        style={styles.foodImage} 
+        resizeMode="contain"
+      />
+      <Text style={styles.foodName}>{item.name}</Text>
+      <Text style={styles.foodRestore}>Restores: {item.hungerRestore}%</Text>
+    </TouchableOpacity>
+  );
 
   return (
     <View style={styles.container}>
@@ -110,19 +167,19 @@ export default function HomeScreen() {
         experience={experience}
       />
 
-      <View style={styles.buttonsContainer}>
+      <Animated.View style={[styles.buttonsContainer, { opacity: buttonsOpacity }]}>
         <View style={styles.buttonRow}>
           <Button 
             icon="fast-food" 
             text="Feed" 
             onPress={() => handleAction('feed')} 
-            disabled={isSleeping}
+            disabled={isSleeping || showFood}
           />
           <Button 
             icon="game-controller" 
             text="Play" 
             onPress={() => handleAction('play')} 
-            disabled={isSleeping || energy < 15 || hunger > 85}
+            disabled={isSleeping || energy < 15 || hunger > 85 || showFood}
           />
         </View>
         <View style={styles.buttonRow}>
@@ -130,45 +187,43 @@ export default function HomeScreen() {
             icon="moon" 
             text={isSleeping ? "Sleeping..." : "Sleep"} 
             onPress={() => handleAction('sleep')} 
-            disabled={isSleeping}
+            disabled={isSleeping || showFood}
           />
           <Button 
             icon="water" 
             text="Clean" 
             onPress={() => handleAction('clean')} 
-            disabled={!canClean || isSleeping}
+            disabled={!canClean || isSleeping || showFood}
           />
         </View>
         <TouchableOpacity 
           style={styles.outfitsButton}
           onPress={toggleOutfitsMenu}
-          disabled={isSleeping}
+          disabled={isSleeping || showFood}
         >
           <Text style={styles.outfitsButtonText}>Outfits</Text>
+          <Ionicons 
+            name={showOutfits ? "chevron-up" : "chevron-down"} 
+            size={16} 
+            color="white" 
+            style={styles.outfitArrow}
+          />
         </TouchableOpacity>
-      </View>
+      </Animated.View>
 
       <Animated.View style={[styles.outfitsContainer, { height: outfitsHeight }]}>
+        <TouchableOpacity 
+          style={styles.closeOutfitsButton}
+          onPress={toggleOutfitsMenu}
+        >
+          <Ionicons name="chevron-up" size={24} color={COLORS.primary} />
+        </TouchableOpacity>
         <FlatList
           data={outfits.filter(o => o.owned)}
           numColumns={3}
           keyExtractor={(item) => item.id}
-          renderItem={({ item }) => (
-            <TouchableOpacity
-              style={[
-                styles.outfitItem,
-                equippedOutfits[item.type] === item.id && styles.equippedOutfit
-              ]}
-              onPress={() => equipOutfit(item.id)}
-            >
-              <Image 
-                source={{ uri: item.image }} 
-                style={styles.outfitImage} 
-                resizeMode="contain"
-              />
-              <Text style={styles.outfitName}>{item.name}</Text>
-            </TouchableOpacity>
-          )}
+          renderItem={renderOutfitItem}
+          contentContainerStyle={styles.outfitsContent}
         />
       </Animated.View>
 
@@ -177,29 +232,14 @@ export default function HomeScreen() {
           style={styles.closeFoodButton}
           onPress={toggleFoodMenu}
         >
-          <Text style={styles.closeFoodButtonText}>▲</Text>
+          <Ionicons name="chevron-up" size={24} color={COLORS.primary} />
         </TouchableOpacity>
         <FlatList
           data={foods.filter(f => f.owned)}
           numColumns={2}
           keyExtractor={(item) => item.id}
-          renderItem={({ item }) => (
-            <TouchableOpacity
-              style={styles.foodItem}
-              onPress={() => {
-                feed(item);
-                toggleFoodMenu();
-              }}
-            >
-              <Image 
-                source={{ uri: item.image }} 
-                style={styles.foodImage} 
-                resizeMode="contain"
-              />
-              <Text style={styles.foodName}>{item.name}</Text>
-              <Text style={styles.foodRestore}>Restores: {item.hungerRestore}%</Text>
-            </TouchableOpacity>
-          )}
+          renderItem={renderFoodItem}
+          contentContainerStyle={styles.foodContent}
         />
       </Animated.View>
 
@@ -260,23 +300,37 @@ const styles = StyleSheet.create({
     borderRadius: 8,
     alignItems: 'center',
     marginTop: 10,
+    flexDirection: 'row',
+    justifyContent: 'center',
   },
   outfitsButtonText: {
     fontFamily: 'PressStart2P',
     fontSize: 12,
     color: 'white',
   },
+  outfitArrow: {
+    marginLeft: 8,
+  },
   outfitsContainer: {
     position: 'absolute',
-    bottom: 100,
-    left: 20,
-    right: 20,
+    bottom: 0,
+    left: 0,
+    right: 0,
     backgroundColor: 'white',
-    borderRadius: 10,
-    padding: 10,
-    maxHeight: 200,
-    elevation: 5,
+    borderTopLeftRadius: 20,
+    borderTopRightRadius: 20,
+    padding: 20,
+    maxHeight: 300,
+    elevation: 10,
     overflow: 'hidden',
+  },
+  closeOutfitsButton: {
+    alignSelf: 'center',
+    marginBottom: 10,
+    padding: 5,
+  },
+  outfitsContent: {
+    paddingBottom: 20,
   },
   outfitItem: {
     width: 80,
@@ -305,34 +359,34 @@ const styles = StyleSheet.create({
   },
   foodContainer: {
     position: 'absolute',
-    bottom: 100,
-    left: 20,
-    right: 20,
+    bottom: 0,
+    left: 0,
+    right: 0,
     backgroundColor: 'white',
-    borderRadius: 10,
-    padding: 10,
-    maxHeight: 200,
-    elevation: 5,
+    borderTopLeftRadius: 20,
+    borderTopRightRadius: 20,
+    padding: 20,
+    maxHeight: 300,
+    elevation: 10,
     overflow: 'hidden',
+  },
+  foodContent: {
+    paddingBottom: 20,
   },
   closeFoodButton: {
     alignSelf: 'center',
-    marginBottom: 5,
-  },
-  closeFoodButtonText: {
-    fontFamily: 'PressStart2P',
-    fontSize: 16,
-    color: COLORS.primary,
+    marginBottom: 10,
+    padding: 5,
   },
   foodItem: {
-    width: 120,
+    width: '45%',
     height: 120,
-    margin: 5,
+    margin: 8,
     alignItems: 'center',
     justifyContent: 'center',
     backgroundColor: COLORS.secondary,
     borderRadius: 8,
-    padding: 5,
+    padding: 10,
   },
   foodImage: {
     width: 60,
