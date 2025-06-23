@@ -39,6 +39,25 @@ const usePet = () => {
     loadSleepState();
   }, []);
 
+  // Update energy while sleeping
+  useEffect(() => {
+    let interval: NodeJS.Timeout;
+    if (isSleeping && sleepStartTime) {
+      interval = setInterval(() => {
+        const now = Date.now();
+        const elapsedHours = (now - sleepStartTime) / (1000 * 60 * 60);
+        const energyToAdd = Math.min(100, Math.floor(elapsedHours * (100 / 1.5)));
+        setEnergy(energyToAdd);
+        
+        if (elapsedHours >= 1.5) {
+          wakeUp();
+          clearInterval(interval);
+        }
+      }, 10000); // Update every 10 seconds
+    }
+    return () => clearInterval(interval);
+  }, [isSleeping, sleepStartTime]);
+
   // Decrease stats over time
   useEffect(() => {
     const interval = setInterval(() => {
@@ -88,6 +107,12 @@ const usePet = () => {
     }));
   };
 
+  const wakeUp = async () => {
+    setIsSleeping(false);
+    setSleepStartTime(null);
+    await SecureStore.deleteItemAsync('petSleep');
+  };
+
   const clean = () => {
     setCleanliness(100);
     setHappiness(prev => Math.min(100, prev + 10));
@@ -98,6 +123,7 @@ const usePet = () => {
     feed,
     play,
     sleep,
+    wakeUp,
     clean,
     happiness,
     hunger,

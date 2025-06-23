@@ -1,6 +1,7 @@
 // home.tsx
-import React, { useState } from 'react';
-import { FlatList, Image, StyleSheet, Text, TouchableOpacity, View } from 'react-native';
+import { useNavigation } from '@react-navigation/native';
+import React, { useRef, useState } from 'react';
+import { Animated, FlatList, Image, StyleSheet, Text, TouchableOpacity, View } from 'react-native';
 import Button from '../components/Button';
 import PixelPet from '../components/PixelPet';
 import StatusBar from '../components/StatusBar';
@@ -13,6 +14,7 @@ export default function HomeScreen() {
     feed,
     play,
     sleep,
+    wakeUp,
     clean,
     happiness,
     hunger,
@@ -24,6 +26,7 @@ export default function HomeScreen() {
     setShowOutfits,
     showFood,
     setShowFood,
+    isSleeping,
   } = usePet();
   
   const {
@@ -34,6 +37,11 @@ export default function HomeScreen() {
   } = useStore();
 
   const [activeAction, setActiveAction] = useState<string | null>(null);
+  const navigation = useNavigation();
+  const outfitsHeight = useRef(new Animated.Value(0)).current;
+  const foodHeight = useRef(new Animated.Value(0)).current;
+  const [lastCleanTime, setLastCleanTime] = useState<number | null>(null);
+  const [canClean, setCanClean] = useState(true);
 
   const handleAction = (action: string) => {
     setActiveAction(action);
@@ -41,18 +49,43 @@ export default function HomeScreen() {
     
     switch (action) {
       case 'feed':
-        setShowFood(!showFood);
+        toggleFoodMenu();
         break;
       case 'play':
-        // This will now navigate to games screen
+        navigation.navigate('games');
         break;
       case 'sleep':
-        sleep();
+        if (!isSleeping) {
+          sleep();
+        }
         break;
       case 'clean':
-        clean();
+        if (canClean) {
+          clean();
+          setLastCleanTime(Date.now());
+          setCanClean(false);
+          setTimeout(() => setCanClean(true), 2 * 60 * 60 * 1000); // 2 hours cooldown
+        }
         break;
     }
+  };
+
+  const toggleOutfitsMenu = () => {
+    setShowOutfits(!showOutfits);
+    Animated.timing(outfitsHeight, {
+      toValue: showOutfits ? 0 : 200,
+      duration: 300,
+      useNativeDriver: false,
+    }).start();
+  };
+
+  const toggleFoodMenu = () => {
+    setShowFood(!showFood);
+    Animated.timing(foodHeight, {
+      toValue: showFood ? 0 : 200,
+      duration: 300,
+      useNativeDriver: false,
+    }).start();
   };
 
   return (
@@ -78,72 +111,108 @@ export default function HomeScreen() {
       />
 
       <View style={styles.buttonsContainer}>
-<View style={styles.buttonRow}>
-  <Button icon="fast-food" text="Feed" onPress={() => handleAction('feed')} />
-  <Button icon="game-controller" text="Play" onPress={() => handleAction('play')} />
-</View>
-<View style={styles.buttonRow}>
-  <Button icon="moon" text="Sleep" onPress={() => handleAction('sleep')} />
-  <Button icon="water" text="Clean" onPress={() => handleAction('clean')} />
-</View>
+        <View style={styles.buttonRow}>
+          <Button 
+            icon="fast-food" 
+            text="Feed" 
+            onPress={() => handleAction('feed')} 
+            disabled={isSleeping}
+          />
+          <Button 
+            icon="game-controller" 
+            text="Play" 
+            onPress={() => handleAction('play')} 
+            disabled={isSleeping || energy < 15 || hunger > 85}
+          />
+        </View>
+        <View style={styles.buttonRow}>
+          <Button 
+            icon="moon" 
+            text={isSleeping ? "Sleeping..." : "Sleep"} 
+            onPress={() => handleAction('sleep')} 
+            disabled={isSleeping}
+          />
+          <Button 
+            icon="water" 
+            text="Clean" 
+            onPress={() => handleAction('clean')} 
+            disabled={!canClean || isSleeping}
+          />
+        </View>
         <TouchableOpacity 
           style={styles.outfitsButton}
-          onPress={() => setShowOutfits(!showOutfits)}
+          onPress={toggleOutfitsMenu}
+          disabled={isSleeping}
         >
           <Text style={styles.outfitsButtonText}>Outfits</Text>
         </TouchableOpacity>
       </View>
 
-      {showOutfits && (
-        <View style={styles.outfitsContainer}>
-          <FlatList
-            data={outfits.filter(o => o.owned)}
-            numColumns={3}
-            keyExtractor={(item) => item.id}
-            renderItem={({ item }) => (
-              <TouchableOpacity
-                style={[
-                  styles.outfitItem,
-                  equippedOutfits[item.type] === item.id && styles.equippedOutfit
-                ]}
-                onPress={() => equipOutfit(item.id)}
-              >
-                <Image 
-                  source={{ uri: item.image }} 
-                  style={styles.outfitImage} 
-                  resizeMode="contain"
-                />
-                <Text style={styles.outfitName}>{item.name}</Text>
-              </TouchableOpacity>
-            )}
-          />
-        </View>
-      )}
+      <Animated.View style={[styles.outfitsContainer, { height: outfitsHeight }]}>
+        <FlatList
+          data={outfits.filter(o => o.owned)}
+          numColumns={3}
+          keyExtractor={(item) => item.id}
+          renderItem={({ item }) => (
+            <TouchableOpacity
+              style={[
+                styles.outfitItem,
+                equippedOutfits[item.type] === item.id && styles.equippedOutfit
+              ]}
+              onPress={() => equipOutfit(item.id)}
+            >
+              <Image 
+                source={{ uri: item.image }} 
+                style={styles.outfitImage} 
+                resizeMode="contain"
+              />
+              <Text style={styles.outfitName}>{item.name}</Text>
+            </TouchableOpacity>
+          )}
+        />
+      </Animated.View>
 
-      {showFood && (
-        <View style={styles.foodContainer}>
-          <FlatList
-            data={foods.filter(f => f.owned)}
-            numColumns={2}
-            keyExtractor={(item) => item.id}
-            renderItem={({ item }) => (
-              <TouchableOpacity
-                style={styles.foodItem}
-                onPress={() => {
-                  feed(item);
-                  setShowFood(false);
-                }}
-              >
-                <Image 
-                  source={{ uri: item.image }} 
-                  style={styles.foodImage} 
-                  resizeMode="contain"
-                />
-                <Text style={styles.foodName}>{item.name}</Text>
-                <Text style={styles.foodRestore}>Restores: {item.hungerRestore}%</Text>
-              </TouchableOpacity>
-            )}
-          />
+      <Animated.View style={[styles.foodContainer, { height: foodHeight }]}>
+        <TouchableOpacity 
+          style={styles.closeFoodButton}
+          onPress={toggleFoodMenu}
+        >
+          <Text style={styles.closeFoodButtonText}>▲</Text>
+        </TouchableOpacity>
+        <FlatList
+          data={foods.filter(f => f.owned)}
+          numColumns={2}
+          keyExtractor={(item) => item.id}
+          renderItem={({ item }) => (
+            <TouchableOpacity
+              style={styles.foodItem}
+              onPress={() => {
+                feed(item);
+                toggleFoodMenu();
+              }}
+            >
+              <Image 
+                source={{ uri: item.image }} 
+                style={styles.foodImage} 
+                resizeMode="contain"
+              />
+              <Text style={styles.foodName}>{item.name}</Text>
+              <Text style={styles.foodRestore}>Restores: {item.hungerRestore}%</Text>
+            </TouchableOpacity>
+          )}
+        />
+      </Animated.View>
+
+      {isSleeping && (
+        <View style={styles.sleepOverlay}>
+          <Text style={styles.sleepText}>Your pet is sleeping...</Text>
+          <Text style={styles.sleepText}>Energy: {Math.min(100, Math.floor(energy))}%</Text>
+          <TouchableOpacity 
+            style={styles.wakeUpButton}
+            onPress={wakeUp}
+          >
+            <Text style={styles.wakeUpButtonText}>Wake Up</Text>
+          </TouchableOpacity>
         </View>
       )}
     </View>
@@ -207,6 +276,7 @@ const styles = StyleSheet.create({
     padding: 10,
     maxHeight: 200,
     elevation: 5,
+    overflow: 'hidden',
   },
   outfitItem: {
     width: 80,
@@ -243,6 +313,16 @@ const styles = StyleSheet.create({
     padding: 10,
     maxHeight: 200,
     elevation: 5,
+    overflow: 'hidden',
+  },
+  closeFoodButton: {
+    alignSelf: 'center',
+    marginBottom: 5,
+  },
+  closeFoodButtonText: {
+    fontFamily: 'PressStart2P',
+    fontSize: 16,
+    color: COLORS.primary,
   },
   foodItem: {
     width: 120,
@@ -270,5 +350,33 @@ const styles = StyleSheet.create({
     fontSize: 8,
     color: COLORS.hunger,
     textAlign: 'center',
+  },
+  sleepOverlay: {
+    position: 'absolute',
+    top: 0,
+    left: 0,
+    right: 0,
+    bottom: 0,
+    backgroundColor: 'rgba(0,0,0,0.7)',
+    justifyContent: 'center',
+    alignItems: 'center',
+    zIndex: 100,
+  },
+  sleepText: {
+    fontFamily: 'PressStart2P',
+    fontSize: 16,
+    color: 'white',
+    marginBottom: 10,
+  },
+  wakeUpButton: {
+    backgroundColor: COLORS.primary,
+    padding: 15,
+    borderRadius: 8,
+    marginTop: 20,
+  },
+  wakeUpButtonText: {
+    fontFamily: 'PressStart2P',
+    fontSize: 16,
+    color: 'white',
   },
 });
