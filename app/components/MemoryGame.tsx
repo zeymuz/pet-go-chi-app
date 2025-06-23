@@ -1,6 +1,6 @@
 import { Ionicons } from '@expo/vector-icons';
 import React, { useEffect, useState } from 'react';
-import { Alert, Dimensions, StyleSheet, Text, TouchableOpacity, View } from 'react-native';
+import { Alert, Animated, Dimensions, StyleSheet, Text, TouchableOpacity, View } from 'react-native';
 import COLORS from '../constants/colors';
 
 const { width } = Dimensions.get('window');
@@ -20,6 +20,7 @@ interface Card {
   icon: string;
   isFlipped: boolean;
   isMatched: boolean;
+  flipAnimation: Animated.Value;
 }
 
 export default function MemoryGame({ onClose }: MemoryGameProps) {
@@ -45,6 +46,7 @@ export default function MemoryGame({ onClose }: MemoryGameProps) {
         icon,
         isFlipped: false,
         isMatched: false,
+        flipAnimation: new Animated.Value(0) // Initialize animation value here
       }))
       .sort(() => 0.5 - Math.random());
     
@@ -55,76 +57,138 @@ export default function MemoryGame({ onClose }: MemoryGameProps) {
     setGameStarted(false);
   };
 
+  const flipCard = (cardId: number, toValue: number, callback?: () => void) => {
+    const cardIndex = cards.findIndex(c => c.id === cardId);
+    if (cardIndex === -1) return;
+
+    Animated.timing(cards[cardIndex].flipAnimation, {
+      toValue,
+      duration: 300,
+      useNativeDriver: true,
+    }).start(callback);
+  };
+
   const handleCardPress = (id: number) => {
     if (!gameStarted) {
       setGameStarted(true);
     }
 
-    const card = cards.find(c => c.id === id);
-    if (!card || card.isFlipped || card.isMatched || flippedCards.length >= 2) {
+    const cardIndex = cards.findIndex(c => c.id === id);
+    if (cardIndex === -1 || cards[cardIndex].isFlipped || cards[cardIndex].isMatched || flippedCards.length >= 2) {
       return;
     }
 
-    const newCards = cards.map(card => 
-      card.id === id ? { ...card, isFlipped: true } : card
-    );
-    
-    setCards(newCards);
-    setFlippedCards([...flippedCards, id]);
+    // Flip the card to show front
+    flipCard(id, 1, () => {
+      const newCards = [...cards];
+      newCards[cardIndex] = {
+        ...newCards[cardIndex],
+        isFlipped: true
+      };
+      setCards(newCards);
+      setFlippedCards([...flippedCards, id]);
 
-    if (flippedCards.length === 1) {
-      setMoves(moves + 1);
-      const [firstId] = flippedCards;
-      const firstCard = cards.find(c => c.id === firstId);
-      const secondCard = cards.find(c => c.id === id);
-      
-      if (firstCard?.icon === secondCard?.icon) {
-        setTimeout(() => {
-          const matchedCards = newCards.map(card => 
-            card.id === firstId || card.id === id 
-              ? { ...card, isMatched: true } 
-              : card
-          );
-          setCards(matchedCards);
-          setFlippedCards([]);
-          
-          if (matchedCards.every(card => card.isMatched)) {
-            setGameComplete(true);
-            const coinsEarned = level * 10;
-            Alert.alert(
-              `Level Complete!`,
-              `Completed in ${moves + 1} moves!\nEarned ${coinsEarned} coins!`,
-              [
-                { 
-                  text: 'Next Level', 
-                  onPress: () => {
-                    setLevel(prev => prev + 1);
-                  } 
-                },
-                { 
-                  text: 'Quit', 
-                  onPress: () => onClose(coinsEarned) 
-                }
-              ]
-            );
-          }
-        }, 500);
-      } else {
-        setTimeout(() => {
-          const resetCards = newCards.map(card => 
-            card.id === firstId || card.id === id 
-              ? { ...card, isFlipped: false } 
-              : card
-          );
-          setCards(resetCards);
-          setFlippedCards([]);
-        }, 1000);
+      if (flippedCards.length === 1) {
+        setMoves(moves + 1);
+        const [firstId] = flippedCards;
+        const firstCardIndex = cards.findIndex(c => c.id === firstId);
+        const firstCard = cards[firstCardIndex];
+        const secondCard = cards[cardIndex];
+        
+        if (firstCard?.icon === secondCard?.icon) {
+          setTimeout(() => {
+            const matchedCards = [...newCards];
+            matchedCards[firstCardIndex] = {
+              ...matchedCards[firstCardIndex],
+              isMatched: true
+            };
+            matchedCards[cardIndex] = {
+              ...matchedCards[cardIndex],
+              isMatched: true
+            };
+            setCards(matchedCards);
+            setFlippedCards([]);
+            
+            if (matchedCards.every(card => card.isMatched)) {
+              setGameComplete(true);
+              const coinsEarned = level * 10;
+              Alert.alert(
+                `Level Complete!`,
+                `Completed in ${moves + 1} moves!\nEarned ${coinsEarned} coins!`,
+                [
+                  { 
+                    text: 'Next Level', 
+                    onPress: () => {
+                      setLevel(prev => prev + 1);
+                    } 
+                  },
+                  { 
+                    text: 'Quit', 
+                    onPress: () => onClose(coinsEarned) 
+                  }
+                ]
+              );
+            }
+          }, 500);
+        } else {
+          setTimeout(() => {
+            // Flip both cards back
+            flipCard(firstId, 0);
+            flipCard(id, 0, () => {
+              const resetCards = [...newCards];
+              resetCards[firstCardIndex] = {
+                ...resetCards[firstCardIndex],
+                isFlipped: false
+              };
+              resetCards[cardIndex] = {
+                ...resetCards[cardIndex],
+                isFlipped: false
+              };
+              setCards(resetCards);
+              setFlippedCards([]);
+            });
+          }, 1000);
+        }
       }
-    }
+    });
   };
 
   const handleClose = () => {
     onClose(0);
+  };
+
+  const getCardStyle = (card: Card) => {
+    if (!card.flipAnimation) {
+      // Fallback in case animation value is missing
+      return {
+        frontAnimatedStyle: { transform: [{ rotateY: '0deg' }] },
+        backAnimatedStyle: { transform: [{ rotateY: '0deg' }] }
+      };
+    }
+
+    const frontInterpolate = card.flipAnimation.interpolate({
+      inputRange: [0, 1],
+      outputRange: ['180deg', '360deg']
+    });
+    
+    const backInterpolate = card.flipAnimation.interpolate({
+      inputRange: [0, 1],
+      outputRange: ['0deg', '180deg']
+    });
+
+    const frontAnimatedStyle = {
+      transform: [
+        { rotateY: frontInterpolate }
+      ]
+    };
+
+    const backAnimatedStyle = {
+      transform: [
+        { rotateY: backInterpolate }
+      ]
+    };
+
+    return { frontAnimatedStyle, backAnimatedStyle };
   };
 
   return (
@@ -138,23 +202,33 @@ export default function MemoryGame({ onClose }: MemoryGameProps) {
       <Text style={styles.coins}>Potential Coins: {level * 10}</Text>
 
       <View style={styles.gameArea}>
-        {cards.map(card => (
-          <TouchableOpacity
-            key={card.id}
-            style={[
-              styles.card,
-              card.isFlipped || card.isMatched ? styles.cardFlipped : styles.cardBack,
-            ]}
-            onPress={() => handleCardPress(card.id)}
-            activeOpacity={0.7}
-          >
-            <Ionicons 
-              name={card.isFlipped || card.isMatched ? (card.icon as any) : "md-help-circle"} 
-              size={28} 
-              color={card.isFlipped || card.isMatched ? COLORS.primary : "white"} 
-            />
-          </TouchableOpacity>
-        ))}
+        {cards.map(card => {
+          const { frontAnimatedStyle, backAnimatedStyle } = getCardStyle(card);
+          
+          return (
+            <TouchableOpacity
+              key={card.id}
+              style={styles.cardContainer}
+              onPress={() => handleCardPress(card.id)}
+              activeOpacity={0.7}
+            >
+              <Animated.View style={[styles.card, styles.cardBack, backAnimatedStyle]}>
+                <Ionicons 
+                  name="md-help-circle" 
+                  size={28} 
+                  color="white" 
+                />
+              </Animated.View>
+              <Animated.View style={[styles.card, styles.cardFlipped, frontAnimatedStyle]}>
+                <Ionicons 
+                  name={card.icon as any} 
+                  size={28} 
+                  color={COLORS.primary} 
+                />
+              </Animated.View>
+            </TouchableOpacity>
+          );
+        })}
       </View>
 
       {!gameStarted && (
@@ -216,13 +290,19 @@ const styles = StyleSheet.create({
     justifyContent: 'center',
     marginHorizontal: 10,
   },
-  card: {
+  cardContainer: {
     width: width / 4 - 20,
     height: width / 4 - 20,
     margin: 6,
+  },
+  card: {
+    width: '100%',
+    height: '100%',
     borderRadius: 8,
     alignItems: 'center',
     justifyContent: 'center',
+    backfaceVisibility: 'hidden',
+    position: 'absolute',
   },
   cardBack: {
     backgroundColor: COLORS.secondary,
