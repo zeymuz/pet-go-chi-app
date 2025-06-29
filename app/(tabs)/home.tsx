@@ -39,8 +39,8 @@ export default function HomeScreen() {
 
   const [activeAction, setActiveAction] = useState<string | null>(null);
   const navigation = useNavigation();
-  const outfitsHeight = useRef(new Animated.Value(0)).current;
-  const foodHeight = useRef(new Animated.Value(0)).current;
+  const outfitsPosition = useRef(new Animated.Value(0)).current;
+  const foodPosition = useRef(new Animated.Value(0)).current;
   const buttonsOpacity = useRef(new Animated.Value(1)).current;
   const [lastCleanTime, setLastCleanTime] = useState<number | null>(null);
   const [canClean, setCanClean] = useState(true);
@@ -73,18 +73,18 @@ export default function HomeScreen() {
   };
 
   const toggleOutfitsMenu = () => {
-    const toValue = showOutfits ? 0 : 250;
+    const toValue = showOutfits ? 0 : 1;
     setShowOutfits(!showOutfits);
     
     Animated.parallel([
-      Animated.timing(outfitsHeight, {
+      Animated.timing(outfitsPosition, {
         toValue,
         duration: 500,
         easing: Easing.bezier(0.4, 0, 0.2, 1),
-        useNativeDriver: false,
+        useNativeDriver: true,
       }),
       Animated.timing(buttonsOpacity, {
-        toValue: showOutfits ? 1 : 0,
+        toValue: showOutfits ? 1 : 0.5,
         duration: 300,
         useNativeDriver: true,
       })
@@ -92,18 +92,18 @@ export default function HomeScreen() {
   };
 
   const toggleFoodMenu = () => {
-    const toValue = showFood ? 0 : 250;
+    const toValue = showFood ? 0 : 1;
     setShowFood(!showFood);
     
     Animated.parallel([
-      Animated.timing(foodHeight, {
+      Animated.timing(foodPosition, {
         toValue,
         duration: 500,
         easing: Easing.bezier(0.4, 0, 0.2, 1),
-        useNativeDriver: false,
+        useNativeDriver: true,
       }),
       Animated.timing(buttonsOpacity, {
-        toValue: showFood ? 1 : 0,
+        toValue: showFood ? 1 : 0.5,
         duration: 300,
         useNativeDriver: true,
       })
@@ -211,7 +211,17 @@ export default function HomeScreen() {
         </TouchableOpacity>
       </Animated.View>
 
-      <Animated.View style={[styles.outfitsContainer, { height: outfitsHeight }]}>
+      <Animated.View style={[
+        styles.outfitsContainer, 
+        { 
+          transform: [{
+            translateY: outfitsPosition.interpolate({
+              inputRange: [0, 1],
+              outputRange: [300, 0]
+            })
+          }] 
+        }
+      ]}>
         <TouchableOpacity 
           style={styles.closeOutfitsButton}
           onPress={toggleOutfitsMenu}
@@ -227,7 +237,17 @@ export default function HomeScreen() {
         />
       </Animated.View>
 
-      <Animated.View style={[styles.foodContainer, { height: foodHeight }]}>
+      <Animated.View style={[
+        styles.foodContainer, 
+        { 
+          transform: [{
+            translateY: foodPosition.interpolate({
+              inputRange: [0, 1],
+              outputRange: [300, 0]
+            })
+          }] 
+        }
+      ]}>
         <TouchableOpacity 
           style={styles.closeFoodButton}
           onPress={toggleFoodMenu}
@@ -264,6 +284,7 @@ const styles = StyleSheet.create({
     flex: 1,
     backgroundColor: COLORS.background,
     padding: 16,
+    paddingBottom: 20,
   },
   header: {
     flexDirection: 'row',
@@ -288,6 +309,8 @@ const styles = StyleSheet.create({
   },
   buttonsContainer: {
     marginTop: 20,
+    position: 'relative',
+    zIndex: 1,
   },
   buttonRow: {
     flexDirection: 'row',
@@ -316,13 +339,13 @@ const styles = StyleSheet.create({
     bottom: 0,
     left: 0,
     right: 0,
+    height: 300,
     backgroundColor: 'white',
     borderTopLeftRadius: 20,
     borderTopRightRadius: 20,
     padding: 20,
-    maxHeight: 300,
     elevation: 10,
-    overflow: 'hidden',
+    zIndex: 2,
   },
   closeOutfitsButton: {
     alignSelf: 'center',
@@ -362,13 +385,13 @@ const styles = StyleSheet.create({
     bottom: 0,
     left: 0,
     right: 0,
+    height: 300,
     backgroundColor: 'white',
     borderTopLeftRadius: 20,
     borderTopRightRadius: 20,
     padding: 20,
-    maxHeight: 300,
     elevation: 10,
-    overflow: 'hidden',
+    zIndex: 2,
   },
   foodContent: {
     paddingBottom: 20,
