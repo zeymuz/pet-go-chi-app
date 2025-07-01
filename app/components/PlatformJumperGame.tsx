@@ -83,6 +83,7 @@ export default function PlatformJumperGame({ onExit }: PlatformJumperGameProps) 
   const monsterSwayAnim = useRef(new Animated.Value(0)).current;
   const sunGlowAnim = useRef(new Animated.Value(0)).current;
   const spaceToSunAnim = useRef(new Animated.Value(0)).current;
+  const dayToNightAnim = useRef(new Animated.Value(0)).current;
 
   // Pan responder
   const panResponder = useRef(
@@ -162,6 +163,7 @@ export default function PlatformJumperGame({ onExit }: PlatformJumperGameProps) 
     monsterFadeAnim.setValue(0);
     sunGlowAnim.setValue(0);
     spaceToSunAnim.setValue(0);
+    dayToNightAnim.setValue(0);
     
     initGameObjects();
     setScoreUI(0);
@@ -480,16 +482,21 @@ export default function PlatformJumperGame({ onExit }: PlatformJumperGameProps) 
       ]).start();
       setBackgroundMode('sun');
     } else if (scoreUI >= 5000) {
-      // Space appears - smooth transition from sky (day to night)
+      // Smooth day to night transition
       Animated.parallel([
+        Animated.timing(dayToNightAnim, {
+          toValue: 1,
+          duration: 5000,
+          useNativeDriver: true,
+        }),
         Animated.timing(skyFadeAnim, {
           toValue: 0,
-          duration: 3000,
+          duration: 5000,
           useNativeDriver: true,
         }),
         Animated.timing(spaceFadeAnim, {
           toValue: 1,
-          duration: 3000,
+          duration: 5000,
           useNativeDriver: true,
         }),
       ]).start();
@@ -527,6 +534,11 @@ export default function PlatformJumperGame({ onExit }: PlatformJumperGameProps) 
           duration: 1000,
           useNativeDriver: true,
         }),
+        Animated.timing(dayToNightAnim, {
+          toValue: 0,
+          duration: 1000,
+          useNativeDriver: true,
+        }),
       ]).start();
       setBackgroundMode('sky');
     }
@@ -542,8 +554,17 @@ export default function PlatformJumperGame({ onExit }: PlatformJumperGameProps) 
     };
   }, []);
 
-  // Background style
+  // Background style - now with smooth day-to-night transition
   const getBackgroundStyle = () => {
+    if (backgroundMode === 'space' && dayToNightAnim._value < 1) {
+      return {
+        backgroundColor: dayToNightAnim.interpolate({
+          inputRange: [0, 1],
+          outputRange: ['#87CEEB', '#000033']
+        })
+      };
+    }
+    
     switch(backgroundMode) {
       case 'monster': return styles.monsterBackground;
       case 'galaxy': return styles.galaxyBackground;
@@ -555,7 +576,10 @@ export default function PlatformJumperGame({ onExit }: PlatformJumperGameProps) 
 
   // Optimized render methods
   const renderClouds = useCallback(() => (
-    <Animated.View style={{ opacity: skyFadeAnim }}>
+    <Animated.View style={{ opacity: skyFadeAnim.interpolate({
+      inputRange: [0, 1],
+      outputRange: [0, 1]
+    }) }}>
       {clouds.current.map((cloud) => (
         <View
           key={cloud.id}
@@ -566,12 +590,16 @@ export default function PlatformJumperGame({ onExit }: PlatformJumperGameProps) 
   ), [skyFadeAnim]);
 
   const renderStars = useCallback(() => (
-    <Animated.View style={{ opacity: backgroundMode === 'monster' ? 
-      monsterFadeAnim.interpolate({
-        inputRange: [0, 1],
-        outputRange: [1, 0.3]
-      }) : 
-      spaceFadeAnim 
+    <Animated.View style={{ 
+      opacity: backgroundMode === 'monster' ? 
+        monsterFadeAnim.interpolate({
+          inputRange: [0, 1],
+          outputRange: [1, 0.3]
+        }) : 
+        spaceFadeAnim.interpolate({
+          inputRange: [0, 1],
+          outputRange: [0, 1]
+        })
     }}>
       {stars.current.map((star) => (
         <View
@@ -593,12 +621,16 @@ export default function PlatformJumperGame({ onExit }: PlatformJumperGameProps) 
   ), [backgroundMode, spaceFadeAnim, monsterFadeAnim]);
 
   const renderBigStars = useCallback(() => (
-    <Animated.View style={{ opacity: backgroundMode === 'monster' ? 
-      monsterFadeAnim.interpolate({
-        inputRange: [0, 1],
-        outputRange: [1, 0.2]
-      }) : 
-      spaceFadeAnim 
+    <Animated.View style={{ 
+      opacity: backgroundMode === 'monster' ? 
+        monsterFadeAnim.interpolate({
+          inputRange: [0, 1],
+          outputRange: [1, 0.2]
+        }) : 
+        spaceFadeAnim.interpolate({
+          inputRange: [0, 1],
+          outputRange: [0, 1]
+        })
     }}>
       {bigStars.current.map((star) => (
         <Animated.View
@@ -683,7 +715,10 @@ export default function PlatformJumperGame({ onExit }: PlatformJumperGameProps) 
       style={[
         styles.galaxyContainer,
         {
-          opacity: galaxyFadeAnim,
+          opacity: galaxyFadeAnim.interpolate({
+            inputRange: [0, 1],
+            outputRange: [0, 1]
+          }),
           transform: [
             { scale: galaxyFadeAnim.interpolate({
               inputRange: [0, 1],
@@ -705,7 +740,10 @@ export default function PlatformJumperGame({ onExit }: PlatformJumperGameProps) 
     <Animated.View style={[
       styles.monsterContainer,
       { 
-        opacity: monsterFadeAnim,
+        opacity: monsterFadeAnim.interpolate({
+          inputRange: [0, 1],
+          outputRange: [0, 1]
+        }),
         transform: [
           { scale: monsterPulseAnim },
           { 
@@ -764,7 +802,8 @@ export default function PlatformJumperGame({ onExit }: PlatformJumperGameProps) 
 
   return (
     <SafeAreaView style={styles.container} {...panResponder.panHandlers}>
-      <View style={[StyleSheet.absoluteFill, getBackgroundStyle()]} />
+      {/* Background with smooth day-to-night transition */}
+      <Animated.View style={[StyleSheet.absoluteFill, getBackgroundStyle()]} />
 
       <TouchableOpacity style={styles.exitButton} onPress={handleExit}>
         <Text style={styles.exitButtonText}>✕</Text>
