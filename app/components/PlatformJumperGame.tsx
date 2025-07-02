@@ -260,9 +260,9 @@ export default function PlatformJumperGame({ onExit }: PlatformJumperGameProps) 
     if (rodSpawnTimer.current) clearInterval(rodSpawnTimer.current);
     rodSpawnTimer.current = setInterval(() => {
       if (backgroundMode === 'monster' && gameStatus === 'playing') {
-        addRods(1, 5 + (scoreUI - 20000) / 1000); // Reduced from 2 to 1 rods
+        addRods(1, 5 + (scoreUI - 20000) / 1000);
       }
-    }, 1000); // Increased interval from 500ms to 1000ms
+    }, 1000);
   }, [backgroundMode, gameStatus, scoreUI]);
 
   // Check rod collision
@@ -669,46 +669,13 @@ export default function PlatformJumperGame({ onExit }: PlatformJumperGameProps) 
         },
       ]}
     >
-      <Animated.View style={[
-        styles.sunCore,
-        {
-          transform: [
-            { scale: sunFadeAnim.interpolate({
-              inputRange: [0, 1],
-              outputRange: [0.8, 1.2]
-            })}
-          ],
-        }
-      ]} />
-      <Animated.View style={[
-        styles.sunCorona,
-        {
-          transform: [
-            { scale: sunFadeAnim.interpolate({
-              inputRange: [0, 1],
-              outputRange: [0.9, 1.3]
-            })}
-          ],
-          opacity: sunGlowAnim.interpolate({
-            inputRange: [0, 1],
-            outputRange: [0.7, 1]
-          })
-        },
-      ]} />
-      <Animated.View style={[
-        styles.sunGlow,
-        {
-          opacity: sunGlowAnim,
-          transform: [
-            { scale: sunGlowAnim.interpolate({
-              inputRange: [0, 1],
-              outputRange: [1, 1.5]
-            })}
-          ]
-        }
-      ]} />
+      <Image
+        source={require('../../assets/images/sun.gif')}
+        style={styles.sunImage}
+        resizeMode="contain"
+      />
     </Animated.View>
-  ), [sunFadeAnim, sunGlowAnim]);
+  ), [sunFadeAnim]);
 
   const renderGalaxy = useCallback(() => (
     <Animated.View
@@ -729,7 +696,7 @@ export default function PlatformJumperGame({ onExit }: PlatformJumperGameProps) 
       ]}
     >
       <Image
-        source={require('../../assets/images/favicon.png')}
+        source={require('../../assets/images/galaxy.gif')}
         style={styles.galaxyImage}
         resizeMode="contain"
       />
@@ -756,7 +723,7 @@ export default function PlatformJumperGame({ onExit }: PlatformJumperGameProps) 
       }
     ]}>
       <Image
-        source={require('../../assets/images/favicon.png')}
+        source={require('../../assets/images/monster.gif')}
         style={styles.monsterImage}
         resizeMode="contain"
       />
@@ -922,25 +889,9 @@ const styles = StyleSheet.create({
     justifyContent: 'center',
     alignItems: 'center',
   },
-  sunCore: {
+  sunImage: {
     width: '100%',
     height: '100%',
-    borderRadius: 100,
-    backgroundColor: '#FDB813',
-  },
-  sunCorona: {
-    position: 'absolute',
-    width: '120%',
-    height: '120%',
-    borderRadius: 120,
-    backgroundColor: 'rgba(253, 184, 19, 0.5)',
-  },
-  sunGlow: {
-    position: 'absolute',
-    width: '150%',
-    height: '150%',
-    borderRadius: 150,
-    backgroundColor: 'rgba(253, 184, 19, 0.2)',
   },
   galaxyContainer: {
     position: 'absolute',
