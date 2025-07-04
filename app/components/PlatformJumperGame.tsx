@@ -9,7 +9,7 @@ import {
   StyleSheet,
   Text,
   TouchableOpacity,
-  View,
+  View
 } from 'react-native';
 
 const window = Dimensions.get('window');
@@ -28,8 +28,8 @@ const CLOUD_WIDTH = 100;
 const CLOUD_HEIGHT = 60;
 const MAX_PLATFORMS = 15;
 const JUMP_COOLDOWN = 300;
-const STAR_COUNT = 50;
-const BIG_STAR_COUNT = 8;
+const STAR_COUNT = 30;
+const BIG_STAR_COUNT = 5;
 const ROD_WIDTH = 10;
 const ROD_HEIGHT = 30;
 
@@ -47,8 +47,6 @@ export default function PlatformJumperGame({ onExit }: PlatformJumperGameProps) 
   // Game state refs
   const playerX = useRef(screenWidth / 2 - PLAYER_SIZE / 2);
   const playerY = useRef(screenHeight - PLAYER_SIZE - 100);
-  const lastPlayerX = useRef(playerX.current);
-  const lastPlayerY = useRef(playerY.current);
   const velocityY = useRef(0);
   const isJumping = useRef(false);
   const currentModeRef = useRef<'sky' | 'space' | 'sun' | 'galaxy' | 'monster'>('sky');
@@ -72,6 +70,10 @@ export default function PlatformJumperGame({ onExit }: PlatformJumperGameProps) 
   const [gameStatus, setGameStatus] = useState<'ready' | 'playing' | 'gameover'>('ready');
   const [backgroundMode, setBackgroundMode] = useState<'sky' | 'space' | 'sun' | 'galaxy' | 'monster'>('sky');
   const [displayCoins, setDisplayCoins] = useState(0);
+  const [playerPosition, setPlayerPosition] = useState({
+    x: screenWidth / 2 - PLAYER_SIZE / 2,
+    y: screenHeight - PLAYER_SIZE - 100
+  });
 
   // Animations
   const skyFadeAnim = useRef(new Animated.Value(1)).current;
@@ -86,6 +88,11 @@ export default function PlatformJumperGame({ onExit }: PlatformJumperGameProps) 
   const spaceToSunAnim = useRef(new Animated.Value(0)).current;
   const dayToNightAnim = useRef(new Animated.Value(0)).current;
 
+  // GIF container refs
+  const sunRef = useRef(null);
+  const galaxyRef = useRef(null);
+  const monsterRef = useRef(null);
+
   // Update the ref whenever backgroundMode changes
   useEffect(() => {
     currentModeRef.current = backgroundMode;
@@ -98,6 +105,10 @@ export default function PlatformJumperGame({ onExit }: PlatformJumperGameProps) 
       onMoveShouldSetPanResponder: () => true,
       onPanResponderMove: (_, gestureState) => {
         playerX.current = Math.max(0, Math.min(screenWidth - PLAYER_SIZE, playerX.current + gestureState.dx * 0.15));
+        setPlayerPosition(prev => ({
+          ...prev,
+          x: playerX.current
+        }));
       },
     })
   ).current;
@@ -111,7 +122,7 @@ export default function PlatformJumperGame({ onExit }: PlatformJumperGameProps) 
   const initGameObjects = useCallback(() => {
     // Platforms
     platforms.current = Array.from({ length: NUM_INITIAL_PLATFORMS }, (_, i) => ({
-      id: `platform-${i}-${Math.random().toString(36).substr(2, 9)}`,
+      id: `platform-${i}`,
       x: i === 0 ? screenWidth / 2 - PLATFORM_WIDTH / 2 : Math.random() * (screenWidth - PLATFORM_WIDTH),
       y: screenHeight - 80 - i * PLATFORM_SPACING,
       special: i > 0 && Math.random() < 0.1,
@@ -120,7 +131,7 @@ export default function PlatformJumperGame({ onExit }: PlatformJumperGameProps) 
 
     // Clouds - slower speed
     clouds.current = Array.from({ length: 3 }, (_, i) => ({
-      id: `cloud-${i}-${Math.random().toString(36).substr(2, 9)}`,
+      id: `cloud-${i}`,
       x: Math.random() * (screenWidth - CLOUD_WIDTH),
       y: Math.random() * (screenHeight / 2),
       speed: 0.05 + Math.random() * 0.05,
@@ -128,7 +139,7 @@ export default function PlatformJumperGame({ onExit }: PlatformJumperGameProps) 
 
     // Stars
     stars.current = Array.from({ length: STAR_COUNT }, (_, i) => ({
-      id: `star-${i}-${Math.random().toString(36).substr(2, 9)}`,
+      id: `star-${i}`,
       x: Math.random() * screenWidth,
       y: Math.random() * screenHeight,
       size: 0.5 + Math.random() * 1.5,
@@ -137,7 +148,7 @@ export default function PlatformJumperGame({ onExit }: PlatformJumperGameProps) 
 
     // Big stars
     bigStars.current = Array.from({ length: BIG_STAR_COUNT }, (_, i) => ({
-      id: `bigstar-${i}-${Math.random().toString(36).substr(2, 9)}`,
+      id: `bigstar-${i}`,
       x: Math.random() * screenWidth,
       y: Math.random() * screenHeight,
       size: 2 + Math.random() * 3,
@@ -152,8 +163,10 @@ export default function PlatformJumperGame({ onExit }: PlatformJumperGameProps) 
   const resetGame = useCallback(() => {
     playerX.current = screenWidth / 2 - PLAYER_SIZE / 2;
     playerY.current = screenHeight - PLAYER_SIZE - 100;
-    lastPlayerX.current = playerX.current;
-    lastPlayerY.current = playerY.current;
+    setPlayerPosition({
+      x: screenWidth / 2 - PLAYER_SIZE / 2,
+      y: screenHeight - PLAYER_SIZE - 100
+    });
     velocityY.current = 0;
     isJumping.current = false;
     score.current = 0;
@@ -252,14 +265,13 @@ export default function PlatformJumperGame({ onExit }: PlatformJumperGameProps) 
 
   // Add red rods
   const addRods = useCallback((count: number, speed: number) => {
-    for (let i = 0; i < count; i++) {
-      rods.current.push({
-        id: `rod-${Date.now()}-${Math.random().toString(36).substr(2, 9)}`,
-        x: Math.random() * (screenWidth - ROD_WIDTH),
-        y: -ROD_HEIGHT,
-        speed: speed,
-      });
-    }
+    const newRods = Array.from({ length: count }, (_, i) => ({
+      id: `rod-${Date.now()}-${i}`,
+      x: Math.random() * (screenWidth - ROD_WIDTH),
+      y: -ROD_HEIGHT,
+      speed: speed,
+    }));
+    rods.current = [...rods.current, ...newRods].slice(-20); // Limit to 20 rods
   }, []);
 
   // Start rod spawning
@@ -353,14 +365,20 @@ export default function PlatformJumperGame({ onExit }: PlatformJumperGameProps) 
         playerY.current = screenHeight / 3;
 
         // Move platforms and clouds
-        platforms.current.forEach(p => p.y += diff);
-        platforms.current = platforms.current.filter(p => p.y < screenHeight + PLATFORM_HEIGHT * 2);
+        platforms.current = platforms.current.map(p => ({
+          ...p,
+          y: p.y + diff
+        })).filter(p => p.y < screenHeight + PLATFORM_HEIGHT * 2);
 
-        clouds.current.forEach(c => c.y += diff * 0.5);
-        clouds.current = clouds.current.filter(c => c.y < screenHeight + CLOUD_HEIGHT);
+        clouds.current = clouds.current.map(c => ({
+          ...c,
+          y: c.y + diff * 0.5
+        })).filter(c => c.y < screenHeight + CLOUD_HEIGHT);
 
-        rods.current.forEach(r => r.y += diff);
-        rods.current = rods.current.filter(r => r.y < screenHeight + ROD_HEIGHT);
+        rods.current = rods.current.map(r => ({
+          ...r,
+          y: r.y + diff
+        })).filter(r => r.y < screenHeight + ROD_HEIGHT);
 
         const scoreDiff = Math.floor(diff);
         score.current += scoreDiff;
@@ -370,16 +388,17 @@ export default function PlatformJumperGame({ onExit }: PlatformJumperGameProps) 
       }
 
       // Move clouds
-      clouds.current.forEach(c => {
-        c.x = (c.x + c.speed) % (screenWidth + CLOUD_WIDTH) - CLOUD_WIDTH;
-      });
+      clouds.current = clouds.current.map(c => ({
+        ...c,
+        x: (c.x + c.speed) % (screenWidth + CLOUD_WIDTH) - CLOUD_WIDTH
+      }));
 
       // Generate new platforms
       if (platforms.current.length > 0 && platforms.current.length < MAX_PLATFORMS) {
         const lastPlatform = platforms.current[platforms.current.length - 1];
         if (lastPlatform.y > 0) {
           platforms.current.push({
-            id: `platform-${Date.now()}-${Math.random().toString(36).substr(2, 9)}`,
+            id: `platform-${Date.now()}`,
             x: Math.random() * (screenWidth - PLATFORM_WIDTH),
             y: lastPlatform.y - PLATFORM_SPACING,
             special: Math.random() < 0.1,
@@ -394,13 +413,11 @@ export default function PlatformJumperGame({ onExit }: PlatformJumperGameProps) 
         return;
       }
 
-      // Only update when player moves significantly
-      if (Math.abs(playerY.current - lastPlayerY.current) > 1 || 
-          Math.abs(playerX.current - lastPlayerX.current) > 1) {
-        lastPlayerY.current = playerY.current;
-        lastPlayerX.current = playerX.current;
-        forceUpdate(n => n + 1);
-      }
+      // Update player position for rendering
+      setPlayerPosition({
+        x: playerX.current,
+        y: playerY.current
+      });
     }
 
     animationFrameId.current = requestAnimationFrame(gameTick);
@@ -422,7 +439,6 @@ export default function PlatformJumperGame({ onExit }: PlatformJumperGameProps) 
   // Background transitions with smooth fading
   useEffect(() => {
     if (scoreUI >= 40000 && currentModeRef.current !== 'galaxy') {
-      // Monster leaves - smooth fade out but immediately set to galaxy mode
       setBackgroundMode('galaxy');
       Animated.parallel([
         Animated.timing(monsterFadeAnim, {
@@ -438,7 +454,6 @@ export default function PlatformJumperGame({ onExit }: PlatformJumperGameProps) 
       ]).start();
       if (rodSpawnTimer.current) clearInterval(rodSpawnTimer.current);
     } else if (scoreUI >= 20000 && currentModeRef.current !== 'monster') {
-      // Monster appears - smooth fade in but immediately set to monster mode
       setBackgroundMode('monster');
       Animated.parallel([
         Animated.timing(galaxyFadeAnim, {
@@ -454,7 +469,6 @@ export default function PlatformJumperGame({ onExit }: PlatformJumperGameProps) 
       ]).start();
       startRodSpawning();
     } else if (scoreUI >= 15000 && currentModeRef.current !== 'galaxy') {
-      // Galaxy appears - smooth transition but immediately set to galaxy mode
       setBackgroundMode('galaxy');
       Animated.parallel([
         Animated.timing(sunFadeAnim, {
@@ -469,7 +483,6 @@ export default function PlatformJumperGame({ onExit }: PlatformJumperGameProps) 
         }),
       ]).start();
     } else if (scoreUI >= 10000 && currentModeRef.current !== 'sun') {
-      // Sun appears - smooth transition but immediately set to sun mode
       setBackgroundMode('sun');
       Animated.parallel([
         Animated.timing(spaceFadeAnim, {
@@ -489,7 +502,6 @@ export default function PlatformJumperGame({ onExit }: PlatformJumperGameProps) 
         }),
       ]).start();
     } else if (scoreUI >= 5000 && currentModeRef.current !== 'space') {
-      // Smooth day to night transition but immediately set to space mode
       setBackgroundMode('space');
       Animated.parallel([
         Animated.timing(dayToNightAnim, {
@@ -509,7 +521,6 @@ export default function PlatformJumperGame({ onExit }: PlatformJumperGameProps) 
         }),
       ]).start();
     } else if (scoreUI < 5000 && currentModeRef.current !== 'sky') {
-      // Sky transition - reset all but immediately set to sky mode
       setBackgroundMode('sky');
       Animated.parallel([
         Animated.timing(skyFadeAnim, {
@@ -581,12 +592,9 @@ export default function PlatformJumperGame({ onExit }: PlatformJumperGameProps) 
     }
   };
 
-  // Optimized render methods
+  // Memoized render methods
   const renderClouds = useCallback(() => (
-    <Animated.View style={{ opacity: skyFadeAnim.interpolate({
-      inputRange: [0, 1],
-      outputRange: [0, 1]
-    }) }}>
+    <Animated.View style={{ opacity: skyFadeAnim }}>
       {clouds.current.map((cloud) => (
         <View
           key={cloud.id}
@@ -599,14 +607,11 @@ export default function PlatformJumperGame({ onExit }: PlatformJumperGameProps) 
   const renderStars = useCallback(() => (
     <Animated.View style={{ 
       opacity: backgroundMode === 'monster' ? 
-        monsterFadeAnim.interpolate({
+        Animated.subtract(1, monsterFadeAnim.interpolate({
           inputRange: [0, 1],
           outputRange: [1, 0.3]
-        }) : 
-        spaceFadeAnim.interpolate({
-          inputRange: [0, 1],
-          outputRange: [0, 1]
-        })
+        })) : 
+        spaceFadeAnim
     }}>
       {stars.current.map((star) => (
         <View
@@ -630,14 +635,11 @@ export default function PlatformJumperGame({ onExit }: PlatformJumperGameProps) 
   const renderBigStars = useCallback(() => (
     <Animated.View style={{ 
       opacity: backgroundMode === 'monster' ? 
-        monsterFadeAnim.interpolate({
+        Animated.subtract(1, monsterFadeAnim.interpolate({
           inputRange: [0, 1],
           outputRange: [1, 0.2]
-        }) : 
-        spaceFadeAnim.interpolate({
-          inputRange: [0, 1],
-          outputRange: [0, 1]
-        })
+        })) : 
+        spaceFadeAnim
     }}>
       {bigStars.current.map((star) => (
         <Animated.View
@@ -658,15 +660,14 @@ export default function PlatformJumperGame({ onExit }: PlatformJumperGameProps) 
     </Animated.View>
   ), [backgroundMode, spaceFadeAnim, starPulseAnim, monsterFadeAnim]);
 
+  // Fixed GIF rendering with persistent containers
   const renderSun = useCallback(() => (
     <Animated.View
+      ref={sunRef}
       style={[
         styles.sunContainer,
         {
-          opacity: sunFadeAnim.interpolate({
-            inputRange: [0, 1],
-            outputRange: [0, 1]
-          }),
+          opacity: sunFadeAnim,
           transform: [{
             scale: sunFadeAnim.interpolate({
               inputRange: [0, 1],
@@ -675,6 +676,7 @@ export default function PlatformJumperGame({ onExit }: PlatformJumperGameProps) 
           }]
         },
       ]}
+      collapsable={false}
     >
       <Image
         source={require('../../assets/images/sun.gif')}
@@ -686,21 +688,22 @@ export default function PlatformJumperGame({ onExit }: PlatformJumperGameProps) 
 
   const renderGalaxy = useCallback(() => (
     <Animated.View
+      ref={galaxyRef}
       style={[
         styles.galaxyContainer,
         {
-          opacity: galaxyFadeAnim.interpolate({
-            inputRange: [0, 1],
-            outputRange: [0, 1]
-          }),
+          opacity: galaxyFadeAnim,
           transform: [
-            { scale: galaxyFadeAnim.interpolate({
-              inputRange: [0, 1],
-              outputRange: [0.8, 1]
-            })}
+            { 
+              scale: galaxyFadeAnim.interpolate({
+                inputRange: [0, 1],
+                outputRange: [0.8, 1]
+              })
+            }
           ],
         },
       ]}
+      collapsable={false}
     >
       <Image
         source={require('../../assets/images/galaxy.gif')}
@@ -711,24 +714,25 @@ export default function PlatformJumperGame({ onExit }: PlatformJumperGameProps) 
   ), [galaxyFadeAnim]);
 
   const renderMonster = useCallback(() => (
-    <Animated.View style={[
-      styles.monsterContainer,
-      { 
-        opacity: monsterFadeAnim.interpolate({
-          inputRange: [0, 1],
-          outputRange: [0, 1]
-        }),
-        transform: [
-          { scale: monsterPulseAnim },
-          { 
-            translateX: monsterSwayAnim.interpolate({
-              inputRange: [-1, 1],
-              outputRange: [-20, 20]
-            }) 
-          }
-        ]
-      }
-    ]}>
+    <Animated.View
+      ref={monsterRef}
+      style={[
+        styles.monsterContainer,
+        { 
+          opacity: monsterFadeAnim,
+          transform: [
+            { scale: monsterPulseAnim },
+            { 
+              translateX: monsterSwayAnim.interpolate({
+                inputRange: [-1, 1],
+                outputRange: [-20, 20]
+              }) 
+            }
+          ]
+        }
+      ]}
+      collapsable={false}
+    >
       <Image
         source={require('../../assets/images/monster.gif')}
         style={styles.monsterImage}
@@ -774,6 +778,24 @@ export default function PlatformJumperGame({ onExit }: PlatformJumperGameProps) 
     </>
   ), []);
 
+  const renderPlayer = useCallback(() => (
+    <View
+      style={[
+        styles.characterContainer,
+        {
+          left: playerPosition.x,
+          top: playerPosition.y,
+        }
+      ]}
+    >
+      <Image
+        source={require('../../assets/images/favicon.png')}
+        style={styles.character}
+        resizeMode="contain"
+      />
+    </View>
+  ), [playerPosition]);
+
   return (
     <SafeAreaView style={styles.container} {...panResponder.panHandlers}>
       {/* Background with smooth day-to-night transition */}
@@ -786,19 +808,18 @@ export default function PlatformJumperGame({ onExit }: PlatformJumperGameProps) 
       {renderClouds()}
       {renderStars()}
       {renderBigStars()}
-      {backgroundMode === 'sun' && renderSun()}
-      {backgroundMode === 'galaxy' && renderGalaxy()}
-      {backgroundMode === 'monster' && renderMonster()}
+      
+      {/* Render all GIFs persistently but control visibility with opacity */}
+      <View pointerEvents="none" style={styles.gifContainer}>
+        {renderSun()}
+        {renderGalaxy()}
+        {renderMonster()}
+      </View>
+      
       {renderPlatforms()}
       {backgroundMode === 'monster' && renderRods()}
 
-      {gameStatus === 'playing' && (
-        <Image
-          source={require('../../assets/images/favicon.png')}
-          style={[styles.character, { left: playerX.current, top: playerY.current }]}
-          resizeMode="contain"
-        />
-      )}
+      {gameStatus === 'playing' && renderPlayer()}
 
       <View style={styles.scoreContainer}>
         <Text style={styles.score}>Score: {scoreUI}</Text>
@@ -930,11 +951,15 @@ const styles = StyleSheet.create({
     borderRadius: 10,
     zIndex: 10,
   },
-  character: {
+  characterContainer: {
     position: 'absolute',
     width: PLAYER_SIZE,
     height: PLAYER_SIZE,
     zIndex: 20,
+  },
+  character: {
+    width: '100%',
+    height: '100%',
   },
   rod: {
     position: 'absolute',
@@ -1027,4 +1052,9 @@ const styles = StyleSheet.create({
     lineHeight: 24,
     fontWeight: 'bold',
   },
+  // New style to contain all GIFs
+  gifContainer: {
+    ...StyleSheet.absoluteFillObject,
+    zIndex: 1,
+  }
 });
