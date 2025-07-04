@@ -51,6 +51,7 @@ export default function PlatformJumperGame({ onExit }: PlatformJumperGameProps) 
   const lastPlayerY = useRef(playerY.current);
   const velocityY = useRef(0);
   const isJumping = useRef(false);
+  const currentModeRef = useRef<'sky' | 'space' | 'sun' | 'galaxy' | 'monster'>('sky');
 
   // Game objects
   const platforms = useRef<Platform[]>([]);
@@ -84,6 +85,11 @@ export default function PlatformJumperGame({ onExit }: PlatformJumperGameProps) 
   const sunGlowAnim = useRef(new Animated.Value(0)).current;
   const spaceToSunAnim = useRef(new Animated.Value(0)).current;
   const dayToNightAnim = useRef(new Animated.Value(0)).current;
+
+  // Update the ref whenever backgroundMode changes
+  useEffect(() => {
+    currentModeRef.current = backgroundMode;
+  }, [backgroundMode]);
 
   // Pan responder
   const panResponder = useRef(
@@ -154,6 +160,7 @@ export default function PlatformJumperGame({ onExit }: PlatformJumperGameProps) 
     coinsEarned.current = 0;
     setDisplayCoins(0);
     setBackgroundMode('sky');
+    currentModeRef.current = 'sky';
     
     // Reset animations
     skyFadeAnim.setValue(1);
@@ -259,11 +266,11 @@ export default function PlatformJumperGame({ onExit }: PlatformJumperGameProps) 
   const startRodSpawning = useCallback(() => {
     if (rodSpawnTimer.current) clearInterval(rodSpawnTimer.current);
     rodSpawnTimer.current = setInterval(() => {
-      if (backgroundMode === 'monster' && gameStatus === 'playing') {
+      if (currentModeRef.current === 'monster' && gameStatus === 'playing') {
         addRods(1, 5 + (scoreUI - 20000) / 1000);
       }
     }, 1000);
-  }, [backgroundMode, gameStatus, scoreUI]);
+  }, [gameStatus, scoreUI, addRods]);
 
   // Check rod collision
   const checkRodCollision = useCallback(() => {
@@ -327,7 +334,7 @@ export default function PlatformJumperGame({ onExit }: PlatformJumperGameProps) 
       isJumping.current = !landed;
 
       // Update rods
-      if (backgroundMode === 'monster') {
+      if (currentModeRef.current === 'monster') {
         rods.current = rods.current.map(rod => ({
           ...rod,
           y: rod.y + rod.speed
@@ -397,7 +404,7 @@ export default function PlatformJumperGame({ onExit }: PlatformJumperGameProps) 
     }
 
     animationFrameId.current = requestAnimationFrame(gameTick);
-  }, [endGame, backgroundMode, checkRodCollision]);
+  }, [endGame, checkRodCollision]);
 
   // Game loop management
   useEffect(() => {
@@ -414,8 +421,9 @@ export default function PlatformJumperGame({ onExit }: PlatformJumperGameProps) 
 
   // Background transitions with smooth fading
   useEffect(() => {
-    if (scoreUI >= 40000) {
-      // Monster leaves - smooth fade out
+    if (scoreUI >= 40000 && currentModeRef.current !== 'galaxy') {
+      // Monster leaves - smooth fade out but immediately set to galaxy mode
+      setBackgroundMode('galaxy');
       Animated.parallel([
         Animated.timing(monsterFadeAnim, {
           toValue: 0,
@@ -428,26 +436,26 @@ export default function PlatformJumperGame({ onExit }: PlatformJumperGameProps) 
           useNativeDriver: true,
         }),
       ]).start();
-      setBackgroundMode('galaxy');
       if (rodSpawnTimer.current) clearInterval(rodSpawnTimer.current);
-    } else if (scoreUI >= 20000) {
-      // Monster appears - smooth fade in while galaxy fades out
-      Animated.parallel([
-        Animated.timing(galaxyFadeAnim, {
-          toValue: 0,
-          duration: 3000,
-          useNativeDriver: true,
-        }),
-        Animated.timing(monsterFadeAnim, {
-          toValue: 1,
-          duration: 3000,
-          useNativeDriver: true,
-        }),
-      ]).start();
+    } else if (scoreUI >= 20000 && currentModeRef.current !== 'monster') {
+      // Monster appears - smooth fade in but immediately set to monster mode
       setBackgroundMode('monster');
+      Animated.parallel([
+        Animated.timing(galaxyFadeAnim, {
+          toValue: 0,
+          duration: 3000,
+          useNativeDriver: true,
+        }),
+        Animated.timing(monsterFadeAnim, {
+          toValue: 1,
+          duration: 3000,
+          useNativeDriver: true,
+        }),
+      ]).start();
       startRodSpawning();
-    } else if (scoreUI >= 15000) {
-      // Galaxy appears - smooth transition from sun
+    } else if (scoreUI >= 15000 && currentModeRef.current !== 'galaxy') {
+      // Galaxy appears - smooth transition but immediately set to galaxy mode
+      setBackgroundMode('galaxy');
       Animated.parallel([
         Animated.timing(sunFadeAnim, {
           toValue: 0,
@@ -460,9 +468,9 @@ export default function PlatformJumperGame({ onExit }: PlatformJumperGameProps) 
           useNativeDriver: true,
         }),
       ]).start();
-      setBackgroundMode('galaxy');
-    } else if (scoreUI >= 10000) {
-      // Sun appears - smooth transition from space
+    } else if (scoreUI >= 10000 && currentModeRef.current !== 'sun') {
+      // Sun appears - smooth transition but immediately set to sun mode
+      setBackgroundMode('sun');
       Animated.parallel([
         Animated.timing(spaceFadeAnim, {
           toValue: 0,
@@ -480,9 +488,9 @@ export default function PlatformJumperGame({ onExit }: PlatformJumperGameProps) 
           useNativeDriver: true,
         }),
       ]).start();
-      setBackgroundMode('sun');
-    } else if (scoreUI >= 5000) {
-      // Smooth day to night transition
+    } else if (scoreUI >= 5000 && currentModeRef.current !== 'space') {
+      // Smooth day to night transition but immediately set to space mode
+      setBackgroundMode('space');
       Animated.parallel([
         Animated.timing(dayToNightAnim, {
           toValue: 1,
@@ -500,9 +508,9 @@ export default function PlatformJumperGame({ onExit }: PlatformJumperGameProps) 
           useNativeDriver: true,
         }),
       ]).start();
-      setBackgroundMode('space');
-    } else {
-      // Sky transition - reset all
+    } else if (scoreUI < 5000 && currentModeRef.current !== 'sky') {
+      // Sky transition - reset all but immediately set to sky mode
+      setBackgroundMode('sky');
       Animated.parallel([
         Animated.timing(skyFadeAnim, {
           toValue: 1,
@@ -540,7 +548,6 @@ export default function PlatformJumperGame({ onExit }: PlatformJumperGameProps) 
           useNativeDriver: true,
         }),
       ]).start();
-      setBackgroundMode('sky');
     }
   }, [scoreUI, startRodSpawning]);
 
