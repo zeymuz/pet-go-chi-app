@@ -51,6 +51,15 @@ export default function PlatformJumperGame({ onExit }: PlatformJumperGameProps) 
   const isJumping = useRef(false);
   const currentModeRef = useRef<'sky' | 'space' | 'sun' | 'galaxy' | 'monster'>('sky');
 
+  // Animation queue refs
+  const triggeredAnimations = useRef({
+    sun: false,
+    galaxy: false,
+    monster: false,
+  });
+  const animationQueue = useRef<string[]>([]);
+  const playingGif = useRef(false);
+
   // Game objects
   const platforms = useRef<Platform[]>([]);
   const clouds = useRef<Cloud[]>([]);
@@ -184,6 +193,15 @@ export default function PlatformJumperGame({ onExit }: PlatformJumperGameProps) 
     sunGlowAnim.setValue(0);
     spaceToSunAnim.setValue(0);
     dayToNightAnim.setValue(0);
+    
+    // Reset animation queue state
+    triggeredAnimations.current = {
+      sun: false,
+      galaxy: false,
+      monster: false,
+    };
+    animationQueue.current = [];
+    playingGif.current = false;
     
     initGameObjects();
     setScoreUI(0);
@@ -436,72 +454,67 @@ export default function PlatformJumperGame({ onExit }: PlatformJumperGameProps) 
     }
   }, [gameStatus, gameTick]);
 
-  // Background transitions with smooth fading
+  // Play next GIF in queue
+  const playNextGif = useCallback(() => {
+    if (playingGif.current || animationQueue.current.length === 0) return;
+    const next = animationQueue.current.shift();
+    if (!next) return;
+    
+    playingGif.current = true;
+
+    switch (next) {
+      case 'sun':
+        triggeredAnimations.current.sun = true;
+        setBackgroundMode('sun');
+        Animated.timing(sunFadeAnim, {
+          toValue: 1,
+          duration: 1000,
+          useNativeDriver: true,
+        }).start(() => {
+          setTimeout(() => {
+            playingGif.current = false;
+            playNextGif();
+          }, 4000);
+        });
+        break;
+
+      case 'galaxy':
+        triggeredAnimations.current.galaxy = true;
+        setBackgroundMode('galaxy');
+        Animated.timing(galaxyFadeAnim, {
+          toValue: 1,
+          duration: 1000,
+          useNativeDriver: true,
+        }).start(() => {
+          setTimeout(() => {
+            playingGif.current = false;
+            playNextGif();
+          }, 4000);
+        });
+        break;
+
+      case 'monster':
+        triggeredAnimations.current.monster = true;
+        setBackgroundMode('monster');
+        Animated.timing(monsterFadeAnim, {
+          toValue: 1,
+          duration: 1000,
+          useNativeDriver: true,
+        }).start(() => {
+          setTimeout(() => {
+            playingGif.current = false;
+            playNextGif();
+          }, 4000);
+          startRodSpawning();
+        });
+        break;
+    }
+  }, [sunFadeAnim, galaxyFadeAnim, monsterFadeAnim, startRodSpawning]);
+
+  // Background transitions for space (5000 points) and GIF queue
   useEffect(() => {
-    if (scoreUI >= 40000 && currentModeRef.current !== 'galaxy') {
-      setBackgroundMode('galaxy');
-      Animated.parallel([
-        Animated.timing(monsterFadeAnim, {
-          toValue: 0,
-          duration: 3000,
-          useNativeDriver: true,
-        }),
-        Animated.timing(galaxyFadeAnim, {
-          toValue: 1,
-          duration: 3000,
-          useNativeDriver: true,
-        }),
-      ]).start();
-      if (rodSpawnTimer.current) clearInterval(rodSpawnTimer.current);
-    } else if (scoreUI >= 20000 && currentModeRef.current !== 'monster') {
-      setBackgroundMode('monster');
-      Animated.parallel([
-        Animated.timing(galaxyFadeAnim, {
-          toValue: 0,
-          duration: 3000,
-          useNativeDriver: true,
-        }),
-        Animated.timing(monsterFadeAnim, {
-          toValue: 1,
-          duration: 3000,
-          useNativeDriver: true,
-        }),
-      ]).start();
-      startRodSpawning();
-    } else if (scoreUI >= 15000 && currentModeRef.current !== 'galaxy') {
-      setBackgroundMode('galaxy');
-      Animated.parallel([
-        Animated.timing(sunFadeAnim, {
-          toValue: 0,
-          duration: 3000,
-          useNativeDriver: true,
-        }),
-        Animated.timing(galaxyFadeAnim, {
-          toValue: 1,
-          duration: 3000,
-          useNativeDriver: true,
-        }),
-      ]).start();
-    } else if (scoreUI >= 10000 && currentModeRef.current !== 'sun') {
-      setBackgroundMode('sun');
-      Animated.parallel([
-        Animated.timing(spaceFadeAnim, {
-          toValue: 0,
-          duration: 3000,
-          useNativeDriver: true,
-        }),
-        Animated.timing(sunFadeAnim, {
-          toValue: 1,
-          duration: 3000,
-          useNativeDriver: true,
-        }),
-        Animated.timing(spaceToSunAnim, {
-          toValue: 1,
-          duration: 3000,
-          useNativeDriver: true,
-        }),
-      ]).start();
-    } else if (scoreUI >= 5000 && currentModeRef.current !== 'space') {
+    // Handle space transition at 5000 points
+    if (scoreUI >= 5000 && currentModeRef.current !== 'space') {
       setBackgroundMode('space');
       Animated.parallel([
         Animated.timing(dayToNightAnim, {
@@ -520,47 +533,21 @@ export default function PlatformJumperGame({ onExit }: PlatformJumperGameProps) 
           useNativeDriver: true,
         }),
       ]).start();
-    } else if (scoreUI < 5000 && currentModeRef.current !== 'sky') {
-      setBackgroundMode('sky');
-      Animated.parallel([
-        Animated.timing(skyFadeAnim, {
-          toValue: 1,
-          duration: 1000,
-          useNativeDriver: true,
-        }),
-        Animated.timing(spaceFadeAnim, {
-          toValue: 0,
-          duration: 1000,
-          useNativeDriver: true,
-        }),
-        Animated.timing(sunFadeAnim, {
-          toValue: 0,
-          duration: 1000,
-          useNativeDriver: true,
-        }),
-        Animated.timing(galaxyFadeAnim, {
-          toValue: 0,
-          duration: 1000,
-          useNativeDriver: true,
-        }),
-        Animated.timing(monsterFadeAnim, {
-          toValue: 0,
-          duration: 1000,
-          useNativeDriver: true,
-        }),
-        Animated.timing(spaceToSunAnim, {
-          toValue: 0,
-          duration: 1000,
-          useNativeDriver: true,
-        }),
-        Animated.timing(dayToNightAnim, {
-          toValue: 0,
-          duration: 1000,
-          useNativeDriver: true,
-        }),
-      ]).start();
     }
-  }, [scoreUI, startRodSpawning]);
+    
+    // Handle GIF animations queue
+    if (scoreUI >= 10000 && !triggeredAnimations.current.sun && !animationQueue.current.includes('sun')) {
+      animationQueue.current.push('sun');
+    }
+    if (scoreUI >= 15000 && triggeredAnimations.current.sun && !triggeredAnimations.current.galaxy && !animationQueue.current.includes('galaxy')) {
+      animationQueue.current.push('galaxy');
+    }
+    if (scoreUI >= 20000 && triggeredAnimations.current.galaxy && !triggeredAnimations.current.monster && !animationQueue.current.includes('monster')) {
+      animationQueue.current.push('monster');
+    }
+
+    playNextGif();
+  }, [scoreUI, playNextGif]);
 
   // Clean up animations
   useEffect(() => {
