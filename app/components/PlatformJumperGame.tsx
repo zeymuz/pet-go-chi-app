@@ -126,6 +126,8 @@ export default function PlatformJumperGame({ onExit }: PlatformJumperGameProps) 
   const animationFrameId = useRef<number>();
   const lastUpdateTime = useRef(0);
   const rodSpawnTimer = useRef<NodeJS.Timeout>();
+  const redRodSpawnTimer = useRef<NodeJS.Timeout>();
+
 
   // Initialize game objects
   const initGameObjects = useCallback(() => {
@@ -437,6 +439,64 @@ export default function PlatformJumperGame({ onExit }: PlatformJumperGameProps) 
         y: playerY.current
       });
     }
+
+    
+
+
+// Handle red rods between 20000 and 40000 score
+// Red rods fall from 20,000 to 40,000
+if (score.current >= 20000 && score.current <= 40000) {
+  if (!redRodSpawnTimer.current) {
+    redRodSpawnTimer.current = setInterval(() => {
+      rods.current.push({
+        id: `red-rod-${Date.now()}`,
+        x: Math.random() * (screenWidth - ROD_WIDTH),
+        y: -ROD_HEIGHT,
+        speed: 6,
+      });
+      if (rods.current.length > 30) {
+        rods.current = rods.current.slice(-30); // Limit rod count
+      }
+    }, 500); // spawn every 0.5 seconds
+  }
+
+  // Move rods
+  rods.current = rods.current.map(rod => ({
+    ...rod,
+    y: rod.y + rod.speed,
+  })).filter(rod => rod.y < screenHeight + ROD_HEIGHT);
+
+  // Check collision
+  const playerLeft = playerX.current;
+  const playerRight = playerX.current + PLAYER_SIZE;
+  const playerTop = playerY.current;
+  const playerBottom = playerY.current + PLAYER_SIZE;
+
+  for (const rod of rods.current) {
+    const rodLeft = rod.x;
+    const rodRight = rod.x + ROD_WIDTH;
+    const rodTop = rod.y;
+    const rodBottom = rod.y + ROD_HEIGHT;
+
+    if (
+      playerRight > rodLeft &&
+      playerLeft < rodRight &&
+      playerBottom > rodTop &&
+      playerTop < rodBottom
+    ) {
+      endGame();
+      return;
+    }
+  }
+} else {
+  if (redRodSpawnTimer.current) {
+    clearInterval(redRodSpawnTimer.current);
+    redRodSpawnTimer.current = undefined;
+    rods.current = [];
+  }
+}
+
+
 
     animationFrameId.current = requestAnimationFrame(gameTick);
   }, [endGame, checkRodCollision]);
@@ -804,7 +864,7 @@ export default function PlatformJumperGame({ onExit }: PlatformJumperGameProps) 
       </View>
       
       {renderPlatforms()}
-      {backgroundMode === 'monster' && renderRods()}
+      {renderRods()}
 
       {gameStatus === 'playing' && renderPlayer()}
 
