@@ -457,7 +457,7 @@ if (score.current >= 20000 && score.current <= 40000) {
       if (rods.current.length > 30) {
         rods.current = rods.current.slice(-30); // Limit rod count
       }
-    }, 500); // spawn every 0.5 seconds
+    }, 1500); // spawn every 0.5 seconds
   }
 
   // Move rods
