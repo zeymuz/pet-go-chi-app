@@ -596,15 +596,66 @@ if (score.current >= 20000 && score.current <= 40000) {
     }
     
     // Handle GIF animations queue
-    if (scoreUI >= 10000 && !triggeredAnimations.current.sun && !animationQueue.current.includes('sun')) {
-      animationQueue.current.push('sun');
-    }
-    if (scoreUI >= 15000 && triggeredAnimations.current.sun && !triggeredAnimations.current.galaxy && !animationQueue.current.includes('galaxy')) {
-      animationQueue.current.push('galaxy');
-    }
-    if (scoreUI >= 20000 && triggeredAnimations.current.galaxy && !triggeredAnimations.current.monster && !animationQueue.current.includes('monster')) {
-      animationQueue.current.push('monster');
-    }
+    if (scoreUI >= 10000 && !triggeredAnimations.current.sun) {
+  triggeredAnimations.current.sun = true;
+  setBackgroundMode('sun');
+  Animated.timing(sunFadeAnim, {
+    toValue: 1,
+    duration: 1000,
+    useNativeDriver: true,
+  }).start();
+}
+
+if (scoreUI >= 15000 && !triggeredAnimations.current.galaxy) {
+  triggeredAnimations.current.galaxy = true;
+  setBackgroundMode('galaxy');
+  
+  // fade in galaxy
+  Animated.timing(galaxyFadeAnim, {
+    toValue: 1,
+    duration: 1000,
+    useNativeDriver: true,
+  }).start();
+
+  // fade out sun
+  Animated.timing(sunFadeAnim, {
+    toValue: 0,
+    duration: 1000,
+    useNativeDriver: true,
+  }).start();
+}
+
+if (scoreUI >= 20000 && !triggeredAnimations.current.monster) {
+  triggeredAnimations.current.monster = true;
+  setBackgroundMode('monster');
+
+  // fade in monster
+  Animated.timing(monsterFadeAnim, {
+    toValue: 1,
+    duration: 1000,
+    useNativeDriver: true,
+  }).start();
+
+  // fade out galaxy
+  Animated.timing(galaxyFadeAnim, {
+    toValue: 0,
+    duration: 1000,
+    useNativeDriver: true,
+  }).start();
+
+  startRodSpawning();
+}
+
+if (scoreUI >= 40000) {
+  // fade out monster
+  Animated.timing(monsterFadeAnim, {
+    toValue: 0,
+    duration: 1000,
+    useNativeDriver: true,
+  }).start();
+}
+
+
 
     playNextGif();
   }, [scoreUI, playNextGif]);
