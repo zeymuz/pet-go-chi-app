@@ -71,6 +71,7 @@ export default function PlatformJumperGame({ onExit }: PlatformJumperGameProps) 
   const score = useRef(0);
   const highScore = useRef(0);
   const coinsEarned = useRef(0);
+  const totalCoinsRef = useRef(0); // Track total coins across games
 
   // UI states
   const [, forceUpdate] = useState(0);
@@ -83,6 +84,7 @@ export default function PlatformJumperGame({ onExit }: PlatformJumperGameProps) 
     x: screenWidth / 2 - PLAYER_SIZE / 2,
     y: screenHeight - PLAYER_SIZE - 100
   });
+  const [totalCoinsUI, setTotalCoinsUI] = useState(0); // State for displaying total coins
 
   // Animations
   const skyFadeAnim = useRef(new Animated.Value(1)).current;
@@ -277,11 +279,17 @@ export default function PlatformJumperGame({ onExit }: PlatformJumperGameProps) 
       highScore.current = score.current;
       setHighScoreUI(highScore.current);
     }
+    // Add current game coins to total
+    totalCoinsRef.current += coinsEarned.current;
+    setTotalCoinsUI(totalCoinsRef.current);
   }, []);
 
   const handleExit = useCallback(() => {
-    onExit(coinsEarned.current);
-  }, [onExit]);
+    // Pass total coins including current game if still playing
+    const finalCoins = totalCoinsRef.current + 
+      (gameStatus === 'playing' ? coinsEarned.current : 0);
+    onExit(finalCoins);
+  }, [onExit, gameStatus]);
 
   // Add red rods
   const addRods = useCallback((count: number, speed: number) => {
@@ -403,8 +411,9 @@ export default function PlatformJumperGame({ onExit }: PlatformJumperGameProps) 
         const scoreDiff = Math.floor(diff);
         score.current += scoreDiff;
         coinsEarned.current = Math.floor(score.current / 1000);
-        setScoreUI(prev => prev + scoreDiff);
         setDisplayCoins(coinsEarned.current);
+        setTotalCoinsUI(totalCoinsRef.current + coinsEarned.current);
+        setScoreUI(prev => prev + scoreDiff);
       }
 
       // Move clouds
@@ -440,63 +449,58 @@ export default function PlatformJumperGame({ onExit }: PlatformJumperGameProps) 
       });
     }
 
-    
-
-
-// Handle red rods between 20000 and 40000 score
-// Red rods fall from 20,000 to 40,000
-if (score.current >= 20000 && score.current <= 40000) {
-  if (!redRodSpawnTimer.current) {
-    redRodSpawnTimer.current = setInterval(() => {
-      rods.current.push({
-        id: `red-rod-${Date.now()}`,
-        x: Math.random() * (screenWidth - ROD_WIDTH),
-        y: -ROD_HEIGHT,
-        speed: 6,
-      });
-      if (rods.current.length > 30) {
-        rods.current = rods.current.slice(-30); // Limit rod count
+    // Handle red rods between 20000 and 40000 score
+    // Red rods fall from 20,000 to 40,000
+    if (score.current >= 20000 && score.current <= 40000) {
+      if (!redRodSpawnTimer.current) {
+        redRodSpawnTimer.current = setInterval(() => {
+          rods.current.push({
+            id: `red-rod-${Date.now()}`,
+            x: Math.random() * (screenWidth - ROD_WIDTH),
+            y: -ROD_HEIGHT,
+            speed: 6,
+          });
+          if (rods.current.length > 30) {
+            rods.current = rods.current.slice(-30); // Limit rod count
+          }
+        }, 1500); // spawn every 0.5 seconds
       }
-    }, 1500); // spawn every 0.5 seconds
-  }
 
-  // Move rods
-  rods.current = rods.current.map(rod => ({
-    ...rod,
-    y: rod.y + rod.speed,
-  })).filter(rod => rod.y < screenHeight + ROD_HEIGHT);
+      // Move rods
+      rods.current = rods.current.map(rod => ({
+        ...rod,
+        y: rod.y + rod.speed,
+      })).filter(rod => rod.y < screenHeight + ROD_HEIGHT);
 
-  // Check collision
-  const playerLeft = playerX.current;
-  const playerRight = playerX.current + PLAYER_SIZE;
-  const playerTop = playerY.current;
-  const playerBottom = playerY.current + PLAYER_SIZE;
+      // Check collision
+      const playerLeft = playerX.current;
+      const playerRight = playerX.current + PLAYER_SIZE;
+      const playerTop = playerY.current;
+      const playerBottom = playerY.current + PLAYER_SIZE;
 
-  for (const rod of rods.current) {
-    const rodLeft = rod.x;
-    const rodRight = rod.x + ROD_WIDTH;
-    const rodTop = rod.y;
-    const rodBottom = rod.y + ROD_HEIGHT;
+      for (const rod of rods.current) {
+        const rodLeft = rod.x;
+        const rodRight = rod.x + ROD_WIDTH;
+        const rodTop = rod.y;
+        const rodBottom = rod.y + ROD_HEIGHT;
 
-    if (
-      playerRight > rodLeft &&
-      playerLeft < rodRight &&
-      playerBottom > rodTop &&
-      playerTop < rodBottom
-    ) {
-      endGame();
-      return;
+        if (
+          playerRight > rodLeft &&
+          playerLeft < rodRight &&
+          playerBottom > rodTop &&
+          playerTop < rodBottom
+        ) {
+          endGame();
+          return;
+        }
+      }
+    } else {
+      if (redRodSpawnTimer.current) {
+        clearInterval(redRodSpawnTimer.current);
+        redRodSpawnTimer.current = undefined;
+        rods.current = [];
+      }
     }
-  }
-} else {
-  if (redRodSpawnTimer.current) {
-    clearInterval(redRodSpawnTimer.current);
-    redRodSpawnTimer.current = undefined;
-    rods.current = [];
-  }
-}
-
-
 
     animationFrameId.current = requestAnimationFrame(gameTick);
   }, [endGame, checkRodCollision]);
@@ -654,8 +658,6 @@ if (scoreUI >= 40000) {
     useNativeDriver: true,
   }).start();
 }
-
-
 
     playNextGif();
   }, [scoreUI, playNextGif]);
@@ -922,7 +924,8 @@ if (scoreUI >= 40000) {
       <View style={styles.scoreContainer}>
         <Text style={styles.score}>Score: {scoreUI}</Text>
         <Text style={styles.highScore}>High Score: {highScoreUI}</Text>
-        <Text style={styles.coins}>Coins: {displayCoins}</Text>
+        <Text style={styles.coins}>Game Coins: {displayCoins}</Text>
+        <Text style={styles.totalCoins}>Total Coins: {totalCoinsUI}</Text>
       </View>
 
       {gameStatus === 'ready' && (
@@ -1088,6 +1091,12 @@ const styles = StyleSheet.create({
     fontSize: 16,
     color: 'gold',
     fontWeight: 'bold',
+  },
+  totalCoins: {
+    fontSize: 16,
+    color: '#ff9900',
+    fontWeight: 'bold',
+    marginTop: 5,
   },
   monsterWarning: {
     fontSize: 14,
