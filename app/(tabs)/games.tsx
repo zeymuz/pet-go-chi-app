@@ -32,8 +32,7 @@ export default function GamesScreen() {
     setActiveGame(gameId);
   };
 
-  const handleGameEnd = async (score: number) => {
-    const coinsEarned = Math.floor(score / 10);
+  const handleGameEnd = async (coinsEarned: number) => {
     if (coinsEarned > 0) {
       const actualEarned = earnCoins(coinsEarned);
       console.log(`Earned ${actualEarned} coins from game`);

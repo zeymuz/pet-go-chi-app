@@ -402,7 +402,7 @@ export default function PlatformJumperGame({ onExit }: PlatformJumperGameProps) 
 
         const scoreDiff = Math.floor(diff);
         score.current += scoreDiff;
-        coinsEarned.current = Math.floor(score.current / 100);
+        coinsEarned.current = Math.floor(score.current / 1000);
         setScoreUI(prev => prev + scoreDiff);
         setDisplayCoins(coinsEarned.current);
       }
