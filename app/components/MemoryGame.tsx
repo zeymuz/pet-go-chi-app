@@ -73,7 +73,7 @@ export default function MemoryGame({ onClose }: MemoryGameProps) {
 
     Animated.timing(cards[cardIndex].flipAnimation, {
       toValue,
-      duration: 300,
+      duration: 150,
       useNativeDriver: true,
     }).start(callback);
   };
