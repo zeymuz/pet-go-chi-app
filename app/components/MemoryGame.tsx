@@ -1,23 +1,28 @@
 import { Ionicons } from '@expo/vector-icons';
 import React, { useEffect, useState } from 'react';
-import { Alert, Animated, Dimensions, StyleSheet, Text, TouchableOpacity, View } from 'react-native';
+import {
+  Alert,
+  Animated,
+  Dimensions,
+  Image,
+  StyleSheet,
+  Text,
+  TouchableOpacity,
+  View
+} from 'react-native';
 import COLORS from '../constants/colors';
 
-const { width } = Dimensions.get('window');
+const { width, height } = Dimensions.get('window');
 
 interface MemoryGameProps {
   onClose: (score: number) => void;
 }
 
-const ALL_ICONS = [
-  'game-controller', 'football', 'basketball', 'tennisball',
-  'baseball', 'american-football', 'md-trophy', 'md-star',
-  'md-heart', 'md-flash', 'md-snow', 'md-rainy'
-];
+const ALL_IMAGES = new Array(100).fill(require('../../assets/images/favicon.png'));
 
 interface Card {
   id: number;
-  icon: string;
+  image: any;
   isFlipped: boolean;
   isMatched: boolean;
   flipAnimation: Animated.Value;
@@ -25,34 +30,39 @@ interface Card {
 
 export default function MemoryGame({ onClose }: MemoryGameProps) {
   const [level, setLevel] = useState(1);
+  const [coins, setCoins] = useState(0);
   const [cards, setCards] = useState<Card[]>([]);
   const [flippedCards, setFlippedCards] = useState<number[]>([]);
   const [moves, setMoves] = useState(0);
+  const [maxMoves, setMaxMoves] = useState(0);
   const [gameComplete, setGameComplete] = useState(false);
   const [gameStarted, setGameStarted] = useState(false);
 
-  const pairs = Math.min(4 + (level - 1) * 2, 6);
+  const pairs = level < 6 ? 4 * Math.pow(2, level - 1) : 64 / 2;
 
   useEffect(() => {
     initializeGame();
   }, [level]);
 
   const initializeGame = () => {
-    const selectedIcons = [...ALL_ICONS].sort(() => 0.5 - Math.random()).slice(0, pairs);
-    
-    const cardPairs = [...selectedIcons, ...selectedIcons]
-      .map((icon, index) => ({
+    const selectedImages = [...ALL_IMAGES].sort(() => 0.5 - Math.random()).slice(0, pairs);
+
+    const cardPairs = [...selectedImages, ...selectedImages]
+      .map((image, index) => ({
         id: index,
-        icon,
+        image,
         isFlipped: false,
         isMatched: false,
-        flipAnimation: new Animated.Value(0) // Initialize animation value here
+        flipAnimation: new Animated.Value(0)
       }))
       .sort(() => 0.5 - Math.random());
-    
+
+    const newMaxMoves = Math.max(pairs * 2 - level * 2, pairs);
+
     setCards(cardPairs);
     setFlippedCards([]);
     setMoves(0);
+    setMaxMoves(newMaxMoves);
     setGameComplete(false);
     setGameStarted(false);
   };
@@ -73,12 +83,25 @@ export default function MemoryGame({ onClose }: MemoryGameProps) {
       setGameStarted(true);
     }
 
+    if (moves >= maxMoves) {
+      Alert.alert('Out of moves!', 'You lost this level.', [
+        {
+          text: 'Try Again',
+          onPress: () => initializeGame()
+        },
+        {
+          text: 'Quit',
+          onPress: () => onClose(coins)
+        }
+      ]);
+      return;
+    }
+
     const cardIndex = cards.findIndex(c => c.id === id);
     if (cardIndex === -1 || cards[cardIndex].isFlipped || cards[cardIndex].isMatched || flippedCards.length >= 2) {
       return;
     }
 
-    // Flip the card to show front
     flipCard(id, 1, () => {
       const newCards = [...cards];
       newCards[cardIndex] = {
@@ -89,42 +112,37 @@ export default function MemoryGame({ onClose }: MemoryGameProps) {
       setFlippedCards([...flippedCards, id]);
 
       if (flippedCards.length === 1) {
-        setMoves(moves + 1);
+        setMoves(prev => prev + 1);
         const [firstId] = flippedCards;
         const firstCardIndex = cards.findIndex(c => c.id === firstId);
         const firstCard = cards[firstCardIndex];
         const secondCard = cards[cardIndex];
-        
-        if (firstCard?.icon === secondCard?.icon) {
+
+        if (firstCard?.image === secondCard?.image) {
           setTimeout(() => {
             const matchedCards = [...newCards];
-            matchedCards[firstCardIndex] = {
-              ...matchedCards[firstCardIndex],
-              isMatched: true
-            };
-            matchedCards[cardIndex] = {
-              ...matchedCards[cardIndex],
-              isMatched: true
-            };
+            matchedCards[firstCardIndex].isMatched = true;
+            matchedCards[cardIndex].isMatched = true;
             setCards(matchedCards);
             setFlippedCards([]);
-            
+
             if (matchedCards.every(card => card.isMatched)) {
               setGameComplete(true);
               const coinsEarned = level * 10;
+              setCoins(prev => prev + coinsEarned);
               Alert.alert(
                 `Level Complete!`,
                 `Completed in ${moves + 1} moves!\nEarned ${coinsEarned} coins!`,
                 [
-                  { 
-                    text: 'Next Level', 
+                  {
+                    text: 'Next Level',
                     onPress: () => {
                       setLevel(prev => prev + 1);
-                    } 
+                    }
                   },
-                  { 
-                    text: 'Quit', 
-                    onPress: () => onClose(coinsEarned) 
+                  {
+                    text: 'Quit',
+                    onPress: () => onClose(coins + coinsEarned)
                   }
                 ]
               );
@@ -132,18 +150,11 @@ export default function MemoryGame({ onClose }: MemoryGameProps) {
           }, 500);
         } else {
           setTimeout(() => {
-            // Flip both cards back
             flipCard(firstId, 0);
             flipCard(id, 0, () => {
               const resetCards = [...newCards];
-              resetCards[firstCardIndex] = {
-                ...resetCards[firstCardIndex],
-                isFlipped: false
-              };
-              resetCards[cardIndex] = {
-                ...resetCards[cardIndex],
-                isFlipped: false
-              };
+              resetCards[firstCardIndex].isFlipped = false;
+              resetCards[cardIndex].isFlipped = false;
               setCards(resetCards);
               setFlippedCards([]);
             });
@@ -154,42 +165,27 @@ export default function MemoryGame({ onClose }: MemoryGameProps) {
   };
 
   const handleClose = () => {
-    onClose(0);
+    onClose(coins);
   };
 
   const getCardStyle = (card: Card) => {
-    if (!card.flipAnimation) {
-      // Fallback in case animation value is missing
-      return {
-        frontAnimatedStyle: { transform: [{ rotateY: '0deg' }] },
-        backAnimatedStyle: { transform: [{ rotateY: '0deg' }] }
-      };
-    }
-
     const frontInterpolate = card.flipAnimation.interpolate({
       inputRange: [0, 1],
       outputRange: ['180deg', '360deg']
     });
-    
+
     const backInterpolate = card.flipAnimation.interpolate({
       inputRange: [0, 1],
       outputRange: ['0deg', '180deg']
     });
 
-    const frontAnimatedStyle = {
-      transform: [
-        { rotateY: frontInterpolate }
-      ]
+    return {
+      frontAnimatedStyle: { transform: [{ rotateY: frontInterpolate }] },
+      backAnimatedStyle: { transform: [{ rotateY: backInterpolate }] }
     };
-
-    const backAnimatedStyle = {
-      transform: [
-        { rotateY: backInterpolate }
-      ]
-    };
-
-    return { frontAnimatedStyle, backAnimatedStyle };
   };
+
+  const cardSize = Math.min(width, height) / Math.ceil(Math.sqrt(cards.length)) - 10;
 
   return (
     <View style={styles.container}>
@@ -198,33 +194,25 @@ export default function MemoryGame({ onClose }: MemoryGameProps) {
       </TouchableOpacity>
 
       <Text style={styles.title}>Memory Game - Level {level}</Text>
-      <Text style={styles.stats}>Moves: {moves} | Pairs: {pairs}</Text>
-      <Text style={styles.coins}>Potential Coins: {level * 10}</Text>
+      <Text style={styles.stats}>Moves: {moves} / {maxMoves} | Pairs: {pairs}</Text>
+      <Text style={styles.coins}>Coins: {coins} | Potential: {level * 10}</Text>
 
       <View style={styles.gameArea}>
         {cards.map(card => {
           const { frontAnimatedStyle, backAnimatedStyle } = getCardStyle(card);
-          
+
           return (
             <TouchableOpacity
               key={card.id}
-              style={styles.cardContainer}
+              style={{ width: cardSize, height: cardSize, margin: 2 }}
               onPress={() => handleCardPress(card.id)}
               activeOpacity={0.7}
             >
               <Animated.View style={[styles.card, styles.cardBack, backAnimatedStyle]}>
-                <Ionicons 
-                  name="md-help-circle" 
-                  size={28} 
-                  color="white" 
-                />
+                <Ionicons name="md-help-circle" size={cardSize * 0.4} color="white" />
               </Animated.View>
               <Animated.View style={[styles.card, styles.cardFlipped, frontAnimatedStyle]}>
-                <Ionicons 
-                  name={card.icon as any} 
-                  size={28} 
-                  color={COLORS.primary} 
-                />
+                <Image source={card.image} style={{ width: '80%', height: '80%', resizeMode: 'contain' }} />
               </Animated.View>
             </TouchableOpacity>
           );
@@ -232,11 +220,7 @@ export default function MemoryGame({ onClose }: MemoryGameProps) {
       </View>
 
       {!gameStarted && (
-        <TouchableOpacity 
-          style={styles.startOverlay} 
-          onPress={() => setGameStarted(true)}
-          activeOpacity={1}
-        >
+        <TouchableOpacity style={styles.startOverlay} onPress={() => setGameStarted(true)} activeOpacity={1}>
           <Text style={styles.startText}>TAP ANY CARD TO START</Text>
         </TouchableOpacity>
       )}
@@ -282,27 +266,23 @@ const styles = StyleSheet.create({
     fontSize: 12,
     color: 'gold',
     textAlign: 'center',
-    marginBottom: 20,
+    marginBottom: 10,
   },
   gameArea: {
+    flex: 1,
     flexDirection: 'row',
     flexWrap: 'wrap',
     justifyContent: 'center',
-    marginHorizontal: 10,
-  },
-  cardContainer: {
-    width: width / 4 - 20,
-    height: width / 4 - 20,
-    margin: 6,
+    alignContent: 'center'
   },
   card: {
-    width: '100%',
-    height: '100%',
-    borderRadius: 8,
+    borderRadius: 6,
     alignItems: 'center',
     justifyContent: 'center',
     backfaceVisibility: 'hidden',
     position: 'absolute',
+    width: '100%',
+    height: '100%'
   },
   cardBack: {
     backgroundColor: COLORS.secondary,
