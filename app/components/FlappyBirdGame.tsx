@@ -112,10 +112,10 @@ export default function FlappyBirdGame({ onClose }: FlappyBirdGameProps) {
           if (!pipe.passed && pipe.x + PIPE_WIDTH < birdX - BIRD_WIDTH / 2) {
             pipe.passed = true;
             scoreRef.current += 1;
-            const newCoins = Math.floor(scoreRef.current / 10);
-            if (newCoins > coinsEarnedRef.current) {
-              coinsEarnedRef.current = newCoins;
-              setCoinsEarned(newCoins);
+            // Fixed: Only award coins when score is divisible by 10
+            if (scoreRef.current % 10 === 0) {
+              coinsEarnedRef.current += 1;
+              setCoinsEarned(coinsEarnedRef.current);
             }
             setScore(scoreRef.current);
           }
@@ -136,7 +136,7 @@ export default function FlappyBirdGame({ onClose }: FlappyBirdGameProps) {
     clearInterval(gameLoopRef.current);
     clearInterval(pipeLoopRef.current);
     setTimeout(() => {
-      onClose(scoreRef.current);
+      onClose(coinsEarnedRef.current); // Pass coins earned instead of score
     }, 0);
   };
 
