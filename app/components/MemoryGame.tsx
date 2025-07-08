@@ -201,7 +201,7 @@ export default function MemoryGame({ onClose }: MemoryGameProps) {
               activeOpacity={0.7}
             >
               <Animated.View style={[styles.card, styles.cardBack, backAnimatedStyle]}>
-                <Ionicons name="md-help-circle" size={cardSize * 0.4} color="white" />
+                <Ionicons name="trash" size={cardSize * 0.4} color="white" />
               </Animated.View>
               <Animated.View style={[styles.card, styles.cardFlipped, frontAnimatedStyle]}>
                 <Image
@@ -250,8 +250,8 @@ const styles = StyleSheet.create({
     fontSize: 20,
     color: COLORS.primary,
     textAlign: 'center',
-    marginTop: 60,
-    marginBottom: 10,
+    marginTop: 20,
+    marginBottom: 5,
   },
   stats: {
     fontFamily: 'PressStart2P',
@@ -273,6 +273,7 @@ const styles = StyleSheet.create({
     flexWrap: 'wrap',
     justifyContent: 'center',
     alignContent: 'center',
+    marginTop: 50,
   },
   card: {
     borderRadius: 6,
