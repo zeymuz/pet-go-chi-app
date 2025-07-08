@@ -1,5 +1,6 @@
 import React, { useState } from 'react';
 import { Alert, StyleSheet, Text, View } from 'react-native';
+import BrickBreaker from '../components/brickBreakerGame';
 import FlappyBirdGame from '../components/FlappyBirdGame';
 import GameButton from '../components/GameButton';
 import MemoryGame from '../components/MemoryGame';
@@ -17,6 +18,7 @@ export default function GamesScreen() {
     { id: 'flappy', name: 'Flappy Pet', icon: 'game-controller' },
     { id: 'jumper', name: 'Platform Jumper', icon: 'game-controller' },
     { id: 'memory', name: 'Memory Game', icon: 'game-controller' },
+    { id: 'brick', name: 'Brick Breaker', icon: 'game-controller' },
   ];
 
   const handleGameStart = (gameId: string) => {
@@ -50,6 +52,8 @@ export default function GamesScreen() {
         return <PlatformJumperGame onExit={(score) => handleGameEnd(score)} />;
       case 'memory':
         return <MemoryGame onClose={(score) => handleGameEnd(score)} />;
+      case 'brick':
+        return <BrickBreaker onClose={(score) => handleGameEnd(score)} />;
       default:
         return (
           <View style={styles.gamesContainer}>
