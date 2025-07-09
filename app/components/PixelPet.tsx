@@ -14,7 +14,7 @@ export default function PixelPet({ activeAction, equippedOutfits }: PixelPetProp
     if (activeAction) {
       Animated.sequence([
         Animated.timing(bounceAnim, {
-          toValue: -10,
+          toValue: -15,
           duration: 100,
           easing: Easing.linear,
           useNativeDriver: true,
@@ -79,18 +79,18 @@ const styles = StyleSheet.create({
     justifyContent: 'center',
   },
   petImage: {
-    width: 100,
-    height: 100,
+    width: 180,
+    height: 180,
     resizeMode: 'contain',
   },
   outfitImage: {
     position: 'absolute',
-    width: 100,
-    height: 100,
+    width: 180,
+    height: 180,
     resizeMode: 'contain',
   },
   hat: {
-    top: -10,
+    top: -15,
     left: 0,
   },
   jacket: {
@@ -98,15 +98,15 @@ const styles = StyleSheet.create({
     left: 0,
   },
   shirt: {
-    top: 20,
+    top: 35,
     left: 0,
   },
   pants: {
-    top: 50,
+    top: 90,
     left: 0,
   },
   shoes: {
-    top: 80,
+    top: 145,
     left: 0,
   },
 });

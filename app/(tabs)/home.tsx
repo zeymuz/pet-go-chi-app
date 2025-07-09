@@ -290,7 +290,7 @@ const styles = StyleSheet.create({
     flexDirection: 'row',
     justifyContent: 'space-between',
     alignItems: 'center',
-    marginBottom: 20,
+    marginBottom: 15,
   },
   title: {
     fontFamily: 'PressStart2P',
@@ -305,17 +305,17 @@ const styles = StyleSheet.create({
   petContainer: {
     alignItems: 'center',
     justifyContent: 'center',
-    marginVertical: 20,
+    marginVertical: 5,
   },
   buttonsContainer: {
-    marginTop: 20,
+    marginTop: 15,
     position: 'relative',
     zIndex: 1,
   },
   buttonRow: {
     flexDirection: 'row',
     justifyContent: 'space-around',
-    marginBottom: 16,
+    marginBottom: 12,
   },
   outfitsButton: {
     backgroundColor: COLORS.primary,
