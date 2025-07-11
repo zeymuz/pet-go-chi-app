@@ -50,6 +50,7 @@ export default function BrickBreakerGame({ onExit }: Props) {
   const [bricks, setBricks] = useState<boolean[][]>([]);
   const [powerUps, setPowerUps] = useState<PowerUp[]>([]);
   const [coins, setCoins] = useState(0);
+  const [gameActive, setGameActive] = useState(true);
 
   const ballsRef = useRef(balls);
   const paddleXRef = useRef(paddleX);
@@ -76,6 +77,7 @@ export default function BrickBreakerGame({ onExit }: Props) {
   useEffect(() => { coinsRef.current = coins; }, [coins]);
 
   const startNewGame = () => {
+    setGameActive(true);
     const startBall = [{ x: GAME_WIDTH / 2 - BALL_SIZE / 2, y: GAME_HEIGHT / 2, dx: 3, dy: -3 }];
     setBalls(startBall);
     ballsRef.current = startBall;
@@ -102,6 +104,8 @@ export default function BrickBreakerGame({ onExit }: Props) {
   };
 
   const gameLoop = () => {
+    if (!gameActive) return;
+    
     let updatedBricks = bricksRef.current.map(row => [...row]);
     let newBalls = ballsRef.current.map(ball => {
       let { x, y, dx, dy } = ball;
@@ -139,9 +143,14 @@ export default function BrickBreakerGame({ onExit }: Props) {
       ) {
         updatedBricks[row][col] = false;
         dy = -dy;
-        setCoins(prev => prev + 1);
 
+        // Only 50% chance to get coin when breaking brick
         if (Math.random() < 0.5) {
+          setCoins(prev => prev + 1);
+        }
+
+        // 30% chance for power-up when breaking brick
+        if (Math.random() < 0.3) {
           const types: PowerUpType[] = ['expand', 'shrink', 'multi', 'slow', 'fast'];
           const type = types[Math.floor(Math.random() * types.length)];
           setPowerUps(old => [...old, {
@@ -156,7 +165,15 @@ export default function BrickBreakerGame({ onExit }: Props) {
     }).filter(b => b.y <= GAME_HEIGHT);
 
     if (newBalls.length === 0) {
-      Alert.alert('Game Over', 'Try again', [{ text: 'OK', onPress: () => startNewGame() }]);
+      setGameActive(false);
+      Alert.alert(
+        'Game Over', 
+        `You earned ${coins} coins!`, 
+        [
+          { text: 'Play Again', onPress: () => startNewGame() },
+          { text: 'Exit', onPress: () => onExit && onExit() }
+        ]
+      );
       return;
     }
 
@@ -231,11 +248,11 @@ export default function BrickBreakerGame({ onExit }: Props) {
 
   const getPowerUpColor = (type: PowerUpType) => {
     switch (type) {
-      case 'expand': return 'green';
-      case 'shrink': return 'red';
-      case 'multi': return 'purple';
-      case 'slow': return 'blue';
-      case 'fast': return 'orange';
+      case 'expand': return '#00FF00'; // Bright green
+      case 'shrink': return '#FF0000'; // Bright red
+      case 'multi': return '#FF00FF';  // Bright magenta
+      case 'slow': return '#00FFFF';   // Bright cyan
+      case 'fast': return '#FFA500';   // Bright orange
       default: return 'white';
     }
   };
@@ -246,7 +263,7 @@ export default function BrickBreakerGame({ onExit }: Props) {
       onStartShouldSetResponder={() => true}
       onResponderMove={handleTouch}
     >
-      <TouchableOpacity style={styles.exitButton} onPress={() => onExit && onExit()}>
+      <TouchableOpacity style={styles.exitButton} onPress={onExit}>
         <Text style={styles.exitText}>✕</Text>
       </TouchableOpacity>
       <Text style={styles.coins}>Coins: {coins}</Text>
@@ -266,6 +283,8 @@ export default function BrickBreakerGame({ onExit }: Props) {
           left: pu.x - BALL_SIZE / 2,
           top: pu.y,
           backgroundColor: getPowerUpColor(pu.type),
+          borderColor: '#FFF',
+          borderWidth: 1,
         }]} />
       ))}
     </View>
@@ -308,7 +327,7 @@ const styles = StyleSheet.create({
     width: BALL_SIZE,
     height: BALL_SIZE,
     borderRadius: BALL_SIZE / 2,
-    opacity: 0.8,
+    opacity: 0.9,
   },
   exitButton: {
     position: 'absolute',
@@ -335,5 +354,9 @@ const styles = StyleSheet.create({
     color: 'yellow',
     fontSize: 16,
     zIndex: 1,
+    fontWeight: 'bold',
+    textShadowColor: 'rgba(0,0,0,0.75)',
+    textShadowOffset: {width: 1, height: 1},
+    textShadowRadius: 2,
   },
 });
