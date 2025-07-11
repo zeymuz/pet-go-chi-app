@@ -20,7 +20,7 @@ const BRICK_MARGIN = 1;
 const BRICK_WIDTH = (GAME_WIDTH - (BRICK_COLS + 1) * BRICK_MARGIN) / BRICK_COLS;
 const BRICK_HEIGHT = 20;
 const POWERUP_SIZE = 20;
-const PADDLE_Y_OFFSET = 50;
+const PADDLE_Y_OFFSET = 20;
 
 type PowerUpType = 
   | 'expand'
@@ -101,6 +101,8 @@ export default function BrickBreakerGame({ onExit }: { onExit?: () => void }) {
   // Game loop
   useEffect(() => {
     function gameStep() {
+      if (gameOver) return;
+      
       setBalls((prevBalls) => {
         let newBalls = [...prevBalls];
 
@@ -111,7 +113,7 @@ export default function BrickBreakerGame({ onExit }: { onExit?: () => void }) {
             return {
               ...ball,
               x: paddleX + paddleWidth / 2 - BALL_SIZE / 2,
-              y: GAME_HEIGHT - PADDLE_Y_OFFSET - BALL_SIZE,
+              y: GAME_HEIGHT - PADDLE_Y_OFFSET - PADDLE_HEIGHT - BALL_SIZE,
             };
           }
 
@@ -134,16 +136,20 @@ export default function BrickBreakerGame({ onExit }: { onExit?: () => void }) {
           }
 
           // Paddle collision with improved hit detection
-          const pt = GAME_HEIGHT - PADDLE_Y_OFFSET;
-          const pl = paddleX;
-          const pr = pl + paddleWidth;
+          const paddleTop = GAME_HEIGHT - PADDLE_Y_OFFSET - PADDLE_HEIGHT;
+          const paddleBottom = GAME_HEIGHT - PADDLE_Y_OFFSET;
+          const paddleLeft = paddleX;
+          const paddleRight = paddleX + paddleWidth;
 
+          // Check if ball is colliding with paddle
           if (
-            newY + BALL_SIZE >= pt && 
-            newX + BALL_SIZE >= pl && 
-            newX <= pr
+            newY + BALL_SIZE >= paddleTop && 
+            newY <= paddleBottom &&
+            newX + BALL_SIZE >= paddleLeft && 
+            newX <= paddleRight
           ) {
-            newY = pt - BALL_SIZE;
+            // Adjust ball to be exactly on top of paddle
+            newY = paddleTop - BALL_SIZE;
             
             if (stickyActive) {
               ball.stuckToPaddle = true;
@@ -151,7 +157,7 @@ export default function BrickBreakerGame({ onExit }: { onExit?: () => void }) {
               ball.dy = 0;
             } else {
               // Calculate bounce angle based on hit position
-              const hitPos = (newX + BALL_SIZE/2 - pl) / paddleWidth;
+              const hitPos = (newX + BALL_SIZE/2 - paddleLeft) / paddleWidth;
               const angle = (hitPos - 0.5) * Math.PI/2;
               const speed = Math.hypot(ball.dx, ball.dy) || 4;
               ball.dx = speed * Math.sin(angle);
@@ -194,7 +200,7 @@ export default function BrickBreakerGame({ onExit }: { onExit?: () => void }) {
             }
           }
 
-          // Ball falls below paddle - lose ball or game over
+          // Ball falls below paddle - lose ball
           if (newY > GAME_HEIGHT) {
             if (shieldActive) {
               // Use shield to save ball
@@ -204,22 +210,15 @@ export default function BrickBreakerGame({ onExit }: { onExit?: () => void }) {
               ball.dx = 0;
               ball.dy = 0;
               newX = paddleX + paddleWidth / 2 - BALL_SIZE / 2;
-              newY = GAME_HEIGHT - PADDLE_Y_OFFSET - BALL_SIZE;
+              newY = GAME_HEIGHT - PADDLE_Y_OFFSET - PADDLE_HEIGHT - BALL_SIZE;
             } else {
-              // Remove this ball
-              ball.dx = 0;
-              ball.dy = 0;
-              ball.stuckToPaddle = false;
-              ball.x = -1000; // move off screen
-              ball.y = -1000;
+              // Mark ball for removal
+              return null;
             }
           }
 
           return { ...ball, x: newX, y: newY };
-        });
-
-        // Remove balls that fell off
-        newBalls = newBalls.filter((b) => !(b.x === -1000 && b.y === -1000));
+        }).filter(ball => ball !== null) as Ball[];
 
         // If no balls left => game over
         if (newBalls.length === 0) {
@@ -227,6 +226,7 @@ export default function BrickBreakerGame({ onExit }: { onExit?: () => void }) {
           if (animationFrameId.current) {
             cancelAnimationFrame(animationFrameId.current);
           }
+          return [];
         }
 
         return newBalls;
@@ -240,8 +240,9 @@ export default function BrickBreakerGame({ onExit }: { onExit?: () => void }) {
 
         // Check paddle collect
         updated.forEach((pu) => {
+          const paddleTop = GAME_HEIGHT - PADDLE_Y_OFFSET - PADDLE_HEIGHT;
           if (
-            pu.y + POWERUP_SIZE >= GAME_HEIGHT - PADDLE_Y_OFFSET &&
+            pu.y + POWERUP_SIZE >= paddleTop && 
             pu.x + POWERUP_SIZE / 2 >= paddleX &&
             pu.x - POWERUP_SIZE / 2 <= paddleX + paddleWidth
           ) {
@@ -288,7 +289,7 @@ export default function BrickBreakerGame({ onExit }: { onExit?: () => void }) {
             return {
               ...ball,
               x: x + paddleWidth / 2 - BALL_SIZE / 2,
-              y: GAME_HEIGHT - PADDLE_Y_OFFSET - BALL_SIZE,
+              y: GAME_HEIGHT - PADDLE_Y_OFFSET - PADDLE_HEIGHT - BALL_SIZE,
             };
           }
           return ball;
@@ -359,9 +360,9 @@ export default function BrickBreakerGame({ onExit }: { onExit?: () => void }) {
         break;
       case 'multiBall':
         setBalls((prev) => {
-          // add 2 more balls
+          // Add 2 more balls
           const paddleCenter = paddleX + paddleWidth / 2;
-          const ballY = GAME_HEIGHT - PADDLE_Y_OFFSET - BALL_SIZE;
+          const ballY = GAME_HEIGHT - PADDLE_Y_OFFSET - PADDLE_HEIGHT - BALL_SIZE;
           
           return [
             ...prev, 
@@ -526,7 +527,7 @@ export default function BrickBreakerGame({ onExit }: { onExit?: () => void }) {
             { 
               width: paddleWidth, 
               left: paddleX, 
-              bottom: 0 
+              bottom: PADDLE_Y_OFFSET 
             },
             shieldActive && { backgroundColor: 'lightblue' }
           ]}
