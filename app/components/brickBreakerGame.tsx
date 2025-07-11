@@ -20,27 +20,27 @@ const BRICK_COLS = 10;
 const BRICK_MARGIN = 1;
 const BRICK_HEIGHT = 12;
 const PADDLE_Y_OFFSET = 50;
+const POWERUP_SIZE = 24;
 
 const BASE_PADDLE_WIDTH = GAME_WIDTH * 0.2;
 const BRICK_WIDTH = (GAME_WIDTH - (BRICK_COLS + 1) * BRICK_MARGIN) / BRICK_COLS;
 
-type PowerUpType = 'expand' | 'shrink' | 'multi' | 'slow' | 'fast';
+type PowerUpType = 'expand' | 'shrink' | 'multi' | 'slow' | 'fast' | 'sticky' | 'shield';
 
 interface Ball {
-  x: number;
-  y: number;
-  dx: number;
-  dy: number;
+  x: number; y: number; dx: number; dy: number;
+  stuck?: boolean;
 }
 
 interface PowerUp {
+  id: number;
   x: number;
   y: number;
   type: PowerUpType;
 }
 
 interface Props {
-  onExit?: () => void; // callback to exit game
+  onExit?: () => void;
 }
 
 export default function BrickBreakerGame({ onExit }: Props) {
@@ -51,15 +51,17 @@ export default function BrickBreakerGame({ onExit }: Props) {
   const [powerUps, setPowerUps] = useState<PowerUp[]>([]);
   const [coins, setCoins] = useState(0);
   const [gameActive, setGameActive] = useState(true);
+  const [shielded, setShielded] = useState(false);
 
   const ballsRef = useRef(balls);
   const paddleXRef = useRef(paddleX);
   const paddleWidthRef = useRef(paddleWidth);
   const bricksRef = useRef(bricks);
   const powerUpsRef = useRef(powerUps);
-  const coinsRef = useRef(coins);
+  const shieldRef = useRef(shielded);
   const animationFrame = useRef<number>();
   const powerUpTimeouts = useRef<{ [key: string]: NodeJS.Timeout }>({});
+  const powerUpId = useRef(0);
 
   useEffect(() => {
     startNewGame();
@@ -69,294 +71,198 @@ export default function BrickBreakerGame({ onExit }: Props) {
     };
   }, []);
 
-  useEffect(() => { ballsRef.current = balls; }, [balls]);
-  useEffect(() => { paddleXRef.current = paddleX; }, [paddleX]);
-  useEffect(() => { paddleWidthRef.current = paddleWidth; }, [paddleWidth]);
-  useEffect(() => { bricksRef.current = bricks; }, [bricks]);
-  useEffect(() => { powerUpsRef.current = powerUps; }, [powerUps]);
-  useEffect(() => { coinsRef.current = coins; }, [coins]);
+  useEffect(() => { ballsRef.current = balls }, [balls]);
+  useEffect(() => { paddleXRef.current = paddleX }, [paddleX]);
+  useEffect(() => { paddleWidthRef.current = paddleWidth }, [paddleWidth]);
+  useEffect(() => { bricksRef.current = bricks }, [bricks]);
+  useEffect(() => { powerUpsRef.current = powerUps }, [powerUps]);
+  useEffect(() => { shieldRef.current = shielded }, [shielded]);
 
   const startNewGame = () => {
     setGameActive(true);
-    const startBall = [{ x: GAME_WIDTH / 2 - BALL_SIZE / 2, y: GAME_HEIGHT / 2, dx: 3, dy: -3 }];
-    setBalls(startBall);
-    ballsRef.current = startBall;
-    setPaddleX(GAME_WIDTH / 2 - BASE_PADDLE_WIDTH / 2);
+    setShielded(false);
+    const startBall = [{ x: GAME_WIDTH / 2, y: GAME_HEIGHT / 2, dx: 3, dy: -3 }];
+    setBalls(startBall); ballsRef.current = startBall;
     setPaddleWidth(BASE_PADDLE_WIDTH);
     setCoins(0);
-    setPowerUps([]);
-    powerUpsRef.current = [];
+    setPowerUps([]); powerUpsRef.current = [];
     createBricks();
+    setShielded(false);
     animationFrame.current = requestAnimationFrame(gameLoop);
   };
 
   const createBricks = () => {
-    const newBricks: boolean[][] = [];
-    for (let r = 0; r < BRICK_ROWS; r++) {
-      const row: boolean[] = [];
-      for (let c = 0; c < BRICK_COLS; c++) {
-        row.push(true);
-      }
-      newBricks.push(row);
-    }
-    setBricks(newBricks);
-    bricksRef.current = newBricks;
+    const arr = Array.from({ length: BRICK_ROWS }, () => Array(BRICK_COLS).fill(true));
+    setBricks(arr); bricksRef.current = arr;
   };
 
   const gameLoop = () => {
     if (!gameActive) return;
-    
-    let updatedBricks = bricksRef.current.map(row => [...row]);
-    let newBalls = ballsRef.current.map(ball => {
-      let { x, y, dx, dy } = ball;
-      x += dx;
-      y += dy;
+    let updated = bricksRef.current.map(r => [...r]);
+    let newBalls: Ball[] = [];
+    let newPowerUps = [...powerUpsRef.current];
 
-      if (x <= 0 || x + BALL_SIZE >= GAME_WIDTH) dx = -dx;
-      if (y <= 0) dy = -dy;
+    ballsRef.current.forEach(ball => {
+      let { x, y, dx, dy, stuck } = ball;
 
-      const paddleTop = GAME_HEIGHT - PADDLE_HEIGHT - PADDLE_Y_OFFSET;
-      const paddleLeft = paddleXRef.current;
-      const paddleRight = paddleLeft + paddleWidthRef.current;
+      if (!stuck) {
+        x += dx; y += dy;
+        if (x <= 0 || x + BALL_SIZE >= GAME_WIDTH) dx = -dx;
+        if (y <= 0) dy = -dy;
+      } else {
+        const px = paddleXRef.current + paddleWidthRef.current / 2 - BALL_SIZE / 2;
+        x = px; y = GAME_HEIGHT - PADDLE_Y_OFFSET - BALL_SIZE - 1;
+      }
 
-      if (
-        y + BALL_SIZE >= paddleTop &&
-        y + BALL_SIZE <= paddleTop + PADDLE_HEIGHT + 5 &&
-        x + BALL_SIZE >= paddleLeft &&
-        x <= paddleRight &&
-        dy > 0
-      ) {
-        const hitPos = (x + BALL_SIZE / 2 - paddleLeft) / paddleWidthRef.current;
-        const angle = (hitPos - 0.5) * Math.PI / 2;
-        const speed = Math.sqrt(dx * dx + dy * dy);
-        dx = speed * Math.sin(angle);
-        dy = -Math.abs(speed * Math.cos(angle));
-        y = paddleTop - BALL_SIZE;
+      const pt = GAME_HEIGHT - PADDLE_Y_OFFSET;
+      const pl = paddleXRef.current;
+      const pr = pl + paddleWidthRef.current;
+
+      if (y + BALL_SIZE >= pt && x + BALL_SIZE >= pl && x <= pr) {
+        if (ball.stuck) {
+          stuck = false;
+          const speed = Math.hypot(dx, dy) || 3;
+          dx = speed * (Math.random() < 0.5 ? 1: -1);
+          dy = -Math.abs(speed);
+        } else {
+          const pos = (x + BALL_SIZE/2 - pl) / paddleWidthRef.current;
+          const angle = (pos - 0.5) * Math.PI/2;
+          const speed = Math.hypot(dx, dy);
+          dx = speed * Math.sin(angle);
+          dy = -Math.abs(speed * Math.cos(angle));
+        }
+        y = pt - BALL_SIZE;
       }
 
       const row = Math.floor((y - PADDLE_Y_OFFSET) / (BRICK_HEIGHT + BRICK_MARGIN));
       const col = Math.floor(x / (BRICK_WIDTH + BRICK_MARGIN));
-      if (
-        row >= 0 && row < BRICK_ROWS &&
-        col >= 0 && col < BRICK_COLS &&
-        updatedBricks[row] && updatedBricks[row][col]
-      ) {
-        updatedBricks[row][col] = false;
+      if (row>=0 && row<BRICK_ROWS && col>=0 && col<BRICK_COLS && updated[row][col]) {
+        updated[row][col] = false;
         dy = -dy;
-
-        // Only 50% chance to get coin when breaking brick
-        if (Math.random() < 0.5) {
-          setCoins(prev => prev + 1);
-        }
-
-        // 30% chance for power-up when breaking brick
+        if (Math.random() < 0.5) setCoins(c=>c+1);
         if (Math.random() < 0.3) {
-          const types: PowerUpType[] = ['expand', 'shrink', 'multi', 'slow', 'fast'];
-          const type = types[Math.floor(Math.random() * types.length)];
-          setPowerUps(old => [...old, {
-            x: col * (BRICK_WIDTH + BRICK_MARGIN) + BRICK_WIDTH / 2,
-            y: row * (BRICK_HEIGHT + BRICK_MARGIN) + PADDLE_Y_OFFSET,
-            type,
-          }]);
+          const types: PowerUpType[] = ['expand','shrink','multi','slow','fast','sticky','shield'];
+          const type = types[Math.floor(Math.random()*types.length)];
+          newPowerUps.push({ id: powerUpId.current++, x: col*(BRICK_WIDTH+BRICK_MARGIN)+BRICK_WIDTH/2, y: row*(BRICK_HEIGHT+BRICK_MARGIN)+PADDLE_Y_OFFSET + BRICK_HEIGHT/2, type });
         }
       }
 
-      return { x, y, dx, dy };
-    }).filter(b => b.y <= GAME_HEIGHT);
+      if (y <= GAME_HEIGHT) newBalls.push({ x,y,dx,dy,stuck });
+    });
 
-    if (newBalls.length === 0) {
-      setGameActive(false);
-      Alert.alert(
-        'Game Over', 
-        `You earned ${coins} coins!`, 
-        [
-          { text: 'Play Again', onPress: () => startNewGame() },
-          { text: 'Exit', onPress: () => onExit && onExit() }
-        ]
-      );
-      return;
+    newPowerUps = newPowerUps
+      .map(p => ({ ...p, y: p.y + 2 }))
+      .filter(p => {
+        if (p.y + POWERUP_SIZE/2 >= GAME_HEIGHT - PADDLE_Y_OFFSET && p.x >= paddleXRef.current && p.x <= paddleXRef.current + paddleWidthRef.current) {
+          applyPowerUp(p.type);
+          return false;
+        }
+        return p.y < GAME_HEIGHT;
+      });
+
+    if (!newBalls.length) {
+      if (shieldRef.current) {
+        setShielded(false);
+      } else {
+        setGameActive(false);
+        Alert.alert('Game Over', `Coins: ${coins}`, [{ text:'Again',onPress:startNewGame },{ text:'Exit',onPress:onExit }]);
+        return;
+      }
     }
 
     setBalls(newBalls);
-    ballsRef.current = newBalls;
-    setBricks(updatedBricks);
-    bricksRef.current = updatedBricks;
-
-    const updatedPowerUps = powerUpsRef.current
-      .map(pu => ({ ...pu, y: pu.y + 2 }))
-      .filter(pu => {
-        if (
-          pu.y + BALL_SIZE >= GAME_HEIGHT - PADDLE_HEIGHT - PADDLE_Y_OFFSET &&
-          pu.x >= paddleXRef.current &&
-          pu.x <= paddleXRef.current + paddleWidthRef.current
-        ) {
-          applyPowerUp(pu.type);
-          return false;
-        }
-        return pu.y < GAME_HEIGHT;
-      });
-
-    setPowerUps(updatedPowerUps);
-    powerUpsRef.current = updatedPowerUps;
+    setBricks(updated);
+    setPowerUps(newPowerUps);
     animationFrame.current = requestAnimationFrame(gameLoop);
   };
 
   const applyPowerUp = (type: PowerUpType) => {
-    const timeoutKey = `powerup-${type}`;
-    clearTimeout(powerUpTimeouts.current[timeoutKey]);
-
-    switch (type) {
+    clearTimeout(powerUpTimeouts.current[type]);
+    switch(type) {
       case 'expand':
         setPaddleWidth(BASE_PADDLE_WIDTH * 1.5);
-        powerUpTimeouts.current[timeoutKey] = setTimeout(() => setPaddleWidth(BASE_PADDLE_WIDTH), 10000);
+        powerUpTimeouts.current[type] = setTimeout(() => setPaddleWidth(BASE_PADDLE_WIDTH), 10000);
         break;
       case 'shrink':
         setPaddleWidth(BASE_PADDLE_WIDTH * 0.6);
-        powerUpTimeouts.current[timeoutKey] = setTimeout(() => setPaddleWidth(BASE_PADDLE_WIDTH), 10000);
+        powerUpTimeouts.current[type] = setTimeout(() => setPaddleWidth(BASE_PADDLE_WIDTH), 10000);
         break;
       case 'multi':
         if (ballsRef.current.length < 5) {
-          const base = ballsRef.current[0];
-          const speed = Math.sqrt(base.dx * base.dx + base.dy * base.dy);
-          setBalls(balls => [...balls, {
-            x: base.x,
-            y: base.y,
-            dx: speed,
-            dy: -speed
-          }, {
-            x: base.x,
-            y: base.y,
-            dx: -speed,
-            dy: -speed
-          }]);
+          const b0 = ballsRef.current[0];
+          const s = Math.hypot(b0.dx,b0.dy) || 3;
+          setBalls(bs => [...bs, { x:b0.x,y:b0.y,dx:s,dy:-s }, { x:b0.x,y:b0.y,dx:-s,dy:-s }]);
         }
         break;
       case 'slow':
-        setBalls(balls => balls.map(b => ({ ...b, dx: b.dx * 0.7, dy: b.dy * 0.7 })));
+        setBalls(bs => bs.map(b => ({ ...b, dx:b.dx*0.7, dy:b.dy*0.7 })));
         break;
       case 'fast':
-        setBalls(balls => balls.map(b => ({ ...b, dx: b.dx * 1.3, dy: b.dy * 1.3 })));
+        setBalls(bs => bs.map(b => ({ ...b, dx:b.dx*1.3, dy:b.dy*1.3 })));
+        break;
+      case 'sticky':
+        setBalls(bs => bs.map((b, i) => i===0 ? { ...b, stuck: true } : b));
+        break;
+      case 'shield':
+        setShielded(true);
         break;
     }
   };
 
   const handleTouch = (e: GestureResponderEvent) => {
-    const touchX = e.nativeEvent.locationX;
-    const newX = Math.max(0, Math.min(touchX - paddleWidthRef.current / 2, GAME_WIDTH - paddleWidthRef.current));
-    setPaddleX(newX);
+    const x0 = e.nativeEvent.locationX;
+    const nx = Math.max(0, Math.min(x0 - paddleWidthRef.current/2, GAME_WIDTH - paddleWidthRef.current));
+    setPaddleX(nx);
   };
 
-  const getPowerUpColor = (type: PowerUpType) => {
-    switch (type) {
-      case 'expand': return '#00FF00'; // Bright green
-      case 'shrink': return '#FF0000'; // Bright red
-      case 'multi': return '#FF00FF';  // Bright magenta
-      case 'slow': return '#00FFFF';   // Bright cyan
-      case 'fast': return '#FFA500';   // Bright orange
-      default: return 'white';
-    }
+  const colors: Record<PowerUpType, string> = {
+    expand: '#0f0', shrink: '#f00',
+    multi: '#f0f', slow: '#0ff', fast: '#fa0',
+    sticky: '#fff', shield: '#ff0',
+  };
+
+  const symbols: Record<PowerUpType, string> = {
+    expand: '⬛', shrink: '⬜',
+    multi: '🎱', slow: '🐢', fast: '⚡',
+    sticky: '🤚', shield: '🛡️',
   };
 
   return (
-    <View
-      style={styles.container}
-      onStartShouldSetResponder={() => true}
-      onResponderMove={handleTouch}
-    >
-      <TouchableOpacity style={styles.exitButton} onPress={onExit}>
-        <Text style={styles.exitText}>✕</Text>
-      </TouchableOpacity>
+    <View style={styles.container} onStartShouldSetResponder={()=>true} onResponderMove={handleTouch}>
+      <TouchableOpacity style={styles.exitButton} onPress={onExit}><Text style={styles.exitText}>✕</Text></TouchableOpacity>
       <Text style={styles.coins}>Coins: {coins}</Text>
-      {bricks.map((row, rIdx) => row.map((brick, cIdx) => brick && (
-        <View key={`${rIdx}-${cIdx}`} style={[styles.brick, {
-          top: PADDLE_Y_OFFSET + rIdx * (BRICK_HEIGHT + BRICK_MARGIN),
-          left: BRICK_MARGIN + cIdx * (BRICK_WIDTH + BRICK_MARGIN),
-          backgroundColor: `hsl(${(rIdx * 60) % 360}, 70%, 50%)`,
+      {bricks.map((r,ri) => r.map((b,ci)=>b && (
+        <View key={`${ri}-${ci}`} style={[styles.brick,{
+          top:PADDLE_Y_OFFSET + ri*(BRICK_HEIGHT+BRICK_MARGIN),
+          left:BRICK_MARGIN + ci*(BRICK_WIDTH+BRICK_MARGIN),
+          backgroundColor:`hsl(${ri*60},70%,50%)`
         }]} />
       )))}
-      {balls.map((ball, idx) => (
-        <View key={idx} style={[styles.ball, { top: ball.y, left: ball.x }]} />
+      {balls.map((b,i)=>(
+        <View key={i} style={[styles.ball,{left:b.x,top:b.y}]} />
       ))}
-      <View style={[styles.paddle, { left: paddleX, width: paddleWidth }]} />
-      {powerUps.map((pu, idx) => (
-        <View key={idx} style={[styles.powerUp, {
-          left: pu.x - BALL_SIZE / 2,
-          top: pu.y,
-          backgroundColor: getPowerUpColor(pu.type),
-          borderColor: '#FFF',
-          borderWidth: 1,
-        }]} />
+      <View style={[styles.paddle,{left:paddleX,width:paddleWidth}]} />
+      {powerUps.map(p=>(
+        <View key={p.id} style={[styles.powerUp,{
+          left:p.x-POWERUP_SIZE/2,
+          top:p.y-POWERUP_SIZE/2,
+          backgroundColor:colors[p.type],
+        }]}>
+          <Text style={styles.powerText}>{symbols[p.type]}</Text>
+        </View>
       ))}
     </View>
   );
 }
 
 const styles = StyleSheet.create({
-  container: {
-    width: GAME_WIDTH,
-    height: GAME_HEIGHT,
-    backgroundColor: '#222',
-    alignSelf: 'center',
-    position: 'relative',
-    borderWidth: 2,
-    borderColor: '#555',
-    marginTop: 50,
-  },
-  brick: {
-    position: 'absolute',
-    width: BRICK_WIDTH,
-    height: BRICK_HEIGHT,
-    borderRadius: 2,
-  },
-  ball: {
-    position: 'absolute',
-    width: BALL_SIZE,
-    height: BALL_SIZE,
-    borderRadius: BALL_SIZE / 2,
-    backgroundColor: 'cyan',
-  },
-  paddle: {
-    position: 'absolute',
-    bottom: PADDLE_Y_OFFSET,
-    height: PADDLE_HEIGHT,
-    backgroundColor: 'hotpink',
-    borderRadius: 10,
-  },
-  powerUp: {
-    position: 'absolute',
-    width: BALL_SIZE,
-    height: BALL_SIZE,
-    borderRadius: BALL_SIZE / 2,
-    opacity: 0.9,
-  },
-  exitButton: {
-    position: 'absolute',
-    top: 8,
-    right: 8,
-    width: 28,
-    height: 28,
-    backgroundColor: '#900',
-    borderRadius: 14,
-    justifyContent: 'center',
-    alignItems: 'center',
-    zIndex: 2,
-  },
-  exitText: {
-    color: 'white',
-    fontWeight: 'bold',
-    fontSize: 20,
-    lineHeight: 20,
-  },
-  coins: {
-    position: 'absolute',
-    top: 10,
-    left: 10,
-    color: 'yellow',
-    fontSize: 16,
-    zIndex: 1,
-    fontWeight: 'bold',
-    textShadowColor: 'rgba(0,0,0,0.75)',
-    textShadowOffset: {width: 1, height: 1},
-    textShadowRadius: 2,
-  },
+  container: { width:GAME_WIDTH, height:GAME_HEIGHT, backgroundColor:'#222', alignSelf:'center', position:'relative', marginTop:50 },
+  brick: { position:'absolute', width:BRICK_WIDTH, height:BRICK_HEIGHT, borderRadius:2 },
+  ball: { position:'absolute', width:BALL_SIZE, height:BALL_SIZE, borderRadius:BALL_SIZE/2, backgroundColor:'cyan' },
+  paddle: { position:'absolute', bottom:PADDLE_Y_OFFSET, height:PADDLE_HEIGHT, backgroundColor:'hotpink', borderRadius:10 },
+  powerUp: { position:'absolute', width:POWERUP_SIZE, height:POWERUP_SIZE, borderRadius:POWERUP_SIZE/2, justifyContent:'center', alignItems:'center', zIndex:4 },
+  powerText: { fontSize:18, color:'#000', fontWeight:'bold' },
+  exitButton: { position:'absolute', top:8,right:8,width:28,height:28,backgroundColor:'#900',borderRadius:14,justifyContent:'center',alignItems:'center',zIndex:5 },
+  exitText: { color:'#fff', fontSize:20 },
+  coins: { position:'absolute', top:10,left:10,color:'#ff0',fontWeight:'bold' },
 });
