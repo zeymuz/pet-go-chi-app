@@ -13,8 +13,8 @@ import COLORS from '../constants/colors';
 
 const { width: SCREEN_WIDTH, height: SCREEN_HEIGHT } = Dimensions.get('window');
 
-const GAME_WIDTH = SCREEN_WIDTH * 0.95; // smaller width to fit phone better
-const GAME_HEIGHT = SCREEN_HEIGHT * 0.75; // limit height for better layout
+const GAME_WIDTH = SCREEN_WIDTH * 0.95;
+const GAME_HEIGHT = SCREEN_HEIGHT * 0.75;
 
 const PADDLE_WIDTH = GAME_WIDTH * 0.2;
 const PADDLE_HEIGHT = 15;
@@ -37,14 +37,15 @@ interface BrickBreakerProps {
 }
 
 export default function BrickBreaker({ onClose }: BrickBreakerProps) {
-  // Use refs for ball position and velocity
-  const ballXRef = useRef(GAME_WIDTH / 2);
-  const ballYRef = useRef(GAME_HEIGHT * 0.7);
-  const ballDXRef = useRef(4);
-  const ballDYRef = useRef(-4);
-
-  const [ballX, setBallX] = useState(ballXRef.current);
-  const [ballY, setBallY] = useState(ballYRef.current);
+  // Ball data now stored as an array to support multi-ball
+  const ballsRef = useRef([{
+    x: GAME_WIDTH / 2,
+    y: GAME_HEIGHT * 0.7,
+    dx: 4,
+    dy: -4
+  }]);
+  const [balls, setBalls] = useState(ballsRef.current);
+  
   const [paddleX, setPaddleX] = useState(GAME_WIDTH / 2 - PADDLE_WIDTH / 2);
   const [bricks, setBricks] = useState<boolean[][]>([]);
   const [coins, setCoins] = useState(0);
@@ -55,9 +56,13 @@ export default function BrickBreaker({ onClose }: BrickBreakerProps) {
   const [powerUps, setPowerUps] = useState<{ x: number; y: number; type: PowerUpType }[]>([]);
   const [activePowerUps, setActivePowerUps] = useState<{ type: PowerUpType; timer: NodeJS.Timeout }[]>([]);
   const levelAnim = useRef(new Animated.Value(1)).current;
+  
+  // Use ref for bricks to avoid undefined errors
+  const bricksRef = useRef<boolean[][]>([]);
 
   const gameLoopRef = useRef<NodeJS.Timeout | null>(null);
   const powerUpTimersRef = useRef<NodeJS.Timeout[]>([]);
+  const baseBallSpeed = useRef(4); // Track base speed for power-up calculations
 
   // Initialize bricks on level change
   useEffect(() => {
@@ -101,89 +106,200 @@ export default function BrickBreaker({ onClose }: BrickBreakerProps) {
       }
     }
     setBricks(newBricks);
+    bricksRef.current = newBricks; // Update the ref
   };
 
   const resetGame = () => {
-    ballXRef.current = GAME_WIDTH / 2;
-    ballYRef.current = GAME_HEIGHT * 0.7;
-    ballDXRef.current = 4;
-    ballDYRef.current = -4;
-    setBallX(ballXRef.current);
-    setBallY(ballYRef.current);
-
-    setPaddleX(GAME_WIDTH / 2 - currentPaddleWidth / 2);
-    setPowerUps([]);
+    // Clear power-up timers
+    powerUpTimersRef.current.forEach(timer => clearTimeout(timer));
+    powerUpTimersRef.current = [];
+    setActivePowerUps([]);
+    
+    // Reset ball(s) to initial state
+    ballsRef.current = [{
+      x: GAME_WIDTH / 2,
+      y: GAME_HEIGHT * 0.7,
+      dx: baseBallSpeed.current,
+      dy: -baseBallSpeed.current
+    }];
+    setBalls(ballsRef.current);
+    
+    // Reset paddle
+    setPaddleX(GAME_WIDTH / 2 - PADDLE_WIDTH / 2);
     setCurrentPaddleWidth(PADDLE_WIDTH);
+    
+    // Reset bricks
+    resetBricks();
+    
+    // Clear power-ups
+    setPowerUps([]);
+    
     setGameRunning(true);
 
     if (gameLoopRef.current) clearInterval(gameLoopRef.current);
     gameLoopRef.current = setInterval(gameLoop, 16);
   };
 
-  const gameLoop = () => {
-    let newBallX = ballXRef.current + ballDXRef.current;
-    let newBallY = ballYRef.current + ballDYRef.current;
+  // Improved collision detection for paddle using continuous collision detection.
+  // Modified so the ball is always adjusted on collision.
+  const checkPaddleCollision = (ball: any, prevBall: any) => {
+  const paddleTop = GAME_HEIGHT - PADDLE_HEIGHT - 50;
+  const paddleLeft = paddleX;
+  const paddleRight = paddleX + currentPaddleWidth;
 
-    // Wall collisions
-    if (newBallX <= 0 || newBallX + BALL_SIZE >= GAME_WIDTH) {
-      ballDXRef.current = -ballDXRef.current;
-      newBallX = ballXRef.current + ballDXRef.current;
-    }
+  // Check if ball moved from above paddle to below paddle in this frame
+  if (
+    prevBall.y + BALL_SIZE <= paddleTop &&
+    ball.y + BALL_SIZE >= paddleTop &&
+    ball.x + BALL_SIZE >= paddleLeft &&
+    ball.x <= paddleRight &&
+    ball.dy > 0
+  ) {
+    // Place ball just above paddle
+    ball.y = paddleTop - BALL_SIZE;
 
-    if (newBallY <= 0) {
-      ballDYRef.current = -ballDYRef.current;
-      newBallY = ballYRef.current + ballDYRef.current;
-    }
+    // Bounce upward
+    ball.dy = -Math.abs(ball.dy);
 
-    // Paddle collision
-    if (
-      newBallY + BALL_SIZE >= GAME_HEIGHT - PADDLE_HEIGHT - 50 &&
-      newBallX + BALL_SIZE >= paddleX &&
-      newBallX <= paddleX + currentPaddleWidth
-    ) {
-      const hitPos = (newBallX + BALL_SIZE / 2 - paddleX) / currentPaddleWidth;
-      const angle = (Math.PI / 4) + hitPos * (Math.PI / 2);
-      const speed = 6;
+    // Adjust horizontal direction based on hit point on paddle
+    const hitPos = (ball.x + BALL_SIZE / 2 - paddleLeft) / currentPaddleWidth;
+    const maxBounceAngle = Math.PI / 3; // 60 degrees
+    const angle = (hitPos - 0.5) * 2 * maxBounceAngle;
 
-      ballDXRef.current = speed * Math.cos(angle);
-      ballDYRef.current = -speed * Math.sin(angle);
+    const speed = Math.sqrt(ball.dx * ball.dx + ball.dy * ball.dy);
+    ball.dx = speed * Math.sin(angle);
+    ball.dy = -Math.abs(speed * Math.cos(angle));
+  }
 
-      // Position ball just above paddle
-      newBallY = GAME_HEIGHT - PADDLE_HEIGHT - 50 - BALL_SIZE - 1;
-    }
+  return ball;
+};
 
-    // Bottom collision - lose
-    if (newBallY + BALL_SIZE >= GAME_HEIGHT) {
-      gameOver();
-      return;
-    }
+const gameLoop = () => {
+  let bricksChanged = false;
+  const newBricks = bricksRef.current.map(row => [...row]);
 
-    ballXRef.current = newBallX;
-    ballYRef.current = newBallY;
+  const MAX_SPEED = 7;
+  const SUB_STEPS = 8;
 
-    setBallX(newBallX);
-    setBallY(newBallY);
+  const newBalls = ballsRef.current.map(ball => {
+    let { x, y, dx, dy, prevX, prevY } = ball;
 
-    // Brick collisions
-    setBricks(prev => {
-      const newBricks = prev.map(row => [...row]);
-      let brickHit = false;
+    prevX = prevX !== undefined ? prevX : x;
+    prevY = prevY !== undefined ? prevY : y;
 
+    dx = Math.max(-MAX_SPEED, Math.min(dx, MAX_SPEED));
+    dy = Math.max(-MAX_SPEED, Math.min(dy, MAX_SPEED));
+
+    let newX = x;
+    let newY = y;
+    let newDx = dx;
+    let newDy = dy;
+
+    for (let step = 0; step < SUB_STEPS; step++) {
+      const stepDx = newDx / SUB_STEPS;
+      const stepDy = newDy / SUB_STEPS;
+
+      const nextX = newX + stepDx;
+      const nextY = newY + stepDy;
+
+      // Wall collisions
+      if (nextX <= 0) {
+        newDx = Math.abs(newDx);
+        newX = 0;
+      } else if (nextX + BALL_SIZE >= GAME_WIDTH) {
+        newDx = -Math.abs(newDx);
+        newX = GAME_WIDTH - BALL_SIZE;
+      } else {
+        newX = nextX;
+      }
+
+      if (nextY <= 0) {
+        newDy = Math.abs(newDy);
+        newY = 0;
+      } else {
+        newY = nextY;
+      }
+
+      // Continuous paddle collision detection:
+      // Check if ball path crossed paddle zone vertically
+      const paddleTop = GAME_HEIGHT - PADDLE_HEIGHT - 50;
+      const paddleBottom = paddleTop + PADDLE_HEIGHT;
+      const paddleLeft = paddleX;
+      const paddleRight = paddleX + currentPaddleWidth;
+
+      // Ball box previous frame
+      const ballPrevLeft = newX - stepDx;
+      const ballPrevRight = ballPrevLeft + BALL_SIZE;
+      const ballPrevBottom = newY - stepDy + BALL_SIZE;
+      const ballPrevTop = ballPrevBottom - BALL_SIZE;
+
+      // Ball box current frame
+      const ballCurrLeft = newX;
+      const ballCurrRight = newX + BALL_SIZE;
+      const ballCurrBottom = newY + BALL_SIZE;
+      const ballCurrTop = newY;
+
+      // Check if the vertical path crossed paddle zone
+      const crossedPaddleVertically =
+        (ballPrevBottom <= paddleTop && ballCurrBottom >= paddleTop) ||
+        (ballPrevTop >= paddleBottom && ballCurrTop <= paddleBottom);
+
+      // Check horizontal overlap at either previous or current x position
+      const horizontalOverlap =
+        (ballPrevRight >= paddleLeft && ballPrevLeft <= paddleRight) ||
+        (ballCurrRight >= paddleLeft && ballCurrLeft <= paddleRight);
+
+      if (crossedPaddleVertically && horizontalOverlap && newDy > 0) {
+        // Ball hit the paddle somewhere between last and current frame
+
+        // Place ball on top of paddle
+        newY = paddleTop - BALL_SIZE;
+        newDy = -Math.abs(newDy);
+
+        // Calculate hit position for angle using current ball center
+        const ballCenterX = newX + BALL_SIZE / 2;
+        const hitPos = (ballCenterX - paddleLeft) / currentPaddleWidth;
+        const maxBounceAngle = Math.PI / 3;
+        const angle = (hitPos - 0.5) * 2 * maxBounceAngle;
+
+        const speed = Math.sqrt(newDx * newDx + newDy * newDy);
+        newDx = speed * Math.sin(angle);
+        newDy = -Math.abs(speed * Math.cos(angle));
+      }
+
+      // Prevent ball from passing paddle edges horizontally near paddle
+      if (
+        newY + BALL_SIZE >= paddleTop &&
+        newY + BALL_SIZE <= paddleBottom
+      ) {
+        if (newX + BALL_SIZE > paddleRight) {
+          newX = paddleRight - BALL_SIZE;
+          newDx = -Math.abs(newDx);
+        } else if (newX < paddleLeft) {
+          newX = paddleLeft;
+          newDx = Math.abs(newDx);
+        }
+      }
+
+      // Brick collisions (same as before)
+      outerLoop:
       for (let r = 0; r < BRICK_ROWS; r++) {
         for (let c = 0; c < BRICK_COLS; c++) {
           if (!newBricks[r][c]) continue;
 
           const brickX = c * (BRICK_WIDTH + BRICK_MARGIN) + BRICK_MARGIN;
           const brickY = r * (BRICK_HEIGHT + BRICK_MARGIN) + BRICK_TOP_OFFSET;
+          const brickRight = brickX + BRICK_WIDTH;
+          const brickBottom = brickY + BRICK_HEIGHT;
 
           if (
-            newBallX + BALL_SIZE >= brickX &&
-            newBallX <= brickX + BRICK_WIDTH &&
-            newBallY + BALL_SIZE >= brickY &&
-            newBallY <= brickY + BRICK_HEIGHT
+            newX + BALL_SIZE >= brickX &&
+            newX <= brickRight &&
+            newY + BALL_SIZE >= brickY &&
+            newY <= brickBottom
           ) {
             newBricks[r][c] = false;
-            brickHit = true;
+            bricksChanged = true;
             setCoins(coins => coins + level);
 
             if (Math.random() < 0.2) {
@@ -196,39 +312,71 @@ export default function BrickBreaker({ onClose }: BrickBreakerProps) {
               }]);
             }
 
-            const dx = (newBallX + BALL_SIZE / 2) - (brickX + BRICK_WIDTH / 2);
-            const dy = (newBallY + BALL_SIZE / 2) - (brickY + BRICK_HEIGHT / 2);
+            const ballCenterX = newX + BALL_SIZE / 2;
+            const ballCenterY = newY + BALL_SIZE / 2;
+            const brickCenterX = brickX + BRICK_WIDTH / 2;
+            const brickCenterY = brickY + BRICK_HEIGHT / 2;
 
-            if (Math.abs(dx) > Math.abs(dy)) {
-              ballDXRef.current = -ballDXRef.current;
+            const dxCenter = ballCenterX - brickCenterX;
+            const dyCenter = ballCenterY - brickCenterY;
+            const absDx = Math.abs(dxCenter);
+            const absDy = Math.abs(dyCenter);
+
+            if (absDx > absDy) {
+              newDx = -newDx;
             } else {
-              ballDYRef.current = -ballDYRef.current;
+              newDy = -newDy;
             }
+            break outerLoop;
           }
         }
       }
+    }
 
-      if (brickHit) checkWin(newBricks);
-      return newBricks;
-    });
+    return { x: newX, y: newY, dx: newDx, dy: newDy, prevX: x, prevY: y };
+  });
 
-    // Power-up movement and collection
-    setPowerUps(prev => {
-      return prev
-        .map(pu => ({ ...pu, y: pu.y + POWERUP_SPEED }))
-        .filter(pu => {
-          if (
-            pu.y + POWERUP_SIZE >= GAME_HEIGHT - PADDLE_HEIGHT - 50 &&
-            pu.x + POWERUP_SIZE >= paddleX &&
-            pu.x <= paddleX + currentPaddleWidth
-          ) {
-            applyPowerUp(pu.type);
-            return false;
-          }
-          return pu.y < GAME_HEIGHT;
-        });
-    });
-  };
+  ballsRef.current = newBalls;
+  setBalls([...newBalls]);
+
+  if (bricksChanged) {
+    bricksRef.current = newBricks;
+    setBricks(newBricks);
+    checkWin(newBricks);
+  }
+
+  const activeBalls = newBalls.filter(ball => ball.y + BALL_SIZE < GAME_HEIGHT);
+  if (activeBalls.length === 0) {
+    gameOver();
+    return;
+  }
+  ballsRef.current = activeBalls;
+  setBalls([...activeBalls]);
+
+  setPowerUps(prev => {
+    return prev
+      .map(pu => ({ ...pu, y: pu.y + POWERUP_SPEED }))
+      .filter(pu => {
+        if (
+          pu.y + POWERUP_SIZE >= GAME_HEIGHT - PADDLE_HEIGHT - 50 &&
+          pu.x + POWERUP_SIZE >= paddleX &&
+          pu.x <= paddleX + currentPaddleWidth
+        ) {
+          applyPowerUp(pu.type);
+          return false;
+        }
+        return pu.y < GAME_HEIGHT;
+      });
+  });
+};
+
+
+
+
+
+
+
+
 
   const applyPowerUp = (type: PowerUpType) => {
     let timer: NodeJS.Timeout | null = null;
@@ -243,23 +391,62 @@ export default function BrickBreaker({ onClose }: BrickBreakerProps) {
         timer = setTimeout(() => setCurrentPaddleWidth(PADDLE_WIDTH), 8000);
         break;
       case 'speed':
-        ballDXRef.current *= 1.3;
-        ballDYRef.current *= 1.3;
+        // Increase speed of all balls
+        ballsRef.current = ballsRef.current.map(ball => ({
+          ...ball,
+          dx: ball.dx * 1.3,
+          dy: ball.dy * 1.3
+        }));
+        setBalls([...ballsRef.current]);
+        
         timer = setTimeout(() => {
-          ballDXRef.current /= 1.3;
-          ballDYRef.current /= 1.3;
+          ballsRef.current = ballsRef.current.map(ball => ({
+            ...ball,
+            dx: ball.dx / 1.3,
+            dy: ball.dy / 1.3
+          }));
+          setBalls([...ballsRef.current]);
         }, 7000);
         break;
       case 'slow':
-        ballDXRef.current *= 0.7;
-        ballDYRef.current *= 0.7;
+        // Decrease speed of all balls
+        ballsRef.current = ballsRef.current.map(ball => ({
+          ...ball,
+          dx: ball.dx * 0.7,
+          dy: ball.dy * 0.7
+        }));
+        setBalls([...ballsRef.current]);
+        
         timer = setTimeout(() => {
-          ballDXRef.current /= 0.7;
-          ballDYRef.current /= 0.7;
+          ballsRef.current = ballsRef.current.map(ball => ({
+            ...ball,
+            dx: ball.dx / 0.7,
+            dy: ball.dy / 0.7
+          }));
+          setBalls([...ballsRef.current]);
         }, 7000);
         break;
       case 'multi':
-        // Not implemented yet
+        // Add two new balls with different trajectories
+        const newBalls = [...ballsRef.current];
+        
+        // Create new balls with slightly different angles
+        newBalls.push({
+          x: ballsRef.current[0].x,
+          y: ballsRef.current[0].y,
+          dx: ballsRef.current[0].dx * 0.8,
+          dy: -Math.abs(ballsRef.current[0].dy) // Ensure upward direction
+        });
+        
+        newBalls.push({
+          x: ballsRef.current[0].x,
+          y: ballsRef.current[0].y,
+          dx: -ballsRef.current[0].dx * 0.8,
+          dy: -Math.abs(ballsRef.current[0].dy) // Ensure upward direction
+        });
+        
+        ballsRef.current = newBalls;
+        setBalls([...newBalls]);
         break;
     }
 
@@ -273,7 +460,13 @@ export default function BrickBreaker({ onClose }: BrickBreakerProps) {
     if (bricks.flat().every(b => !b)) {
       if (gameLoopRef.current) clearInterval(gameLoopRef.current);
       Alert.alert('Level Complete!', `You earned ${level * BRICK_ROWS} coins`, [
-        { text: 'Next Level', onPress: () => setLevel(l => l + 1) },
+        { 
+          text: 'Next Level', 
+          onPress: () => {
+            setLevel(l => l + 1);
+            showLevelAnimation();
+          }
+        },
         { text: 'Quit', onPress: () => onClose(coins) },
       ]);
     }
@@ -282,7 +475,12 @@ export default function BrickBreaker({ onClose }: BrickBreakerProps) {
   const gameOver = () => {
     if (gameLoopRef.current) clearInterval(gameLoopRef.current);
     Alert.alert('Game Over', `You earned ${coins} coins`, [
-      { text: 'Retry', onPress: resetGame },
+      { text: 'Retry', onPress: () => {
+          resetGame();
+          setCoins(0);
+          setLevel(1);
+        } 
+      },
       { text: 'Quit', onPress: () => onClose(coins) },
     ]);
   };
@@ -335,8 +533,9 @@ export default function BrickBreaker({ onClose }: BrickBreakerProps) {
         ))}
       </View>
 
-      {bricks.map((row, r) =>
-        row.map(
+      {/* Safely render bricks */}
+      {bricks && bricks.map((row, r) =>
+        row && row.map(
           (brick, c) =>
             brick && (
               <View
@@ -354,16 +553,21 @@ export default function BrickBreaker({ onClose }: BrickBreakerProps) {
         )
       )}
 
-      <View
-        style={[
-          styles.ball,
-          {
-            left: ballX,
-            top: ballY,
-            backgroundColor: 'blue',
-          },
-        ]}
-      />
+      {/* Safely render balls */}
+      {balls && balls.map((ball, index) => (
+        <View
+          key={index}
+          style={[
+            styles.ball,
+            {
+              left: ball.x,
+              top: ball.y,
+              backgroundColor: index === 0 ? 'blue' : 
+                index === 1 ? 'red' : 'green',
+            },
+          ]}
+        />
+      ))}
 
       <View
         style={[
@@ -375,7 +579,8 @@ export default function BrickBreaker({ onClose }: BrickBreakerProps) {
         ]}
       />
 
-      {powerUps.map((pu, index) => (
+      {/* Safely render power-ups */}
+      {powerUps && powerUps.map((pu, index) => (
         <View
           key={index}
           style={[
