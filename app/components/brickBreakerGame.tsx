@@ -21,6 +21,7 @@ const BRICK_WIDTH = (GAME_WIDTH - (BRICK_COLS + 1) * BRICK_MARGIN) / BRICK_COLS;
 const BRICK_HEIGHT = 20;
 const POWERUP_SIZE = 20;
 const PADDLE_Y_OFFSET = 20;
+const SHIELD_HEIGHT = 10; // Height of the shield area at the bottom
 
 type PowerUpType = 
   | 'expand'
@@ -135,7 +136,7 @@ export default function BrickBreakerGame({ onExit }: { onExit?: () => void }) {
             ball.dy = -ball.dy;
           }
 
-          // Paddle collision with improved hit detection
+          // Paddle collision
           const paddleTop = GAME_HEIGHT - PADDLE_Y_OFFSET - PADDLE_HEIGHT;
           const paddleBottom = GAME_HEIGHT - PADDLE_Y_OFFSET;
           const paddleLeft = paddleX;
@@ -200,17 +201,20 @@ export default function BrickBreakerGame({ onExit }: { onExit?: () => void }) {
             }
           }
 
-          // Ball falls below paddle - lose ball
+          // Shield bounce at the bottom
+          const shieldTop = GAME_HEIGHT - SHIELD_HEIGHT;
+          if (newY + BALL_SIZE >= shieldTop && shieldActive) {
+            // Bounce the ball off the shield
+            ball.dy = -Math.abs(ball.dy);
+            newY = shieldTop - BALL_SIZE;
+          }
+          
+          // Ball falls below the game area - lose ball
           if (newY > GAME_HEIGHT) {
             if (shieldActive) {
-              // Use shield to save ball
-              setShieldActive(false);
-              // Reset ball to stuck state on paddle
-              ball.stuckToPaddle = true;
-              ball.dx = 0;
-              ball.dy = 0;
-              newX = paddleX + paddleWidth / 2 - BALL_SIZE / 2;
-              newY = GAME_HEIGHT - PADDLE_Y_OFFSET - PADDLE_HEIGHT - BALL_SIZE;
+              // If shield is active, bounce the ball
+              ball.dy = -Math.abs(ball.dy);
+              newY = GAME_HEIGHT - BALL_SIZE - 1;
             } else {
               // Mark ball for removal
               return null;
@@ -520,6 +524,15 @@ export default function BrickBreakerGame({ onExit }: { onExit?: () => void }) {
         onResponderMove={onMove}
         onResponderRelease={releaseSticky}
       >
+        {/* Shield area */}
+        {shieldActive && (
+          <View style={[styles.shield, { 
+            bottom: 0, 
+            width: GAME_WIDTH,
+            height: SHIELD_HEIGHT
+          }]} />
+        )}
+        
         {/* Paddle */}
         <View
           style={[
@@ -724,5 +737,10 @@ const styles = StyleSheet.create({
     color: '#ff0',
     fontWeight: 'bold',
     zIndex: 5,
+  },
+  shield: {
+    position: 'absolute',
+    backgroundColor: 'rgba(0, 200, 255, 0.5)',
+    zIndex: 2,
   },
 });
