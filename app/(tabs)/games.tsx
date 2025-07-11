@@ -53,7 +53,7 @@ export default function GamesScreen() {
       case 'memory':
         return <MemoryGame onClose={(score) => handleGameEnd(score)} />;
       case 'brick':
-        return <BrickBreaker onClose={(score) => handleGameEnd(score)} />;
+        return <BrickBreaker onExit={(score) => handleGameEnd(score)} />;
       default:
         return (
           <View style={styles.gamesContainer}>
