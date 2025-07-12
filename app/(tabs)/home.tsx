@@ -1,16 +1,27 @@
-// home.tsx
 import { Ionicons } from '@expo/vector-icons';
 import { useNavigation } from '@react-navigation/native';
 import React, { useRef, useState } from 'react';
-import { Animated, Easing, FlatList, Image, StyleSheet, Text, TouchableOpacity, View } from 'react-native';
+import { Animated, Easing, FlatList, Image, ImageSourcePropType, StyleSheet, Text, TouchableOpacity, View } from 'react-native';
 import Button from '../components/Button';
 import PixelPet from '../components/PixelPet';
 import StatusBar from '../components/StatusBar';
 import COLORS from '../constants/colors';
-import usePet from './../hooks/usePet';
-import useStore from './../hooks/useStore';
+import usePet from '../hooks/usePet';
+import useStore from '../hooks/useStore';
+
+type OutfitType = 'hat' | 'jacket' | 'shirt' | 'pants' | 'shoes';
+
+interface OutfitItem {
+  id: string;
+  name: string;
+  image: ImageSourcePropType;
+  type: OutfitType;
+  price: number;
+  owned: boolean;
+}
 
 export default function HomeScreen() {
+  const navigation = useNavigation();
   const {
     feed,
     play,
@@ -29,7 +40,7 @@ export default function HomeScreen() {
     setShowFood,
     isSleeping,
   } = usePet();
-  
+
   const {
     outfits,
     equippedOutfits,
@@ -38,7 +49,6 @@ export default function HomeScreen() {
   } = useStore();
 
   const [activeAction, setActiveAction] = useState<string | null>(null);
-  const navigation = useNavigation();
   const outfitsPosition = useRef(new Animated.Value(0)).current;
   const foodPosition = useRef(new Animated.Value(0)).current;
   const buttonsOpacity = useRef(new Animated.Value(1)).current;
@@ -57,16 +67,14 @@ export default function HomeScreen() {
         navigation.navigate('games');
         break;
       case 'sleep':
-        if (!isSleeping) {
-          sleep();
-        }
+        if (!isSleeping) sleep();
         break;
       case 'clean':
         if (canClean) {
           clean();
           setLastCleanTime(Date.now());
           setCanClean(false);
-          setTimeout(() => setCanClean(true), 2 * 60 * 60 * 1000); // 2 hours cooldown
+          setTimeout(() => setCanClean(true), 2 * 60 * 60 * 1000);
         }
         break;
     }
@@ -110,7 +118,7 @@ export default function HomeScreen() {
     ]).start();
   };
 
-  const renderOutfitItem = ({ item }: { item: any }) => (
+  const renderOutfitItem = ({ item }: { item: OutfitItem }) => (
     <TouchableOpacity
       style={[
         styles.outfitItem,
@@ -118,13 +126,15 @@ export default function HomeScreen() {
       ]}
       onPress={() => equipOutfit(item.id)}
     >
-      <Image 
-      source={item.image} 
-      style={styles.outfitImage} 
-      resizeMode="contain"
-    />
-    <Text style={styles.outfitName}>{item.name}</Text>
-  </TouchableOpacity>
+      <View style={styles.outfitImageContainer}>
+        <Image 
+          source={item.image} 
+          style={styles.outfitImage}
+          onError={(e) => console.log('Failed to load:', item.name)}
+        />
+      </View>
+      <Text style={styles.outfitName}>{item.name}</Text>
+    </TouchableOpacity>
   );
 
   const renderFoodItem = ({ item }: { item: any }) => (
@@ -136,7 +146,7 @@ export default function HomeScreen() {
       }}
     >
       <Image 
-        source={{ uri: item.image }} 
+        source={item.image} 
         style={styles.foodImage} 
         resizeMode="contain"
       />
@@ -229,7 +239,7 @@ export default function HomeScreen() {
           <Ionicons name="chevron-up" size={24} color={COLORS.primary} />
         </TouchableOpacity>
         <FlatList
-          data={outfits.filter(o => o.owned)}
+          data={outfits.filter(o => o.owned) as OutfitItem[]}
           numColumns={3}
           keyExtractor={(item) => item.id}
           renderItem={renderOutfitItem}
@@ -356,29 +366,38 @@ const styles = StyleSheet.create({
     paddingBottom: 20,
   },
   outfitItem: {
-    width: 80,
-    height: 80,
+    width: 100,
+    height: 120,
     margin: 5,
     alignItems: 'center',
     justifyContent: 'center',
     backgroundColor: COLORS.secondary,
+    borderRadius: 10,
+    padding: 8,
+  },
+  outfitImageContainer: {
+    width: 60,
+    height: 60,
+    marginBottom: 8,
+    justifyContent: 'center',
+    alignItems: 'center',
+    backgroundColor: 'rgba(255,255,255,0.3)',
     borderRadius: 8,
-    padding: 5,
+  },
+  outfitImage: {
+    width: '100%',
+    height: '100%',
+    resizeMode: 'contain',
   },
   equippedOutfit: {
     borderWidth: 2,
     borderColor: COLORS.primary,
   },
-  outfitImage: {
-    width: 50,
-    height: 50,
-  },
   outfitName: {
     fontFamily: 'PressStart2P',
-    fontSize: 8,
+    fontSize: 10,
     color: COLORS.text,
     textAlign: 'center',
-    marginTop: 5,
   },
   foodContainer: {
     position: 'absolute',
