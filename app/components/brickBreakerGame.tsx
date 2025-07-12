@@ -5,7 +5,7 @@ import {
   StyleSheet,
   Text,
   TouchableOpacity,
-  View
+  View,
 } from 'react-native';
 
 const { width: SCREEN_WIDTH, height: SCREEN_HEIGHT } = Dimensions.get('window');
@@ -14,14 +14,45 @@ const GAME_WIDTH = SCREEN_WIDTH * 0.95;
 const GAME_HEIGHT = SCREEN_HEIGHT * 0.7;
 const PADDLE_HEIGHT = 20;
 const BALL_SIZE = 15;
-const BRICK_ROWS = 5;
-const BRICK_COLS = 7;
-const BRICK_MARGIN = 1;
-const BRICK_WIDTH = (GAME_WIDTH - (BRICK_COLS + 1) * BRICK_MARGIN) / BRICK_COLS;
-const BRICK_HEIGHT = 20;
 const POWERUP_SIZE = 20;
 const PADDLE_Y_OFFSET = 20;
-const SHIELD_HEIGHT = 10; // Height of the shield area at the bottom
+const SHIELD_HEIGHT = 10;
+const BRICK_MARGIN = 1;
+const BRICK_HEIGHT = 14; // Smaller bricks
+
+// Enhanced level configurations with significantly increased difficulty
+const LEVELS = [
+  { 
+    rows: 6, cols: 9, speed: 4.5, powerUpChance: 0.25,
+    unbreakableRatio: 0.1, moveDownInterval: null, obstacles: 1,
+    brickHealth: 1, ballSpeedMultiplier: 1.0
+  },
+  { 
+    rows: 7, cols: 10, speed: 5.0, powerUpChance: 0.2,
+    unbreakableRatio: 0.2, moveDownInterval: 35000, obstacles: 3,
+    brickHealth: 2, ballSpeedMultiplier: 1.1
+  },
+  { 
+    rows: 8, cols: 11, speed: 5.5, powerUpChance: 0.15,
+    unbreakableRatio: 0.3, moveDownInterval: 30000, obstacles: 5,
+    brickHealth: 2, ballSpeedMultiplier: 1.2
+  },
+  { 
+    rows: 9, cols: 12, speed: 6.0, powerUpChance: 0.1,
+    unbreakableRatio: 0.4, moveDownInterval: 25000, obstacles: 7,
+    brickHealth: 3, ballSpeedMultiplier: 1.3
+  },
+  { 
+    rows: 10, cols: 13, speed: 6.5, powerUpChance: 0.05,
+    unbreakableRatio: 0.5, moveDownInterval: 20000, obstacles: 9,
+    brickHealth: 3, ballSpeedMultiplier: 1.5
+  },
+  { 
+    rows: 11, cols: 14, speed: 7.0, powerUpChance: 0.03,
+    unbreakableRatio: 0.6, moveDownInterval: 15000, obstacles: 11,
+    brickHealth: 4, ballSpeedMultiplier: 1.7
+  },
+];
 
 type PowerUpType = 
   | 'expand'
@@ -37,6 +68,10 @@ type Brick = {
   x: number;
   y: number;
   alive: boolean;
+  unbreakable: boolean;
+  metal: boolean;
+  health: number;
+  originalHealth: number;
 };
 
 type PowerUp = {
@@ -56,48 +91,55 @@ type Ball = {
   metal: boolean;
 };
 
+type Obstacle = {
+  x: number;
+  y: number;
+  width: number;
+  height: number;
+  moving: boolean;
+  speed: number;
+};
+
 export default function BrickBreakerGame({ onExit }: { onExit?: () => void }) {
-  // Paddle position
+  // Game state
+  const [currentLevel, setCurrentLevel] = useState(0);
   const [paddleX, setPaddleX] = useState(GAME_WIDTH / 2 - 100 / 2);
   const [paddleWidth, setPaddleWidth] = useState(100);
-
-  // Balls state
-  const [balls, setBalls] = useState<Ball[]>([
-    {
-      x: GAME_WIDTH / 2 - BALL_SIZE / 2,
-      y: GAME_HEIGHT / 2,
-      dx: 4,
-      dy: -4,
-      stuckToPaddle: false,
-      metal: false,
-    },
-  ]);
-
-  // Bricks state
+  const [balls, setBalls] = useState<Ball[]>([]);
   const [bricks, setBricks] = useState<Brick[]>([]);
-
-  // Power-ups falling
+  const [obstacles, setObstacles] = useState<Obstacle[]>([]);
   const [powerUps, setPowerUps] = useState<PowerUp[]>([]);
-
-  // Game states
   const [gameOver, setGameOver] = useState(false);
+  const [gameWon, setGameWon] = useState(false);
   const [shieldActive, setShieldActive] = useState(false);
   const [stickyActive, setStickyActive] = useState(false);
   const [ballSpeedMultiplier, setBallSpeedMultiplier] = useState(1);
   const [coins, setCoins] = useState(0);
+  const [brickWidth, setBrickWidth] = useState(0);
+  const [bricksMovingDown, setBricksMovingDown] = useState(false);
+  const [shieldUsed, setShieldUsed] = useState(false);
 
   const animationFrameId = useRef<number | null>(null);
   const powerUpTimeouts = useRef<{ [key: string]: NodeJS.Timeout }>({});
+  const moveDownTimeout = useRef<NodeJS.Timeout | null>(null);
   const powerUpId = useRef(0);
+  const shieldActiveRef = useRef(shieldActive);
+  const levelConfig = LEVELS[Math.min(currentLevel, LEVELS.length - 1)];
 
-  // Init bricks on mount or restart
+  // Initialize game
   useEffect(() => {
     resetBricks();
     return () => {
       if (animationFrameId.current) cancelAnimationFrame(animationFrameId.current);
       Object.values(powerUpTimeouts.current).forEach(clearTimeout);
+      if (moveDownTimeout.current) clearTimeout(moveDownTimeout.current);
     };
-  }, []);
+  }, [currentLevel]);
+
+  // Update ref for shield active state
+  useEffect(() => {
+    shieldActiveRef.current = shieldActive;
+  }, [shieldActive]);
 
   // Game loop
   useEffect(() => {
@@ -106,11 +148,11 @@ export default function BrickBreakerGame({ onExit }: { onExit?: () => void }) {
       
       setBalls((prevBalls) => {
         let newBalls = [...prevBalls];
+        let shieldUsedThisFrame = false;
 
         // Move balls
         newBalls = newBalls.map((ball) => {
           if (ball.stuckToPaddle) {
-            // Keep ball on paddle center
             return {
               ...ball,
               x: paddleX + paddleWidth / 2 - BALL_SIZE / 2,
@@ -118,10 +160,10 @@ export default function BrickBreakerGame({ onExit }: { onExit?: () => void }) {
             };
           }
 
-          let newX = ball.x + ball.dx * ballSpeedMultiplier;
-          let newY = ball.y + ball.dy * ballSpeedMultiplier;
+          let newX = ball.x + ball.dx * ballSpeedMultiplier * levelConfig.ballSpeedMultiplier;
+          let newY = ball.y + ball.dy * ballSpeedMultiplier * levelConfig.ballSpeedMultiplier;
 
-          // Wall collisions left/right
+          // Wall collisions
           if (newX <= 0) {
             newX = 0;
             ball.dx = -ball.dx;
@@ -142,14 +184,12 @@ export default function BrickBreakerGame({ onExit }: { onExit?: () => void }) {
           const paddleLeft = paddleX;
           const paddleRight = paddleX + paddleWidth;
 
-          // Check if ball is colliding with paddle
           if (
             newY + BALL_SIZE >= paddleTop && 
             newY <= paddleBottom &&
             newX + BALL_SIZE >= paddleLeft && 
             newX <= paddleRight
           ) {
-            // Adjust ball to be exactly on top of paddle
             newY = paddleTop - BALL_SIZE;
             
             if (stickyActive) {
@@ -157,66 +197,125 @@ export default function BrickBreakerGame({ onExit }: { onExit?: () => void }) {
               ball.dx = 0;
               ball.dy = 0;
             } else {
-              // Calculate bounce angle based on hit position
               const hitPos = (newX + BALL_SIZE/2 - paddleLeft) / paddleWidth;
               const angle = (hitPos - 0.5) * Math.PI/2;
-              const speed = Math.hypot(ball.dx, ball.dy) || 4;
+              const speed = Math.hypot(ball.dx, ball.dy) || levelConfig.speed;
               ball.dx = speed * Math.sin(angle);
               ball.dy = -Math.abs(speed * Math.cos(angle));
             }
           }
 
-          // Brick collision
-          let hitBrick = false;
-          for (let i = 0; i < bricks.length; i++) {
-            const brick = bricks[i];
+          // Obstacle collision
+          let hitObstacle = false;
+          for (const obstacle of obstacles) {
             if (
-              brick.alive &&
-              newX + BALL_SIZE > brick.x &&
-              newX < brick.x + BRICK_WIDTH &&
-              newY + BALL_SIZE > brick.y &&
-              newY < brick.y + BRICK_HEIGHT
+              newX + BALL_SIZE > obstacle.x &&
+              newX < obstacle.x + obstacle.width &&
+              newY + BALL_SIZE > obstacle.y &&
+              newY < obstacle.y + obstacle.height
             ) {
-              hitBrick = true;
-
-              // If metal ball, it goes through but breaks brick, no bounce
-              if (!ball.metal) {
-                ball.dy = -ball.dy;
-              }
-
-              // Remove brick
-              removeBrick(i);
-
-              // Spawn power-up sometimes
-              if (Math.random() < 0.3) {
-                spawnPowerUp(brick.x + BRICK_WIDTH / 2, brick.y + BRICK_HEIGHT / 2);
-              }
+              hitObstacle = true;
               
-              // Add coins sometimes
-              if (Math.random() < 0.5) {
-                setCoins(c => c + 1);
-              }
+              // Determine which side was hit
+              const ballRight = newX + BALL_SIZE;
+              const ballBottom = newY + BALL_SIZE;
+              const obstacleRight = obstacle.x + obstacle.width;
+              const obstacleBottom = obstacle.y + obstacle.height;
               
+              const dx = obstacle.x - ballRight;
+              const dx2 = obstacleRight - newX;
+              const dy = obstacle.y - ballBottom;
+              const dy2 = obstacleBottom - newY;
+              
+              // Find the minimum overlap to determine side
+              const minOverlap = Math.min(Math.abs(dx), Math.abs(dx2), Math.abs(dy), Math.abs(dy2));
+              
+              if (minOverlap === Math.abs(dx)) {
+                // Left side
+                newX = obstacle.x - BALL_SIZE;
+                ball.dx = -Math.abs(ball.dx);
+              } else if (minOverlap === Math.abs(dx2)) {
+                // Right side
+                newX = obstacleRight;
+                ball.dx = Math.abs(ball.dx);
+              } else if (minOverlap === Math.abs(dy)) {
+                // Top side
+                newY = obstacle.y - BALL_SIZE;
+                ball.dy = -Math.abs(ball.dy);
+              } else {
+                // Bottom side
+                newY = obstacleBottom;
+                ball.dy = Math.abs(ball.dy);
+              }
               break;
             }
           }
 
-          // Shield bounce at the bottom
+          // Brick collision
+          if (!hitObstacle) {
+            for (let i = 0; i < bricks.length; i++) {
+              const brick = bricks[i];
+              if (
+                brick.alive &&
+                newX + BALL_SIZE > brick.x &&
+                newX < brick.x + brickWidth &&
+                newY + BALL_SIZE > brick.y &&
+                newY < brick.y + BRICK_HEIGHT
+              ) {
+                if (brick.unbreakable && !ball.metal) {
+                  // Bounce off unbreakable brick
+                  ball.dy = -ball.dy;
+                  break;
+                } else {
+                  // Breakable brick - reduce health
+                  const updatedBricks = [...bricks];
+                  updatedBricks[i] = {
+                    ...brick,
+                    health: brick.health - 1,
+                    alive: brick.health > 1
+                  };
+                  setBricks(updatedBricks);
+                  
+                  // Only bounce if not destroyed
+                  if (updatedBricks[i].alive) {
+                    if (!ball.metal) {
+                      ball.dy = -ball.dy;
+                    }
+                  } else {
+                    // Brick destroyed
+                    if (Math.random() < levelConfig.powerUpChance) {
+                      spawnPowerUp(brick.x + brickWidth / 2, brick.y + BRICK_HEIGHT / 2);
+                    }
+                    
+                    if (Math.random() < 0.5) {
+                      setCoins(c => c + 1);
+                    }
+                  }
+                  break;
+                }
+              }
+            }
+          }
+
+          // Shield bounce (one-time use)
           const shieldTop = GAME_HEIGHT - SHIELD_HEIGHT;
-          if (newY + BALL_SIZE >= shieldTop && shieldActive) {
-            // Bounce the ball off the shield
+          if (newY + BALL_SIZE >= shieldTop && shieldActiveRef.current && !shieldUsedThisFrame) {
             ball.dy = -Math.abs(ball.dy);
             newY = shieldTop - BALL_SIZE;
+            shieldUsedThisFrame = true;
+            setShieldActive(false);
+            setShieldUsed(true);
           }
           
-          // Ball falls below the game area - lose ball
+          // Ball falls below
           if (newY > GAME_HEIGHT) {
-            if (shieldActive) {
-              // If shield is active, bounce the ball
+            if (shieldActiveRef.current && !shieldUsedThisFrame) {
               ball.dy = -Math.abs(ball.dy);
               newY = GAME_HEIGHT - BALL_SIZE - 1;
+              shieldUsedThisFrame = true;
+              setShieldActive(false);
+              setShieldUsed(true);
             } else {
-              // Mark ball for removal
               return null;
             }
           }
@@ -224,7 +323,7 @@ export default function BrickBreakerGame({ onExit }: { onExit?: () => void }) {
           return { ...ball, x: newX, y: newY };
         }).filter(ball => ball !== null) as Ball[];
 
-        // If no balls left => game over
+        // Game over if no balls left
         if (newBalls.length === 0) {
           setGameOver(true);
           if (animationFrameId.current) {
@@ -236,13 +335,26 @@ export default function BrickBreakerGame({ onExit }: { onExit?: () => void }) {
         return newBalls;
       });
 
-      // Move power-ups down
+      // Move obstacles horizontally
+      setObstacles(prev => 
+        prev.map(obs => {
+          if (!obs.moving) return obs;
+          
+          let newX = obs.x + obs.speed;
+          if (newX <= 0 || newX + obs.width >= GAME_WIDTH) {
+            return {...obs, speed: -obs.speed};
+          }
+          return {...obs, x: newX};
+        })
+      );
+
+      // Move power-ups
       setPowerUps((prevPowerUps) => {
         let updated = prevPowerUps
           .map((pu) => ({ ...pu, y: pu.y + 3 }))
           .filter((pu) => pu.y < GAME_HEIGHT);
 
-        // Check paddle collect
+        // Collect power-ups
         updated.forEach((pu) => {
           const paddleTop = GAME_HEIGHT - PADDLE_Y_OFFSET - PADDLE_HEIGHT;
           if (
@@ -272,11 +384,149 @@ export default function BrickBreakerGame({ onExit }: { onExit?: () => void }) {
     paddleX,
     paddleWidth,
     bricks,
+    obstacles,
     shieldActive,
     stickyActive,
     ballSpeedMultiplier,
     gameOver,
+    brickWidth,
+    levelConfig
   ]);
+
+  // Schedule bricks to move down for certain levels
+  useEffect(() => {
+    if (levelConfig.moveDownInterval && !bricksMovingDown) {
+      setBricksMovingDown(true);
+      
+      moveDownTimeout.current = setTimeout(() => {
+        moveBricksDown();
+        setBricksMovingDown(false);
+      }, levelConfig.moveDownInterval);
+    }
+    
+    return () => {
+      if (moveDownTimeout.current) {
+        clearTimeout(moveDownTimeout.current);
+      }
+    };
+  }, [levelConfig, bricksMovingDown]);
+
+  // Move bricks down by one row
+  const moveBricksDown = () => {
+    setBricks(prev => {
+      const newBricks = [...prev];
+      let gameOver = false;
+      
+      for (let i = 0; i < newBricks.length; i++) {
+        newBricks[i].y += BRICK_HEIGHT + BRICK_MARGIN;
+        
+        // Check if brick has reached the paddle level
+        if (newBricks[i].y + BRICK_HEIGHT >= GAME_HEIGHT - PADDLE_Y_OFFSET - PADDLE_HEIGHT) {
+          gameOver = true;
+        }
+      }
+      
+      if (gameOver) {
+        setGameOver(true);
+      }
+      
+      return newBricks;
+    });
+    
+    // Also move obstacles down
+    setObstacles(prev => 
+      prev.map(obs => ({
+        ...obs,
+        y: obs.y + BRICK_HEIGHT + BRICK_MARGIN
+      }))
+    );
+  };
+
+  // Reset bricks for current level
+  function resetBricks() {
+    const { rows, cols, unbreakableRatio, obstacles: numObstacles, brickHealth } = levelConfig;
+    const newBrickWidth = (GAME_WIDTH - (cols + 1) * BRICK_MARGIN) / cols;
+    setBrickWidth(newBrickWidth);
+    
+    // Generate bricks
+    const tempBricks: Brick[] = [];
+    for (let row = 0; row < rows; row++) {
+      for (let col = 0; col < cols; col++) {
+        const unbreakable = Math.random() < unbreakableRatio;
+        tempBricks.push({
+          x: BRICK_MARGIN + col * (newBrickWidth + BRICK_MARGIN),
+          y: row * (BRICK_HEIGHT + BRICK_MARGIN) + 20,
+          alive: true,
+          unbreakable,
+          metal: false,
+          health: unbreakable ? 999 : brickHealth,
+          originalHealth: brickHealth
+        });
+      }
+    }
+    setBricks(tempBricks);
+    
+    // Generate obstacles
+    const tempObstacles: Obstacle[] = [];
+    for (let i = 0; i < numObstacles; i++) {
+      tempObstacles.push({
+        x: Math.random() * (GAME_WIDTH - 60),
+        y: Math.random() * (GAME_HEIGHT / 2),
+        width: 40 + Math.random() * 40,
+        height: 10,
+        moving: i % 2 === 0, // Every other obstacle moves
+        speed: (Math.random() * 2 + 1) * (Math.random() > 0.5 ? 1 : -1)
+      });
+    }
+    setObstacles(tempObstacles);
+    
+    // Reset balls
+    setBalls([
+      {
+        x: GAME_WIDTH / 2 - BALL_SIZE / 2,
+        y: GAME_HEIGHT / 2,
+        dx: levelConfig.speed,
+        dy: -levelConfig.speed,
+        stuckToPaddle: false,
+        metal: false,
+      },
+    ]);
+    
+    // Reset paddle
+    setPaddleX(GAME_WIDTH / 2 - 100 / 2);
+    setPaddleWidth(100);
+    
+    // Clear power-ups
+    setPowerUps([]);
+    setShieldActive(false);
+    setShieldUsed(false);
+    setStickyActive(false);
+    setBallSpeedMultiplier(1);
+    
+    // Clear timeouts
+    Object.values(powerUpTimeouts.current).forEach(clearTimeout);
+    powerUpTimeouts.current = {};
+    
+    if (moveDownTimeout.current) {
+      clearTimeout(moveDownTimeout.current);
+      moveDownTimeout.current = null;
+    }
+    setBricksMovingDown(false);
+  }
+
+  // Check level completion
+  useEffect(() => {
+    if (bricks.length > 0 && bricks.every(brick => !brick.alive || brick.unbreakable)) {
+      if (currentLevel < LEVELS.length - 1) {
+        // Go to next level
+        setCurrentLevel(prev => prev + 1);
+      } else {
+        // Game won!
+        setGameWon(true);
+        setGameOver(true);
+      }
+    }
+  }, [bricks]);
 
   // Paddle drag
   function onMove(evt: GestureResponderEvent) {
@@ -285,7 +535,7 @@ export default function BrickBreakerGame({ onExit }: { onExit?: () => void }) {
     if (x + paddleWidth > GAME_WIDTH) x = GAME_WIDTH - paddleWidth;
     setPaddleX(x);
 
-    // If sticky ball active and ball stuck, move ball with paddle
+    // Move sticky balls with paddle
     if (stickyActive) {
       setBalls((prev) =>
         prev.map((ball) => {
@@ -302,7 +552,7 @@ export default function BrickBreakerGame({ onExit }: { onExit?: () => void }) {
     }
   }
 
-  // Spawn power-up helper
+  // Spawn power-up
   function spawnPowerUp(x: number, y: number) {
     const types: PowerUpType[] = [
       'expand',
@@ -322,15 +572,6 @@ export default function BrickBreakerGame({ onExit }: { onExit?: () => void }) {
       type, 
       active: true 
     }]);
-  }
-
-  // Remove brick by index
-  function removeBrick(i: number) {
-    setBricks((prev) => {
-      const copy = [...prev];
-      copy[i] = { ...copy[i], alive: false };
-      return copy;
-    });
   }
 
   // Apply power-up effects
@@ -364,7 +605,6 @@ export default function BrickBreakerGame({ onExit }: { onExit?: () => void }) {
         break;
       case 'multiBall':
         setBalls((prev) => {
-          // Add 2 more balls
           const paddleCenter = paddleX + paddleWidth / 2;
           const ballY = GAME_HEIGHT - PADDLE_Y_OFFSET - PADDLE_HEIGHT - BALL_SIZE;
           
@@ -391,10 +631,10 @@ export default function BrickBreakerGame({ onExit }: { onExit?: () => void }) {
         break;
       case 'shield':
         setShieldActive(true);
+        setShieldUsed(false);
         break;
       case 'sticky':
         setStickyActive(true);
-        // Make all balls stuck to paddle
         setBalls((prev) =>
           prev.map((ball) => ({
             ...ball,
@@ -423,7 +663,7 @@ export default function BrickBreakerGame({ onExit }: { onExit?: () => void }) {
     }
   }
 
-  // Release sticky balls on tap
+  // Release sticky balls
   function releaseSticky() {
     if (stickyActive) {
       setStickyActive(false);
@@ -433,8 +673,8 @@ export default function BrickBreakerGame({ onExit }: { onExit?: () => void }) {
             return {
               ...ball,
               stuckToPaddle: false,
-              dx: 4 * (Math.random() > 0.5 ? 1 : -1),
-              dy: -4,
+              dx: levelConfig.speed * (Math.random() > 0.5 ? 1 : -1),
+              dy: -levelConfig.speed,
             };
           }
           return ball;
@@ -446,23 +686,10 @@ export default function BrickBreakerGame({ onExit }: { onExit?: () => void }) {
   // Restart game
   function restart() {
     setGameOver(false);
-    setShieldActive(false);
-    setStickyActive(false);
-    setBallSpeedMultiplier(1);
-    setPaddleWidth(100);
-    setPowerUps([]);
+    setGameWon(false);
+    setCurrentLevel(0);
     setCoins(0);
     resetBricks();
-    setBalls([
-      {
-        x: GAME_WIDTH / 2 - BALL_SIZE / 2,
-        y: GAME_HEIGHT / 2,
-        dx: 4,
-        dy: -4,
-        stuckToPaddle: false,
-        metal: false,
-      },
-    ]);
     
     if (animationFrameId.current) {
       cancelAnimationFrame(animationFrameId.current);
@@ -472,21 +699,6 @@ export default function BrickBreakerGame({ onExit }: { onExit?: () => void }) {
         animationFrameId.current = requestAnimationFrame(restart as FrameRequestCallback);
       }
     });
-  }
-
-  // Reset bricks helper
-  function resetBricks() {
-    const tempBricks: Brick[] = [];
-    for (let row = 0; row < BRICK_ROWS; row++) {
-      for (let col = 0; col < BRICK_COLS; col++) {
-        tempBricks.push({
-          x: BRICK_MARGIN + col * (BRICK_WIDTH + BRICK_MARGIN),
-          y: row * (BRICK_HEIGHT + BRICK_MARGIN) + 20,
-          alive: true,
-        });
-      }
-    }
-    setBricks(tempBricks);
   }
 
   const powerUpColors: Record<PowerUpType, string> = {
@@ -516,7 +728,11 @@ export default function BrickBreakerGame({ onExit }: { onExit?: () => void }) {
       <TouchableOpacity style={styles.exitButton} onPress={onExit}>
         <Text style={styles.exitText}>✕</Text>
       </TouchableOpacity>
-      <Text style={styles.coins}>Coins: {coins}</Text>
+      
+      <View style={styles.header}>
+        <Text style={styles.coins}>Coins: {coins}</Text>
+        <Text style={styles.level}>Level: {currentLevel + 1}/{LEVELS.length}</Text>
+      </View>
       
       <View
         style={[styles.gameArea, { width: GAME_WIDTH, height: GAME_HEIGHT }]}
@@ -563,6 +779,22 @@ export default function BrickBreakerGame({ onExit }: { onExit?: () => void }) {
           />
         ))}
 
+        {/* Obstacles */}
+        {obstacles.map((obs, i) => (
+          <View
+            key={i}
+            style={[
+              styles.obstacle,
+              {
+                left: obs.x,
+                top: obs.y,
+                width: obs.width,
+                height: obs.height,
+              }
+            ]}
+          />
+        ))}
+
         {/* Bricks */}
         {bricks.map(
           (brick, i) =>
@@ -574,9 +806,14 @@ export default function BrickBreakerGame({ onExit }: { onExit?: () => void }) {
                   {
                     left: brick.x,
                     top: brick.y,
-                    width: BRICK_WIDTH,
+                    width: brickWidth,
                     height: BRICK_HEIGHT,
-                    backgroundColor: `hsl(${Math.floor(i / BRICK_COLS) * 60},70%,50%)`
+                    backgroundColor: brick.unbreakable ? '#888' : 
+                      brick.health === 1 ? `hsl(${Math.floor(i / levelConfig.cols) * 60},70%,50%)` :
+                      brick.health === 2 ? `hsl(${Math.floor(i / levelConfig.cols) * 60},70%,40%)` :
+                      `hsl(${Math.floor(i / levelConfig.cols) * 60},70%,30%)`,
+                    borderColor: brick.unbreakable ? '#555' : '#000',
+                    borderWidth: 1
                   },
                 ]}
               />
@@ -605,8 +842,12 @@ export default function BrickBreakerGame({ onExit }: { onExit?: () => void }) {
 
       {gameOver && (
         <View style={styles.gameOverOverlay}>
-          <Text style={styles.gameOverText}>Game Over</Text>
+          <Text style={styles.gameOverText}>
+            {gameWon ? "You Win!" : "Game Over"}
+          </Text>
           <Text style={styles.coinsText}>Coins: {coins}</Text>
+          <Text style={styles.levelText}>Level: {currentLevel + 1}/{LEVELS.length}</Text>
+          
           <TouchableOpacity onPress={restart} style={styles.button}>
             <Text style={styles.buttonText}>Restart</Text>
           </TouchableOpacity>
@@ -632,6 +873,22 @@ const styles = StyleSheet.create({
     alignItems: 'center',
     paddingTop: 40,
   },
+  header: {
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    width: GAME_WIDTH,
+    marginBottom: 10,
+  },
+  coins: {
+    color: '#ff0',
+    fontWeight: 'bold',
+    fontSize: 16,
+  },
+  level: {
+    color: '#0ff',
+    fontWeight: 'bold',
+    fontSize: 16,
+  },
   gameArea: {
     backgroundColor: '#000',
     position: 'relative',
@@ -652,6 +909,11 @@ const styles = StyleSheet.create({
   },
   brick: {
     position: 'absolute',
+    borderRadius: 2,
+  },
+  obstacle: {
+    position: 'absolute',
+    backgroundColor: '#555',
     borderRadius: 3,
   },
   powerUp: {
@@ -661,7 +923,6 @@ const styles = StyleSheet.create({
     borderRadius: POWERUP_SIZE / 2,
     justifyContent: 'center',
     alignItems: 'center',
-    zIndex: 4,
   },
   powerUpText: {
     color: '#000',
@@ -685,6 +946,11 @@ const styles = StyleSheet.create({
   coinsText: {
     fontSize: 20,
     color: '#ff0',
+    marginBottom: 10,
+  },
+  levelText: {
+    fontSize: 18,
+    color: '#0ff',
     marginBottom: 20,
   },
   button: {
@@ -723,20 +989,11 @@ const styles = StyleSheet.create({
     borderRadius: 14,
     justifyContent: 'center',
     alignItems: 'center',
-    zIndex: 5,
   },
   exitText: {
     color: '#fff',
     fontSize: 20,
     lineHeight: 28,
-  },
-  coins: {
-    position: 'absolute',
-    top: 10,
-    left: 10,
-    color: '#ff0',
-    fontWeight: 'bold',
-    zIndex: 5,
   },
   shield: {
     position: 'absolute',
