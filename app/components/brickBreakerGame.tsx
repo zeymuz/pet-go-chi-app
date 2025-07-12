@@ -100,7 +100,7 @@ type Obstacle = {
   speed: number;
 };
 
-export default function BrickBreakerGame({ onExit }: { onExit?: () => void }) {
+export default function BrickBreakerGame({ onExit }: { onExit?: (coins: number) => void }) {
   // Game state
   const [currentLevel, setCurrentLevel] = useState(0);
   const [paddleX, setPaddleX] = useState(GAME_WIDTH / 2 - 100 / 2);
@@ -723,9 +723,13 @@ export default function BrickBreakerGame({ onExit }: { onExit?: () => void }) {
     metalBall: '⚙️'
   };
 
+  const handleExit = () => {
+    onExit && onExit(coins);
+  };
+
   return (
     <View style={styles.container}>
-      <TouchableOpacity style={styles.exitButton} onPress={onExit}>
+      <TouchableOpacity style={styles.exitButton} onPress={handleExit}>
         <Text style={styles.exitText}>✕</Text>
       </TouchableOpacity>
       
@@ -851,7 +855,7 @@ export default function BrickBreakerGame({ onExit }: { onExit?: () => void }) {
           <TouchableOpacity onPress={restart} style={styles.button}>
             <Text style={styles.buttonText}>Restart</Text>
           </TouchableOpacity>
-          <TouchableOpacity onPress={onExit} style={[styles.button, styles.exitBtn]}>
+          <TouchableOpacity onPress={handleExit} style={[styles.button, styles.exitBtn]}>
             <Text style={styles.buttonText}>Exit</Text>
           </TouchableOpacity>
         </View>
