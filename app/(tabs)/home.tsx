@@ -119,12 +119,12 @@ export default function HomeScreen() {
       onPress={() => equipOutfit(item.id)}
     >
       <Image 
-        source={{ uri: item.image }} 
-        style={styles.outfitImage} 
-        resizeMode="contain"
-      />
-      <Text style={styles.outfitName}>{item.name}</Text>
-    </TouchableOpacity>
+      source={item.image} 
+      style={styles.outfitImage} 
+      resizeMode="contain"
+    />
+    <Text style={styles.outfitName}>{item.name}</Text>
+  </TouchableOpacity>
   );
 
   const renderFoodItem = ({ item }: { item: any }) => (

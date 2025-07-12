@@ -1,6 +1,7 @@
-// PixelPet.tsx
+// components/PixelPet.tsx
 import React, { useEffect, useRef } from 'react';
-import { Animated, Easing, Image, StyleSheet, View } from 'react-native';
+import { Animated, Easing, Image, ImageSourcePropType, StyleSheet, View } from 'react-native';
+import { OUTFITS } from '../constants/pets';
 
 interface PixelPetProps {
   activeAction: string | null;
@@ -9,6 +10,13 @@ interface PixelPetProps {
 
 export default function PixelPet({ activeAction, equippedOutfits }: PixelPetProps) {
   const bounceAnim = useRef(new Animated.Value(0)).current;
+
+  // Move the function inside the component but before the return statement
+  const getOutfitSource = (outfitId: string | null): ImageSourcePropType | undefined => {
+    if (!outfitId) return undefined;
+    const outfit = OUTFITS.find(o => o.id === outfitId);
+    return outfit?.image;
+  };
 
   useEffect(() => {
     if (activeAction) {
@@ -37,34 +45,37 @@ export default function PixelPet({ activeAction, equippedOutfits }: PixelPetProp
           style={styles.petImage} 
         />
         
-        {/* Render equipped outfits */}
         {equippedOutfits.hat && (
           <Image 
-            source={{ uri: `../assets/images/outfits/${equippedOutfits.hat}.png` }}
+            source={getOutfitSource(equippedOutfits.hat)}
             style={[styles.outfitImage, styles.hat]}
           />
         )}
+        
         {equippedOutfits.jacket && (
           <Image 
-            source={{ uri: `../assets/images/outfits/${equippedOutfits.jacket}.png` }}
+            source={getOutfitSource(equippedOutfits.jacket)}
             style={[styles.outfitImage, styles.jacket]}
           />
         )}
+        
         {equippedOutfits.shirt && (
           <Image 
-            source={{ uri: `../assets/images/outfits/${equippedOutfits.shirt}.png` }}
+            source={getOutfitSource(equippedOutfits.shirt)}
             style={[styles.outfitImage, styles.shirt]}
           />
         )}
+        
         {equippedOutfits.pants && (
           <Image 
-            source={{ uri: `../assets/images/outfits/${equippedOutfits.pants}.png` }}
+            source={getOutfitSource(equippedOutfits.pants)}
             style={[styles.outfitImage, styles.pants]}
           />
         )}
+        
         {equippedOutfits.shoes && (
           <Image 
-            source={{ uri: `../assets/images/outfits/${equippedOutfits.shoes}.png` }}
+            source={getOutfitSource(equippedOutfits.shoes)}
             style={[styles.outfitImage, styles.shoes]}
           />
         )}

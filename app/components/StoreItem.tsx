@@ -8,7 +8,7 @@ interface StoreItemProps {
     id: string;
     name: string;
     price: number;
-    image: string;
+    image: any;
     owned: boolean;
     type: string;
     hungerRestore?: number;
@@ -28,7 +28,7 @@ export default function StoreItem({
 }: StoreItemProps) {
   return (
     <View style={styles.container}>
-      <Image source={{ uri: item.image }} style={styles.image} />
+     <Image source={item.image} style={styles.image} />
       <Text style={styles.name}>{item.name}</Text>
       <Text style={styles.price}>{item.price} coins</Text>
       {item.type === 'food' && item.hungerRestore && (

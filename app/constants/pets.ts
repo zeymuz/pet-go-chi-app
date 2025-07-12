@@ -7,7 +7,7 @@ const OUTFITS: Outfit[] = [
     name: 'Baseball Cap',
     price: 50,
     owned: false,
-    image: 'https://example.com/hat1.png',
+    image: require('../../assets/images/outfits/favicon.png'),
     type: 'hat',
   },
   {
