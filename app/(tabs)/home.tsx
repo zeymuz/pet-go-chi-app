@@ -1,24 +1,87 @@
 import { Ionicons } from '@expo/vector-icons';
 import { useNavigation } from '@react-navigation/native';
 import React, { useRef, useState } from 'react';
-import { Animated, Easing, FlatList, Image, ImageSourcePropType, StyleSheet, Text, TouchableOpacity, View } from 'react-native';
+import { Animated, Easing, FlatList, Image, StyleSheet, Text, TouchableOpacity, View } from 'react-native';
 import Button from '../components/Button';
 import PixelPet from '../components/PixelPet';
 import StatusBar from '../components/StatusBar';
 import COLORS from '../constants/colors';
 import usePet from '../hooks/usePet';
 import useStore from '../hooks/useStore';
+import { Outfit } from '../types/types';
 
 type OutfitType = 'hat' | 'jacket' | 'shirt' | 'pants' | 'shoes';
 
 interface OutfitItem {
   id: string;
   name: string;
-  image: ImageSourcePropType;
+  image: any;
   type: OutfitType;
   price: number;
   owned: boolean;
 }
+
+const OutfitItemComponent = ({
+  item,
+  equipped,
+  onEquip,
+}: {
+  item: Outfit;
+  equipped: boolean;
+  onEquip: () => void;
+}) => {
+  const [imageError, setImageError] = useState(false);
+
+  const imageSource = imageError
+    ? require('../../assets/images/adaptive-icon.png')
+    : typeof item.image === 'string'
+    ? { uri: item.image }
+    : item.image;
+
+  return (
+    <TouchableOpacity
+      style={[styles.outfitItem, equipped && styles.equippedOutfit]}
+      onPress={onEquip}
+    >
+      <View style={styles.outfitImageContainer}>
+        <Image
+          source={imageSource}
+          style={styles.outfitImage}
+          onError={() => setImageError(true)}
+        />
+      </View>
+      <Text style={styles.outfitName}>{item.name}</Text>
+    </TouchableOpacity>
+  );
+};
+
+const FoodItemComponent = ({
+  item,
+  onFeed,
+}: {
+  item: any;
+  onFeed: () => void;
+}) => {
+  const [imageError, setImageError] = useState(false);
+
+  const imageSource = imageError
+    ? require('../../assets/images/adaptive-icon.png')
+    : typeof item.image === 'string'
+    ? { uri: item.image }
+    : item.image;
+
+  return (
+    <TouchableOpacity style={styles.foodItem} onPress={onFeed}>
+      <Image
+        source={imageSource}
+        style={styles.foodImage}
+        onError={() => setImageError(true)}
+      />
+      <Text style={styles.foodName}>{item.name}</Text>
+      <Text style={styles.foodRestore}>Restores: {item.hungerRestore}%</Text>
+    </TouchableOpacity>
+  );
+};
 
 export default function HomeScreen() {
   const navigation = useNavigation();
@@ -58,7 +121,7 @@ export default function HomeScreen() {
   const handleAction = (action: string) => {
     setActiveAction(action);
     setTimeout(() => setActiveAction(null), 1000);
-    
+
     switch (action) {
       case 'feed':
         toggleFoodMenu();
@@ -83,7 +146,7 @@ export default function HomeScreen() {
   const toggleOutfitsMenu = () => {
     const toValue = showOutfits ? 0 : 1;
     setShowOutfits(!showOutfits);
-    
+
     Animated.parallel([
       Animated.timing(outfitsPosition, {
         toValue,
@@ -95,14 +158,14 @@ export default function HomeScreen() {
         toValue: showOutfits ? 1 : 0.5,
         duration: 300,
         useNativeDriver: true,
-      })
+      }),
     ]).start();
   };
 
   const toggleFoodMenu = () => {
     const toValue = showFood ? 0 : 1;
     setShowFood(!showFood);
-    
+
     Animated.parallel([
       Animated.timing(foodPosition, {
         toValue,
@@ -114,45 +177,26 @@ export default function HomeScreen() {
         toValue: showFood ? 1 : 0.5,
         duration: 300,
         useNativeDriver: true,
-      })
+      }),
     ]).start();
   };
 
   const renderOutfitItem = ({ item }: { item: OutfitItem }) => (
-    <TouchableOpacity
-      style={[
-        styles.outfitItem,
-        equippedOutfits[item.type] === item.id && styles.equippedOutfit
-      ]}
-      onPress={() => equipOutfit(item.id)}
-    >
-      <View style={styles.outfitImageContainer}>
-        <Image 
-          source={item.image} 
-          style={styles.outfitImage}
-          onError={(e) => console.log('Failed to load:', item.name)}
-        />
-      </View>
-      <Text style={styles.outfitName}>{item.name}</Text>
-    </TouchableOpacity>
+    <OutfitItemComponent
+      item={item}
+      equipped={equippedOutfits[item.type] === item.id}
+      onEquip={() => equipOutfit(item.id)}
+    />
   );
 
   const renderFoodItem = ({ item }: { item: any }) => (
-    <TouchableOpacity
-      style={styles.foodItem}
-      onPress={() => {
+    <FoodItemComponent
+      item={item}
+      onFeed={() => {
         feed(item);
         toggleFoodMenu();
       }}
-    >
-      <Image 
-        source={item.image} 
-        style={styles.foodImage} 
-        resizeMode="contain"
-      />
-      <Text style={styles.foodName}>{item.name}</Text>
-      <Text style={styles.foodRestore}>Restores: {item.hungerRestore}%</Text>
-    </TouchableOpacity>
+    />
   );
 
   return (
@@ -163,13 +207,10 @@ export default function HomeScreen() {
       </View>
 
       <View style={styles.petContainer}>
-        <PixelPet 
-          activeAction={activeAction} 
-          equippedOutfits={equippedOutfits}
-        />
+        <PixelPet activeAction={activeAction} equippedOutfits={equippedOutfits} />
       </View>
 
-      <StatusBar 
+      <StatusBar
         happiness={happiness}
         hunger={hunger}
         energy={energy}
@@ -179,63 +220,28 @@ export default function HomeScreen() {
 
       <Animated.View style={[styles.buttonsContainer, { opacity: buttonsOpacity }]}>
         <View style={styles.buttonRow}>
-          <Button 
-            icon="fast-food" 
-            text="Feed" 
-            onPress={() => handleAction('feed')} 
-            disabled={isSleeping || showFood}
-          />
-          <Button 
-            icon="game-controller" 
-            text="Play" 
-            onPress={() => handleAction('play')} 
-            disabled={isSleeping || energy < 15 || hunger > 85 || showFood}
-          />
+          <Button icon="fast-food" text="Feed" onPress={() => handleAction('feed')} disabled={isSleeping || showFood} />
+          <Button icon="game-controller" text="Play" onPress={() => handleAction('play')} disabled={isSleeping || energy < 15 || hunger > 85 || showFood} />
         </View>
         <View style={styles.buttonRow}>
-          <Button 
-            icon="moon" 
-            text={isSleeping ? "Sleeping..." : "Sleep"} 
-            onPress={() => handleAction('sleep')} 
-            disabled={isSleeping || showFood}
-          />
-          <Button 
-            icon="water" 
-            text="Clean" 
-            onPress={() => handleAction('clean')} 
-            disabled={!canClean || isSleeping || showFood}
-          />
+          <Button icon="moon" text={isSleeping ? "Sleeping..." : "Sleep"} onPress={() => handleAction('sleep')} disabled={isSleeping || showFood} />
+          <Button icon="water" text="Clean" onPress={() => handleAction('clean')} disabled={!canClean || isSleeping || showFood} />
         </View>
-        <TouchableOpacity 
-          style={styles.outfitsButton}
-          onPress={toggleOutfitsMenu}
-          disabled={isSleeping || showFood}
-        >
+        <TouchableOpacity style={styles.outfitsButton} onPress={toggleOutfitsMenu} disabled={isSleeping || showFood}>
           <Text style={styles.outfitsButtonText}>Outfits</Text>
-          <Ionicons 
-            name={showOutfits ? "chevron-up" : "chevron-down"} 
-            size={16} 
-            color="white" 
-            style={styles.outfitArrow}
-          />
+          <Ionicons name={showOutfits ? "chevron-up" : "chevron-down"} size={16} color="white" style={styles.outfitArrow} />
         </TouchableOpacity>
       </Animated.View>
 
-      <Animated.View style={[
-        styles.outfitsContainer, 
-        { 
-          transform: [{
-            translateY: outfitsPosition.interpolate({
-              inputRange: [0, 1],
-              outputRange: [300, 0]
-            })
-          }] 
-        }
-      ]}>
-        <TouchableOpacity 
-          style={styles.closeOutfitsButton}
-          onPress={toggleOutfitsMenu}
-        >
+      <Animated.View style={[styles.outfitsContainer, {
+        transform: [{
+          translateY: outfitsPosition.interpolate({
+            inputRange: [0, 1],
+            outputRange: [300, 0]
+          })
+        }]
+      }]}>
+        <TouchableOpacity style={styles.closeOutfitsButton} onPress={toggleOutfitsMenu}>
           <Ionicons name="chevron-up" size={24} color={COLORS.primary} />
         </TouchableOpacity>
         <FlatList
@@ -247,21 +253,15 @@ export default function HomeScreen() {
         />
       </Animated.View>
 
-      <Animated.View style={[
-        styles.foodContainer, 
-        { 
-          transform: [{
-            translateY: foodPosition.interpolate({
-              inputRange: [0, 1],
-              outputRange: [300, 0]
-            })
-          }] 
-        }
-      ]}>
-        <TouchableOpacity 
-          style={styles.closeFoodButton}
-          onPress={toggleFoodMenu}
-        >
+      <Animated.View style={[styles.foodContainer, {
+        transform: [{
+          translateY: foodPosition.interpolate({
+            inputRange: [0, 1],
+            outputRange: [300, 0]
+          })
+        }]
+      }]}>
+        <TouchableOpacity style={styles.closeFoodButton} onPress={toggleFoodMenu}>
           <Ionicons name="chevron-up" size={24} color={COLORS.primary} />
         </TouchableOpacity>
         <FlatList
@@ -277,10 +277,7 @@ export default function HomeScreen() {
         <View style={styles.sleepOverlay}>
           <Text style={styles.sleepText}>Your pet is sleeping...</Text>
           <Text style={styles.sleepText}>Energy: {Math.min(100, Math.floor(energy))}%</Text>
-          <TouchableOpacity 
-            style={styles.wakeUpButton}
-            onPress={wakeUp}
-          >
+          <TouchableOpacity style={styles.wakeUpButton} onPress={wakeUp}>
             <Text style={styles.wakeUpButtonText}>Wake Up</Text>
           </TouchableOpacity>
         </View>

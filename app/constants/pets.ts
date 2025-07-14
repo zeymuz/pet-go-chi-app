@@ -7,7 +7,7 @@ const OUTFITS: Outfit[] = [
     name: 'Baseball Cap',
     price: 50,
     owned: false,
-    image: require('../../assets/images/outfits/favicon.png'),
+    image: require('../../assets/images/favicon.png'),
     type: 'hat',
   },
   {
@@ -15,7 +15,7 @@ const OUTFITS: Outfit[] = [
     name: 'Wizard Hat',
     price: 100,
     owned: false,
-    image: 'https://example.com/hat2.png',
+    image: require('../../assets/images/adaptive-icon.png'),
     type: 'hat',
   },
   {
@@ -23,7 +23,7 @@ const OUTFITS: Outfit[] = [
     name: 'Cowboy Hat',
     price: 75,
     owned: false,
-    image: 'https://example.com/hat3.png',
+    image: require('../../assets/images/adaptive-icon.png'),
     type: 'hat',
   },
   {
@@ -31,7 +31,7 @@ const OUTFITS: Outfit[] = [
     name: 'Beanie',
     price: 40,
     owned: false,
-    image: 'https://example.com/hat4.png',
+    image: require('../../assets/images/adaptive-icon.png'),
     type: 'hat',
   },
   {
@@ -39,7 +39,7 @@ const OUTFITS: Outfit[] = [
     name: 'Crown',
     price: 200,
     owned: false,
-    image: 'https://example.com/hat5.png',
+    image: require('../../assets/images/adaptive-icon.png'),
     type: 'hat',
   },
   // Jackets
@@ -48,7 +48,7 @@ const OUTFITS: Outfit[] = [
     name: 'Denim Jacket',
     price: 150,
     owned: false,
-    image: 'https://example.com/jacket1.png',
+    image: require('../../assets/images/adaptive-icon.png'),
     type: 'jacket',
   },
   {
@@ -56,7 +56,7 @@ const OUTFITS: Outfit[] = [
     name: 'Leather Jacket',
     price: 250,
     owned: false,
-    image: 'https://example.com/jacket2.png',
+    image: require('../../assets/images/adaptive-icon.png'),
     type: 'jacket',
   },
   {
@@ -64,7 +64,7 @@ const OUTFITS: Outfit[] = [
     name: 'Hoodie',
     price: 120,
     owned: false,
-    image: 'https://example.com/jacket3.png',
+    image: require('../../assets/images/adaptive-icon.png'),
     type: 'jacket',
   },
   {
@@ -72,7 +72,7 @@ const OUTFITS: Outfit[] = [
     name: 'Bomber Jacket',
     price: 180,
     owned: false,
-    image: 'https://example.com/jacket4.png',
+    image: require('../../assets/images/adaptive-icon.png'),
     type: 'jacket',
   },
   {
@@ -80,7 +80,7 @@ const OUTFITS: Outfit[] = [
     name: 'Raincoat',
     price: 100,
     owned: false,
-    image: 'https://example.com/jacket5.png',
+    image: require('../../assets/images/adaptive-icon.png'),
     type: 'jacket',
   },
   // Shirts
@@ -89,7 +89,7 @@ const OUTFITS: Outfit[] = [
     name: 'T-Shirt',
     price: 30,
     owned: false,
-    image: 'https://example.com/shirt1.png',
+    image: require('../../assets/images/adaptive-icon.png'),
     type: 'shirt',
   },
   {
@@ -97,7 +97,7 @@ const OUTFITS: Outfit[] = [
     name: 'Button-Up',
     price: 60,
     owned: false,
-    image: 'https://example.com/shirt2.png',
+    image: require('../../assets/images/adaptive-icon.png'),
     type: 'shirt',
   },
   {
@@ -105,7 +105,7 @@ const OUTFITS: Outfit[] = [
     name: 'Tank Top',
     price: 25,
     owned: false,
-    image: 'https://example.com/shirt3.png',
+    image: require('../../assets/images/adaptive-icon.png'),
     type: 'shirt',
   },
   {
@@ -113,7 +113,7 @@ const OUTFITS: Outfit[] = [
     name: 'Sweater',
     price: 80,
     owned: false,
-    image: 'https://example.com/shirt4.png',
+    image: require('../../assets/images/adaptive-icon.png'),
     type: 'shirt',
   },
   {
@@ -121,7 +121,7 @@ const OUTFITS: Outfit[] = [
     name: 'Polo',
     price: 50,
     owned: false,
-    image: 'https://example.com/shirt5.png',
+    image: require('../../assets/images/adaptive-icon.png'),
     type: 'shirt',
   },
   // Pants
@@ -130,7 +130,7 @@ const OUTFITS: Outfit[] = [
     name: 'Jeans',
     price: 100,
     owned: false,
-    image: 'https://example.com/pants1.png',
+    image: require('../../assets/images/adaptive-icon.png'),
     type: 'pants',
   },
   {
@@ -138,7 +138,7 @@ const OUTFITS: Outfit[] = [
     name: 'Shorts',
     price: 60,
     owned: false,
-    image: 'https://example.com/pants2.png',
+    image: require('../../assets/images/adaptive-icon.png'),
     type: 'pants',
   },
   {
@@ -146,7 +146,7 @@ const OUTFITS: Outfit[] = [
     name: 'Sweatpants',
     price: 70,
     owned: false,
-    image: 'https://example.com/pants3.png',
+    image: require('../../assets/images/adaptive-icon.png'),
     type: 'pants',
   },
   {
@@ -154,7 +154,7 @@ const OUTFITS: Outfit[] = [
     name: 'Cargo Pants',
     price: 90,
     owned: false,
-    image: 'https://example.com/pants4.png',
+    image: require('../../assets/images/adaptive-icon.png'),
     type: 'pants',
   },
   {
@@ -162,7 +162,7 @@ const OUTFITS: Outfit[] = [
     name: 'Dress Pants',
     price: 120,
     owned: false,
-    image: 'https://example.com/pants5.png',
+    image: require('../../assets/images/adaptive-icon.png'),
     type: 'pants',
   },
   // Shoes
@@ -171,7 +171,7 @@ const OUTFITS: Outfit[] = [
     name: 'Sneakers',
     price: 80,
     owned: false,
-    image: 'https://example.com/shoes1.png',
+    image: require('../../assets/images/adaptive-icon.png'),
     type: 'shoes',
   },
   {
@@ -179,7 +179,7 @@ const OUTFITS: Outfit[] = [
     name: 'Boots',
     price: 150,
     owned: false,
-    image: 'https://example.com/shoes2.png',
+    image: require('../../assets/images/adaptive-icon.png'),
     type: 'shoes',
   },
   {
@@ -187,7 +187,7 @@ const OUTFITS: Outfit[] = [
     name: 'Sandals',
     price: 50,
     owned: false,
-    image: 'https://example.com/shoes3.png',
+    image: require('../../assets/images/adaptive-icon.png'),
     type: 'shoes',
   },
   {
@@ -195,7 +195,7 @@ const OUTFITS: Outfit[] = [
     name: 'Dress Shoes',
     price: 120,
     owned: false,
-    image: 'https://example.com/shoes4.png',
+    image: require('../../assets/images/adaptive-icon.png'),
     type: 'shoes',
   },
   {
@@ -203,7 +203,7 @@ const OUTFITS: Outfit[] = [
     name: 'Flip Flops',
     price: 30,
     owned: false,
-    image: 'https://example.com/shoes5.png',
+    image: require('../../assets/images/adaptive-icon.png'),
     type: 'shoes',
   },
 ];
@@ -214,7 +214,7 @@ const FOODS: Food[] = [
     name: 'Apple',
     price: 10,
     owned: false,
-    image: 'https://example.com/apple.png',
+    image: require('../../assets/images/adaptive-icon.png'),
     type: 'food',
     hungerRestore: 15
   },
@@ -223,7 +223,7 @@ const FOODS: Food[] = [
     name: 'Pizza',
     price: 30,
     owned: false,
-    image: 'https://example.com/pizza.png',
+    image: require('../../assets/images/adaptive-icon.png'),
     type: 'food',
     hungerRestore: 40
   },
@@ -232,7 +232,7 @@ const FOODS: Food[] = [
     name: 'Burger',
     price: 25,
     owned: false,
-    image: 'https://example.com/burger.png',
+    image: require('../../assets/images/adaptive-icon.png'),
     type: 'food',
     hungerRestore: 35
   },
@@ -241,7 +241,7 @@ const FOODS: Food[] = [
     name: 'Salad',
     price: 15,
     owned: false,
-    image: 'https://example.com/salad.png',
+    image: require('../../assets/images/adaptive-icon.png'),
     type: 'food',
     hungerRestore: 20
   },
@@ -250,7 +250,7 @@ const FOODS: Food[] = [
     name: 'Steak',
     price: 50,
     owned: false,
-    image: 'https://example.com/steak.png',
+    image: require('../../assets/images/adaptive-icon.png'),
     type: 'food',
     hungerRestore: 60
   }

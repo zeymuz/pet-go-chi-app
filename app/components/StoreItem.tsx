@@ -1,4 +1,3 @@
-// StoreItem.tsx
 import React from 'react';
 import { Image, StyleSheet, Text, TouchableOpacity, View } from 'react-native';
 import COLORS from '../constants/colors';
@@ -26,9 +25,23 @@ export default function StoreItem({
   isEquipped,
   owned,
 }: StoreItemProps) {
+  const [imageError, setImageError] = React.useState(false);
+
+  // Fallback to default image if loading fails
+  const imageSource = imageError 
+    ? require('../../assets/images/adaptive-icon.png')
+    : typeof item.image === 'string' 
+      ? { uri: item.image } 
+      : item.image;
+
   return (
     <View style={styles.container}>
-     <Image source={item.image} style={styles.image} />
+      <Image 
+        source={imageSource}
+        style={styles.image}
+        onError={() => setImageError(true)}
+        defaultSource={require('../../assets/images/adaptive-icon.png')}
+      />
       <Text style={styles.name}>{item.name}</Text>
       <Text style={styles.price}>{item.price} coins</Text>
       {item.type === 'food' && item.hungerRestore && (
