@@ -11,6 +11,10 @@ export default function StoreScreen() {
   const { coins, outfits, foods, purchaseItem, equippedOutfits, equipOutfit } = useStore();
   const [displayCoins, setDisplayCoins] = useState(coins);
 
+//   useEffect(() => {
+//   AsyncStorage.clear();
+// }, []);
+
   useEffect(() => {
     if (isFocused) {
       setDisplayCoins(coins);

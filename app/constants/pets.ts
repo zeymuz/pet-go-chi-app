@@ -39,7 +39,7 @@ const OUTFITS: Outfit[] = [
     name: 'Crown',
     price: 200,
     owned: false,
-    image: require('../../assets/images/galaxy.gif'),
+    image: require('../../assets/images/favicon.png'),
     type: 'hat',
   },
   // Jackets
