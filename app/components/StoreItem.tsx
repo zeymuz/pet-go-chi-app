@@ -1,4 +1,4 @@
-import React from 'react';
+import React, { useState } from 'react';
 import { Image, StyleSheet, Text, TouchableOpacity, View } from 'react-native';
 import COLORS from '../constants/colors';
 
@@ -12,10 +12,11 @@ interface StoreItemProps {
     type: string;
     hungerRestore?: number;
   };
-  onPurchase: () => void;
+  onPurchase: (quantity: number) => void;
   onEquip: () => void;
   isEquipped: boolean;
   owned: boolean;
+  quantity: number;
 }
 
 export default function StoreItem({
@@ -24,8 +25,10 @@ export default function StoreItem({
   onEquip,
   isEquipped,
   owned,
+  quantity,
 }: StoreItemProps) {
   const [imageError, setImageError] = React.useState(false);
+  const [purchaseQuantity, setPurchaseQuantity] = useState(1);
 
   // Fallback to default image if loading fails
   const imageSource = imageError 
@@ -33,6 +36,18 @@ export default function StoreItem({
     : typeof item.image === 'string' 
       ? { uri: item.image } 
       : item.image;
+
+  const handleQuantityChange = (change: number) => {
+    const newQuantity = Math.max(1, purchaseQuantity + change);
+    setPurchaseQuantity(newQuantity);
+  };
+
+  const handleBuy = () => {
+    onPurchase(purchaseQuantity);
+    setPurchaseQuantity(1);
+  };
+
+  const totalPrice = item.price * purchaseQuantity;
 
   return (
     <View style={styles.container}>
@@ -48,12 +63,45 @@ export default function StoreItem({
         <Text style={styles.hungerRestore}>Restores: {item.hungerRestore}%</Text>
       )}
       
-      {!owned ? (
-        <TouchableOpacity style={styles.buyButton} onPress={onPurchase}>
+      {item.type === 'food' ? (
+        <View style={styles.quantityContainer}>
+          <TouchableOpacity 
+            style={styles.quantityButton} 
+            onPress={() => handleQuantityChange(-1)}
+            disabled={purchaseQuantity <= 1}
+          >
+            <Text style={styles.quantityText}>-</Text>
+          </TouchableOpacity>
+          
+          <Text style={styles.quantityDisplay}>{purchaseQuantity}</Text>
+          
+          <TouchableOpacity 
+            style={styles.quantityButton} 
+            onPress={() => handleQuantityChange(1)}
+          >
+            <Text style={styles.quantityText}>+</Text>
+          </TouchableOpacity>
+        </View>
+      ) : null}
+      
+      {item.type === 'food' ? (
+        <TouchableOpacity 
+          style={styles.buyButton} 
+          onPress={handleBuy}
+          disabled={totalPrice > (global as any).coins}
+        >
+          <Text style={styles.buttonText}>
+            Buy {purchaseQuantity} ({totalPrice} coins)
+          </Text>
+        </TouchableOpacity>
+      ) : !owned ? (
+        <TouchableOpacity 
+          style={styles.buyButton} 
+          onPress={() => onPurchase(1)}
+          disabled={item.price > (global as any).coins}
+        >
           <Text style={styles.buttonText}>Buy</Text>
         </TouchableOpacity>
-      ) : item.type === 'food' ? (
-        <Text style={styles.ownedText}>Owned</Text>
       ) : (
         <TouchableOpacity 
           style={[styles.equipButton, isEquipped && styles.equippedButton]} 
@@ -94,7 +142,39 @@ const styles = StyleSheet.create({
     fontFamily: 'PressStart2P',
     fontSize: 8,
     color: COLORS.text,
+    marginBottom: 4,
+  },
+  hungerRestore: {
+    fontFamily: 'PressStart2P',
+    fontSize: 8,
+    color: COLORS.hunger,
     marginBottom: 8,
+  },
+  quantityContainer: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'space-between',
+    width: '100%',
+    marginBottom: 8,
+  },
+  quantityButton: {
+    backgroundColor: COLORS.primary,
+    width: 30,
+    height: 30,
+    borderRadius: 15,
+    justifyContent: 'center',
+    alignItems: 'center',
+  },
+  quantityDisplay: {
+    fontFamily: 'PressStart2P',
+    fontSize: 12,
+    color: COLORS.text,
+    marginHorizontal: 8,
+  },
+  quantityText: {
+    fontFamily: 'PressStart2P',
+    fontSize: 12,
+    color: 'white',
   },
   buyButton: {
     backgroundColor: COLORS.primary,
@@ -117,17 +197,5 @@ const styles = StyleSheet.create({
     fontFamily: 'PressStart2P',
     fontSize: 8,
     color: '#fff',
-  },
-  hungerRestore: {
-    fontFamily: 'PressStart2P',
-    fontSize: 8,
-    color: COLORS.hunger,
-    marginBottom: 4,
-  },
-  ownedText: {
-    fontFamily: 'PressStart2P',
-    fontSize: 8,
-    color: '#4CAF50',
-    padding: 8,
   },
 });

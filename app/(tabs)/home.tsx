@@ -58,9 +58,11 @@ const OutfitItemComponent = ({
 const FoodItemComponent = ({
   item,
   onFeed,
+  quantity,
 }: {
   item: any;
   onFeed: () => void;
+  quantity: number;
 }) => {
   const [imageError, setImageError] = useState(false);
 
@@ -71,7 +73,11 @@ const FoodItemComponent = ({
     : item.image;
 
   return (
-    <TouchableOpacity style={styles.foodItem} onPress={onFeed}>
+    <TouchableOpacity 
+      style={[styles.foodItem, quantity === 0 && styles.disabledFoodItem]} 
+      onPress={onFeed} 
+      disabled={quantity === 0}
+    >
       <Image
         source={imageSource}
         style={styles.foodImage}
@@ -79,6 +85,7 @@ const FoodItemComponent = ({
       />
       <Text style={styles.foodName}>{item.name}</Text>
       <Text style={styles.foodRestore}>Restores: {item.hungerRestore}%</Text>
+      <Text style={styles.quantityText}>Qty: {quantity}</Text>
     </TouchableOpacity>
   );
 };
@@ -109,6 +116,7 @@ export default function HomeScreen() {
     equippedOutfits,
     equipOutfit,
     foods,
+    foodQuantities,
   } = useStore();
 
   const [activeAction, setActiveAction] = useState<string | null>(null);
@@ -181,6 +189,15 @@ export default function HomeScreen() {
     ]).start();
   };
 
+  // Group outfits by type
+  const groupedOutfits = outfits.reduce((acc: Record<string, Outfit[]>, outfit) => {
+    if (!acc[outfit.type]) {
+      acc[outfit.type] = [];
+    }
+    acc[outfit.type].push(outfit);
+    return acc;
+  }, {});
+
   const renderOutfitItem = ({ item }: { item: OutfitItem }) => (
     <OutfitItemComponent
       item={item}
@@ -194,8 +211,8 @@ export default function HomeScreen() {
       item={item}
       onFeed={() => {
         feed(item);
-        toggleFoodMenu();
       }}
+      quantity={foodQuantities[item.id] || 0}
     />
   );
 
@@ -244,11 +261,23 @@ export default function HomeScreen() {
         <TouchableOpacity style={styles.closeOutfitsButton} onPress={toggleOutfitsMenu}>
           <Ionicons name="chevron-up" size={24} color={COLORS.primary} />
         </TouchableOpacity>
+        
+        {/* Grouped outfits by type */}
         <FlatList
-          data={outfits.filter(o => o.owned) as OutfitItem[]}
-          numColumns={3}
-          keyExtractor={(item) => item.id}
-          renderItem={renderOutfitItem}
+          data={Object.entries(groupedOutfits)}
+          keyExtractor={([type]) => type}
+          renderItem={({ item: [type, outfits] }) => (
+            <View style={styles.outfitCategory}>
+              <Text style={styles.categoryTitle}>{type.toUpperCase()}</Text>
+              <FlatList
+                data={outfits.filter(o => o.owned) as OutfitItem[]}
+                numColumns={3}
+                keyExtractor={(item) => item.id}
+                renderItem={renderOutfitItem}
+                contentContainerStyle={styles.outfitsContent}
+              />
+            </View>
+          )}
           contentContainerStyle={styles.outfitsContent}
         />
       </Animated.View>
@@ -265,11 +294,17 @@ export default function HomeScreen() {
           <Ionicons name="chevron-up" size={24} color={COLORS.primary} />
         </TouchableOpacity>
         <FlatList
-          data={foods.filter(f => f.owned)}
+          data={foods.filter(f => foodQuantities[f.id] > 0)}
           numColumns={2}
           keyExtractor={(item) => item.id}
           renderItem={renderFoodItem}
           contentContainerStyle={styles.foodContent}
+          ListEmptyComponent={
+            <View style={styles.emptyFoodContainer}>
+              <Text style={styles.emptyFoodText}>No food available</Text>
+              <Text style={styles.emptyFoodSubtext}>Visit the store to buy food</Text>
+            </View>
+          }
         />
       </Animated.View>
 
@@ -354,6 +389,18 @@ const styles = StyleSheet.create({
     elevation: 10,
     zIndex: 2,
   },
+  outfitCategory: {
+    marginBottom: 15,
+  },
+  categoryTitle: {
+    fontFamily: 'PressStart2P',
+    fontSize: 12,
+    color: COLORS.primary,
+    marginBottom: 8,
+    paddingBottom: 4,
+    borderBottomWidth: 2,
+    borderBottomColor: COLORS.secondary,
+  },
   closeOutfitsButton: {
     alignSelf: 'center',
     marginBottom: 10,
@@ -419,13 +466,16 @@ const styles = StyleSheet.create({
   },
   foodItem: {
     width: '45%',
-    height: 120,
+    height: 140,
     margin: 8,
     alignItems: 'center',
     justifyContent: 'center',
     backgroundColor: COLORS.secondary,
     borderRadius: 8,
     padding: 10,
+  },
+  disabledFoodItem: {
+    opacity: 0.5,
   },
   foodImage: {
     width: 60,
@@ -443,6 +493,30 @@ const styles = StyleSheet.create({
     fontSize: 8,
     color: COLORS.hunger,
     textAlign: 'center',
+  },
+  quantityText: {
+    fontFamily: 'PressStart2P',
+    fontSize: 8,
+    color: COLORS.primary,
+    textAlign: 'center',
+    marginTop: 4,
+  },
+  emptyFoodContainer: {
+    flex: 1,
+    justifyContent: 'center',
+    alignItems: 'center',
+    padding: 20,
+  },
+  emptyFoodText: {
+    fontFamily: 'PressStart2P',
+    fontSize: 14,
+    color: COLORS.text,
+    marginBottom: 8,
+  },
+  emptyFoodSubtext: {
+    fontFamily: 'PressStart2P',
+    fontSize: 10,
+    color: COLORS.text,
   },
   sleepOverlay: {
     position: 'absolute',

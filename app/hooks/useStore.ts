@@ -3,13 +3,17 @@ import { useEffect, useState } from 'react';
 import { FOODS, OUTFITS } from '../constants/pets';
 
 const STORAGE_KEY = 'pet_store_data';
-const STORE_VERSION = 1; // ← bump this to reset data when you add new images or items
+const STORE_VERSION = 3; // Updated version to support new food system
 
 // Global store state
 let globalStore = {
   coins: 100,
   outfits: OUTFITS,
   foods: FOODS,
+  foodQuantities: FOODS.reduce((acc: Record<string, number>, food) => {
+    acc[food.id] = 0;
+    return acc;
+  }, {}),
   equippedOutfits: {
     hat: null,
     jacket: null,
@@ -44,7 +48,7 @@ const saveStore = async () => {
       const saved = JSON.parse(savedData);
 
       if (saved._version !== STORE_VERSION) {
-        console.log('Store version outdated. Clearing old data.');
+        console.log('Store version outdated. Resetting store data.');
         await AsyncStorage.removeItem(STORAGE_KEY);
         return;
       }
@@ -52,6 +56,7 @@ const saveStore = async () => {
       globalStore = {
         ...globalStore,
         coins: saved.coins ?? globalStore.coins,
+        foodQuantities: saved.foodQuantities ?? globalStore.foodQuantities,
         equippedOutfits: saved.equippedOutfits ?? globalStore.equippedOutfits,
         outfits: OUTFITS.map(defaultOutfit => {
           const savedOutfit = saved.outfits?.find((o: any) => o.id === defaultOutfit.id);
@@ -87,25 +92,31 @@ const useStore = () => {
     notifyListeners();
   };
 
-  const purchaseItem = (itemId: string) => {
+  const purchaseItem = (itemId: string, quantity: number = 1) => {
     updateStore(store => {
       const item = [...store.outfits, ...store.foods].find(o => o.id === itemId);
-      if (!item || item.owned || store.coins < item.price) return store;
+      if (!item || store.coins < item.price * quantity) return store;
 
-      const newCoins = store.coins - item.price;
-      console.log(`Purchasing item, coins: ${store.coins} -> ${newCoins}`);
+      const newCoins = store.coins - (item.price * quantity);
+      console.log(`Purchasing ${quantity} items, coins: ${store.coins} -> ${newCoins}`);
 
       if (item.type === 'food') {
+        const currentQuantity = store.foodQuantities[itemId] || 0;
         return {
           ...store,
           coins: newCoins,
-          foods: store.foods.map(f => f.id === itemId ? { ...f, owned: true } : f)
+          foodQuantities: {
+            ...store.foodQuantities,
+            [itemId]: currentQuantity + quantity
+          }
         };
       } else {
         return {
           ...store,
           coins: newCoins,
-          outfits: store.outfits.map(o => o.id === itemId ? { ...o, owned: true } : o)
+          outfits: store.outfits.map(o => 
+            o.id === itemId ? { ...o, owned: true } : o
+          )
         };
       }
     });
@@ -145,6 +156,7 @@ const useStore = () => {
     coins: state.coins,
     outfits: state.outfits,
     foods: state.foods,
+    foodQuantities: state.foodQuantities,
     equippedOutfits: state.equippedOutfits,
     purchaseItem,
     equipOutfit,
