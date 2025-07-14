@@ -15,7 +15,7 @@ const OUTFITS: Outfit[] = [
     name: 'Wizard Hat',
     price: 100,
     owned: false,
-    image: require('../../assets/images/adaptive-icon.png'),
+    image: require('../../assets/images/favicon.png'),
     type: 'hat',
   },
   {
@@ -23,7 +23,7 @@ const OUTFITS: Outfit[] = [
     name: 'Cowboy Hat',
     price: 75,
     owned: false,
-    image: require('../../assets/images/adaptive-icon.png'),
+    image: require('../../assets/images/favicon.png'),
     type: 'hat',
   },
   {
@@ -31,7 +31,7 @@ const OUTFITS: Outfit[] = [
     name: 'Beanie',
     price: 40,
     owned: false,
-    image: require('../../assets/images/adaptive-icon.png'),
+    image: require('../../assets/images/favicon.png'),
     type: 'hat',
   },
   {
@@ -39,7 +39,7 @@ const OUTFITS: Outfit[] = [
     name: 'Crown',
     price: 200,
     owned: false,
-    image: require('../../assets/images/adaptive-icon.png'),
+    image: require('../../assets/images/galaxy.gif'),
     type: 'hat',
   },
   // Jackets

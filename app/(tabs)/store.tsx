@@ -5,6 +5,7 @@ import StoreItem from '../components/StoreItem';
 import COLORS from '../constants/colors';
 import useStore from '../hooks/useStore';
 
+
 export default function StoreScreen() {
   const isFocused = useIsFocused();
   const { coins, outfits, foods, purchaseItem, equippedOutfits, equipOutfit } = useStore();
