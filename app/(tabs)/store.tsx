@@ -75,7 +75,7 @@ export default function StoreScreen() {
         data={section.data}
         keyExtractor={(item) => item.id}
         renderItem={section.renderItem}
-        numColumns={2}
+        numColumns={3}
         columnWrapperStyle={styles.columnWrapper}
         scrollEnabled={false}
       />
