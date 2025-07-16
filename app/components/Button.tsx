@@ -26,7 +26,7 @@ export default function Button({ icon, text, onPress, disabled = false }: Button
 
 const styles = StyleSheet.create({
   button: {
-    backgroundColor: COLORS.secondary,
+    backgroundColor: '#fff9b0',
     padding: 12,
     borderRadius: 8,
     alignItems: 'center',

@@ -324,7 +324,7 @@ export default function HomeScreen() {
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    backgroundColor: COLORS.background,
+    backgroundColor: '#40c4ff',
     padding: 16,
     paddingBottom: 20,
   },
@@ -360,7 +360,7 @@ const styles = StyleSheet.create({
     marginBottom: 12,
   },
   outfitsButton: {
-    backgroundColor: COLORS.primary,
+    backgroundColor: '#fff9b0',
     padding: 10,
     borderRadius: 8,
     alignItems: 'center',
@@ -371,7 +371,7 @@ const styles = StyleSheet.create({
   outfitsButtonText: {
     fontFamily: 'PressStart2P',
     fontSize: 12,
-    color: 'white',
+    color: '#292F36',
   },
   outfitArrow: {
     marginLeft: 8,

@@ -1,6 +1,6 @@
 import React from 'react';
 import { StyleSheet, Text, View } from 'react-native';
-import  COLORS  from '../constants/colors';
+import COLORS from '../constants/colors';
 
 interface StatusBarProps {
   happiness: number;
@@ -60,7 +60,7 @@ const styles = StyleSheet.create({
   container: {
     width: '100%',
     padding: 10,
-    backgroundColor: COLORS.secondary,
+    backgroundColor: '#fff9b0',
     borderRadius: 8,
   },
   barContainer: {
