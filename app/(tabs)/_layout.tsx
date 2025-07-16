@@ -8,13 +8,13 @@ export default function TabLayout() {
       screenOptions={{
         tabBarActiveTintColor: COLORS.primary,
         tabBarStyle: {
-          backgroundColor: '#fff',
+          backgroundColor: '#ffe3d7',
           borderTopWidth: 0,
           elevation: 0,
         },
         // 👇 Add these for the header (top bar)
         headerStyle: {
-          backgroundColor: COLORS.primary, // Your desired header color
+          backgroundColor: '#ffe3d7', // Your desired header color
         },
         headerTintColor: '#fff', // Text & icons color (e.g., back button)
         headerTitleStyle: {
