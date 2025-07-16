@@ -375,6 +375,7 @@ const styles = StyleSheet.create({
   },
   outfitArrow: {
     marginLeft: 8,
+    color: '#292F36',
   },
   outfitsContainer: {
     position: 'absolute',
