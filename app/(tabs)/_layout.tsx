@@ -19,7 +19,9 @@ export default function TabLayout() {
         headerTintColor: '#FF6B6B', // Text & icons color (e.g., back button)
         headerTitleStyle: {
           fontWeight: 'bold',
-          fontFamily: 'PressStart2P', // Optional: Customize title font
+          fontFamily: 'PressStart2P', 
+          fontSize: 38,
+          marginBottom: 8,
         },
       }}
     >
