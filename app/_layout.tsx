@@ -22,7 +22,7 @@ export default function RootLayout() {
 
   return (
     <View style={styles.container}>
-      <StatusBar style="auto" />
+      <StatusBar style="dark" />
       <Stack screenOptions={{ headerShown: false }} />
     </View>
   );
