@@ -115,6 +115,7 @@ const styles = StyleSheet.create({
   },
   header: {
     marginBottom: 20,
+  
   },
   title: {
     fontFamily: 'PressStart2P',

@@ -12,33 +12,51 @@ export default function TabLayout() {
           borderTopWidth: 0,
           elevation: 0,
         },
+        // 👇 Add these for the header (top bar)
+        headerStyle: {
+          backgroundColor: COLORS.primary, // Your desired header color
+        },
+        headerTintColor: '#fff', // Text & icons color (e.g., back button)
+        headerTitleStyle: {
+          fontWeight: 'bold',
+          fontFamily: 'PressStart2P', // Optional: Customize title font
+        },
       }}
     >
       <Tabs.Screen
-        name="home"
-        options={{
-          title: 'Pet',
-          tabBarIcon: ({ color }) => (
-            <Ionicons name="paw" size={24} color={color} />
-          ),
-        }}
-      />
+  name="home"
+  options={{
+    title: 'Pet',
+    tabBarIcon: ({ color }) => <Ionicons name="paw" size={24} color={color} />,
+    // 👇 Override label style for this tab only
+    tabBarLabelStyle: {
+      fontFamily: 'PressStart2P',
+      fontSize: 14,
+    },
+  }}
+/>
       <Tabs.Screen
         name="store"
         options={{
           title: 'Store',
-          tabBarIcon: ({ color }) => (
-            <Ionicons name="cart" size={24} color={color} />
-          ),
+          tabBarIcon: ({ color }) => <Ionicons name="cart" size={24} color={color} />,
+           tabBarLabelStyle: {
+              fontFamily: 'PressStart2P',
+              fontSize: 14,
+            }
+          ,
         }}
       />
       <Tabs.Screen
         name="games"
         options={{
           title: 'Games',
-          tabBarIcon: ({ color }) => (
-            <Ionicons name="game-controller" size={24} color={color} />
-          ),
+          tabBarIcon: ({ color }) => <Ionicons name="game-controller" size={24} color={color} />,
+           tabBarLabelStyle: {
+            fontFamily: 'PressStart2P',
+            fontSize: 14,
+          },
+          
         }}
       />
     </Tabs>
