@@ -9,16 +9,40 @@ import COLORS from '../constants/colors';
 import usePet from '../hooks/usePet';
 import useStore from '../hooks/useStore';
 
+// Import game images (create these files in your assets folder)
+const gameImages = {
+  flappy: require('../../assets/images/favicon.png'),
+  jumper: require('../../assets/images/favicon.png'),
+  memory: require('../../assets/images/favicon.png'),
+  brick: require('../../assets/images/favicon.png'),
+};
+
 export default function GamesScreen() {
   const [activeGame, setActiveGame] = useState<string | null>(null);
   const { energy, play, hunger } = usePet();
   const { earnCoins } = useStore();
 
   const games = [
-    { id: 'flappy', name: 'Flappy Pet', icon: 'game-controller' },
-    { id: 'jumper', name: 'Platform Jumper', icon: 'game-controller' },
-    { id: 'memory', name: 'Memory Game', icon: 'game-controller' },
-    { id: 'brick', name: 'Brick Breaker', icon: 'game-controller' },
+    { 
+      id: 'flappy', 
+      name: 'Flappy Pet', 
+      image: gameImages.flappy 
+    },
+    { 
+      id: 'jumper', 
+      name: 'Platform Jumper', 
+      image: gameImages.jumper 
+    },
+    { 
+      id: 'memory', 
+      name: 'Memory Game', 
+      image: gameImages.memory 
+    },
+    { 
+      id: 'brick', 
+      name: 'Brick Breaker', 
+      image: gameImages.brick 
+    },
   ];
 
   const handleGameStart = (gameId: string) => {
@@ -60,7 +84,7 @@ export default function GamesScreen() {
             {games.map((game) => (
               <GameButton
                 key={game.id}
-                icon={game.icon}
+                image={game.image}
                 text={game.name}
                 onPress={() => handleGameStart(game.id)}
               />

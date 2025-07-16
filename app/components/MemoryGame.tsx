@@ -250,7 +250,7 @@ const styles = StyleSheet.create({
     fontSize: 20,
     color: COLORS.primary,
     textAlign: 'center',
-    marginTop: 20,
+    marginTop: 5,
     marginBottom: 5,
   },
   stats: {
