@@ -114,14 +114,15 @@ const styles = StyleSheet.create({
   },
   sectionHeader: {
     fontFamily: 'PressStart2P',
-    fontSize: 14,
-    color: COLORS.primary,
+    fontSize: 20,
+    color: COLORS.text,
     backgroundColor: '#40c4ff',
     paddingVertical: 8,
     paddingHorizontal: 12,
     marginTop: 15,
     borderBottomWidth: 2,
     borderBottomColor: '#fff9b0',
+    
   },
   columnWrapper: {
     justifyContent: 'space-between',

@@ -1,5 +1,5 @@
 import React from 'react';
-import { StyleSheet, Text, View } from 'react-native';
+import { Platform, StyleSheet, Text, View } from 'react-native';
 import COLORS from '../constants/colors';
 
 interface StatusBarProps {
@@ -62,6 +62,14 @@ const styles = StyleSheet.create({
     padding: 10,
     backgroundColor: '#fff9b0',
     borderRadius: 8,
+    ...Platform.select({
+          ios: {
+            shadowColor: '#000',
+            shadowOffset: { width: 0, height: 2 },
+            shadowOpacity: 0.25,
+            shadowRadius: 3.84,
+          }
+        }),
   },
   barContainer: {
     flexDirection: 'row',

@@ -1,7 +1,7 @@
 import { Ionicons } from '@expo/vector-icons';
 import { useNavigation } from '@react-navigation/native';
 import React, { useRef, useState } from 'react';
-import { Animated, Easing, FlatList, Image, StyleSheet, Text, TouchableOpacity, View } from 'react-native';
+import { Animated, Easing, FlatList, Image, Platform, StyleSheet, Text, TouchableOpacity, View } from 'react-native';
 import Button from '../components/Button';
 import PixelPet from '../components/PixelPet';
 import StatusBar from '../components/StatusBar';
@@ -367,6 +367,14 @@ const styles = StyleSheet.create({
     marginTop: 10,
     flexDirection: 'row',
     justifyContent: 'center',
+    ...Platform.select({
+          ios: {
+            shadowColor: '#000',
+            shadowOffset: { width: 0, height: 2 },
+            shadowOpacity: 0.25,
+            shadowRadius: 3.84,
+          }
+        }),
   },
   outfitsButtonText: {
     fontFamily: 'PressStart2P',

@@ -1,7 +1,7 @@
 // Button.tsx
 import { Ionicons } from '@expo/vector-icons';
 import React from 'react';
-import { StyleSheet, Text, TouchableOpacity } from 'react-native';
+import { Platform, StyleSheet, Text, TouchableOpacity } from 'react-native';
 import COLORS from '../constants/colors';
 
 interface ButtonProps {
@@ -33,6 +33,14 @@ const styles = StyleSheet.create({
     justifyContent: 'center',
     width: 120,
     height: 60,
+    ...Platform.select({
+          ios: {
+            shadowColor: '#000',
+            shadowOffset: { width: 0, height: 2 },
+            shadowOpacity: 0.25,
+            shadowRadius: 3.84,
+          }
+        }),
   },
   disabledButton: {
     backgroundColor: '#e0e0e0',

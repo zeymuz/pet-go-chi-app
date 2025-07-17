@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { Image, StyleSheet, Text, TouchableOpacity, View } from 'react-native';
+import { Image, Platform, StyleSheet, Text, TouchableOpacity, View } from 'react-native';
 import COLORS from '../constants/colors';
 
 interface StoreItemProps {
@@ -117,13 +117,21 @@ export default function StoreItem({
 }
 
 const styles = StyleSheet.create({
-  container: {
-    backgroundColor: COLORS.secondary,
+    container: {
+    backgroundColor: '#fff9b0',
     borderRadius: 8,
     padding: 6,
     margin: 12,
     width: 100,
     alignItems: 'center',
+    ...Platform.select({
+      ios: {
+        shadowColor: '#000',
+        shadowOffset: { width: 0, height: 2 },
+        shadowOpacity: 0.25,
+        shadowRadius: 3.84,
+      }
+    }),
   },
   image: {
     width: 85,
@@ -148,7 +156,7 @@ const styles = StyleSheet.create({
     fontFamily: 'PressStart2P',
     fontSize: 8,
     color: COLORS.hunger,
-    marginBottom: 0,
+    marginBottom: 5,
   },
   quantityContainer: {
     flexDirection: 'row',
@@ -175,6 +183,8 @@ const styles = StyleSheet.create({
     fontFamily: 'PressStart2P',
     fontSize: 12,
     color: 'white',
+    
+      
   },
   buyButton: {
     backgroundColor: COLORS.primary,
