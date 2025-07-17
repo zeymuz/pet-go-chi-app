@@ -1080,22 +1080,23 @@ const styles = StyleSheet.create({
   },
   score: {
     fontSize: 18,
-    fontWeight: 'bold',
     color: '#fff',
+    fontFamily: 'PressStart2P',
   },
   highScore: {
     fontSize: 16,
     color: '#fff',
+    fontFamily: 'PressStart2P',
   },
   coins: {
     fontSize: 16,
     color: 'gold',
-    fontWeight: 'bold',
+    fontFamily: 'PressStart2P',
   },
   totalCoins: {
     fontSize: 16,
     color: '#ff9900',
-    fontWeight: 'bold',
+    fontFamily: 'PressStart2P',
     marginTop: 5,
   },
   monsterWarning: {
@@ -1103,6 +1104,7 @@ const styles = StyleSheet.create({
     color: '#ff0000',
     marginVertical: 10,
     fontStyle: 'italic',
+    fontFamily: 'PressStart2P',
   },
   overlay: {
     position: 'absolute',
@@ -1118,10 +1120,10 @@ const styles = StyleSheet.create({
   },
   title: {
     fontSize: 36,
-    fontWeight: 'bold',
     color: '#fff',
     marginBottom: 20,
     textAlign: 'center',
+    fontFamily: 'PressStart2P',
   },
   instructions: {
     fontSize: 16,
@@ -1129,6 +1131,7 @@ const styles = StyleSheet.create({
     marginBottom: 40,
     textAlign: 'center',
     lineHeight: 24,
+    fontFamily: 'PressStart2P',
   },
   button: {
     backgroundColor: '#4CAF50',
@@ -1139,7 +1142,7 @@ const styles = StyleSheet.create({
   buttonText: {
     fontSize: 20,
     color: '#fff',
-    fontWeight: 'bold',
+    fontFamily: 'PressStart2P',
   },
   exitButton: {
     position: 'absolute',
@@ -1157,9 +1160,8 @@ const styles = StyleSheet.create({
     color: 'white',
     fontSize: 24,
     lineHeight: 24,
-    fontWeight: 'bold',
+    fontFamily: 'PressStart2P',
   },
-  // New style to contain all GIFs
   gifContainer: {
     ...StyleSheet.absoluteFillObject,
     zIndex: 1,
