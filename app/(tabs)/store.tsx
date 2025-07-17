@@ -121,7 +121,7 @@ const styles = StyleSheet.create({
     paddingHorizontal: 12,
     marginTop: 15,
     borderBottomWidth: 2,
-    borderBottomColor: COLORS.secondary,
+    borderBottomColor: '#fff9b0',
   },
   columnWrapper: {
     justifyContent: 'space-between',
