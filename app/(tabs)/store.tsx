@@ -90,7 +90,7 @@ export default function StoreScreen() {
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    backgroundColor: COLORS.background,
+    backgroundColor: '#40c4ff',
     padding: 16,
   },
   header: {
