@@ -391,7 +391,7 @@ const styles = StyleSheet.create({
     left: 0,
     right: 0,
     height: 300,
-    backgroundColor: 'white',
+    backgroundColor: '#ffe3d7',
     borderTopLeftRadius: 20,
     borderTopRightRadius: 20,
     padding: 20,
@@ -408,7 +408,7 @@ const styles = StyleSheet.create({
     marginBottom: 8,
     paddingBottom: 4,
     borderBottomWidth: 2,
-    borderBottomColor: COLORS.secondary,
+    borderBottomColor: '#40c4ff',
   },
   closeOutfitsButton: {
     alignSelf: 'center',
@@ -424,9 +424,17 @@ const styles = StyleSheet.create({
     margin: 5,
     alignItems: 'center',
     justifyContent: 'center',
-    backgroundColor: COLORS.secondary,
+    backgroundColor: '#40c4ff',
     borderRadius: 10,
     padding: 8,
+    ...Platform.select({
+          ios: {
+            shadowColor: '#000',
+            shadowOffset: { width: 0, height: 2 },
+            shadowOpacity: 0.25,
+            shadowRadius: 3.84,
+          }
+        }),
   },
   outfitImageContainer: {
     width: 60,
@@ -458,7 +466,7 @@ const styles = StyleSheet.create({
     left: 0,
     right: 0,
     height: 300,
-    backgroundColor: 'white',
+    backgroundColor: '#ffe3d7',
     borderTopLeftRadius: 20,
     borderTopRightRadius: 20,
     padding: 20,
@@ -479,9 +487,17 @@ const styles = StyleSheet.create({
     margin: 8,
     alignItems: 'center',
     justifyContent: 'center',
-    backgroundColor: COLORS.secondary,
+    backgroundColor: '#40c4ff',
     borderRadius: 8,
     padding: 10,
+    ...Platform.select({
+          ios: {
+            shadowColor: '#000',
+            shadowOffset: { width: 0, height: 2 },
+            shadowOpacity: 0.25,
+            shadowRadius: 3.84,
+          }
+        }),
   },
   disabledFoodItem: {
     opacity: 0.5,
@@ -500,7 +516,7 @@ const styles = StyleSheet.create({
   foodRestore: {
     fontFamily: 'PressStart2P',
     fontSize: 8,
-    color: COLORS.hunger,
+    color: 'yellow',
     textAlign: 'center',
   },
   quantityText: {
