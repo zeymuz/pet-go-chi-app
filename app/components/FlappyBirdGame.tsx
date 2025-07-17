@@ -1,5 +1,5 @@
 import React, { useEffect, useRef, useState } from 'react';
-import { Dimensions, Image, StyleSheet, Text, TouchableOpacity, View } from 'react-native';
+import { Dimensions, Image, Platform, StyleSheet, Text, TouchableOpacity, View } from 'react-native';
 
 const { width, height } = Dimensions.get('window');
 const BIRD_WIDTH = 40;
@@ -222,6 +222,14 @@ const styles = StyleSheet.create({
   container: {
     flex: 1,
     backgroundColor: '#70c5ce',
+    ...Platform.select({
+      ios: {
+        shadowColor: '#000',
+        shadowOffset: { width: 0, height: 2 },
+        shadowOpacity: 0.25,
+        shadowRadius: 3.84,
+      }
+    }),
   },
   closeButton: {
     position: 'absolute',
@@ -238,7 +246,7 @@ const styles = StyleSheet.create({
   closeButtonText: {
     fontSize: 16,
     color: '#fff',
-    fontWeight: 'bold',
+    fontFamily: 'PressStart2P',
   },
   score: {
     position: 'absolute',
@@ -247,7 +255,7 @@ const styles = StyleSheet.create({
     zIndex: 10,
     fontSize: 20,
     color: '#fff',
-    fontWeight: 'bold',
+    fontFamily: 'PressStart2P',
   },
   coins: {
     position: 'absolute',
@@ -256,7 +264,7 @@ const styles = StyleSheet.create({
     zIndex: 10,
     fontSize: 20,
     color: 'gold',
-    fontWeight: 'bold',
+    fontFamily: 'PressStart2P',
   },
   startContainer: {
     position: 'absolute',
@@ -269,11 +277,52 @@ const styles = StyleSheet.create({
   startText: {
     fontSize: 24,
     color: '#fff',
-    fontWeight: 'bold',
+    fontFamily: 'PressStart2P',
     backgroundColor: 'rgba(0, 0, 0, 0.5)',
     padding: 20,
     borderRadius: 10,
   },
+  gameOverContainer: {
+    position: 'absolute',
+    top: '30%',
+    left: '10%',
+    right: '10%',
+    backgroundColor: 'rgba(0, 0, 0, 0.8)',
+    padding: 20,
+    borderRadius: 10,
+    alignItems: 'center',
+    zIndex: 20,
+  },
+  gameOverText: {
+    fontSize: 24,
+    color: '#fff',
+    marginBottom: 10,
+    fontFamily: 'PressStart2P',
+  },
+  finalScore: {
+    fontSize: 20,
+    color: '#fff',
+    marginBottom: 10,
+    fontFamily: 'PressStart2P',
+  },
+  coinsEarned: {
+    fontSize: 18,
+    color: 'gold',
+    marginBottom: 20,
+    fontFamily: 'PressStart2P',
+  },
+  restartButtonText: {
+    fontSize: 18,
+    color: '#fff',
+    fontFamily: 'PressStart2P',
+  },
+  exitButtonText: {
+    fontSize: 18,
+    top: 7,
+    color: '#fff',
+    fontFamily: 'PressStart2P',
+  },
+  // ... rest of your styles remain the same
   gameArea: {
     flex: 1,
     width: '100%',
@@ -307,35 +356,6 @@ const styles = StyleSheet.create({
     borderTopWidth: 5,
     borderColor: '#5a9022',
   },
-  gameOverContainer: {
-    position: 'absolute',
-    top: '30%',
-    left: '10%',
-    right: '10%',
-    backgroundColor: 'rgba(0, 0, 0, 0.8)',
-    padding: 20,
-    borderRadius: 10,
-    alignItems: 'center',
-    zIndex: 20,
-  },
-  gameOverText: {
-    fontSize: 24,
-    color: '#fff',
-    marginBottom: 10,
-    fontWeight: 'bold',
-  },
-  finalScore: {
-    fontSize: 20,
-    color: '#fff',
-    marginBottom: 10,
-    fontWeight: 'bold',
-  },
-  coinsEarned: {
-    fontSize: 18,
-    color: 'gold',
-    marginBottom: 20,
-    fontWeight: 'bold',
-  },
   buttonRow: {
     flexDirection: 'row',
     justifyContent: 'space-between',
@@ -356,15 +376,5 @@ const styles = StyleSheet.create({
     flex: 1,
     marginLeft: 10,
     alignItems: 'center',
-  },
-  restartButtonText: {
-    fontSize: 18,
-    color: '#fff',
-    fontWeight: 'bold',
-  },
-  exitButtonText: {
-    fontSize: 18,
-    color: '#fff',
-    fontWeight: 'bold',
   },
 });
