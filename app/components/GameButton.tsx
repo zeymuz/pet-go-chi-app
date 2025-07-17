@@ -1,5 +1,5 @@
 import React from 'react';
-import { Image, StyleSheet, Text, TouchableOpacity } from 'react-native';
+import { Image, Platform, StyleSheet, Text, TouchableOpacity } from 'react-native';
 import COLORS from '../constants/colors';
 
 interface GameButtonProps {
@@ -23,7 +23,7 @@ export default function GameButton({ image, text, onPress }: GameButtonProps) {
 
 const styles = StyleSheet.create({
   button: {
-    backgroundColor: COLORS.secondary,
+    backgroundColor: '#fff9b0',
     padding: 20,
     borderRadius: 12,
     alignItems: 'center',
@@ -31,6 +31,14 @@ const styles = StyleSheet.create({
     marginBottom: 15,
     width: '80%',
     alignSelf: 'center',
+    ...Platform.select({
+              ios: {
+                shadowColor: '#000',
+                shadowOffset: { width: 0, height: 2 },
+                shadowOpacity: 0.25,
+                shadowRadius: 3.84,
+              }
+            }),
   },
   gameImage: {
     width: 80,
