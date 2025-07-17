@@ -116,7 +116,7 @@ const styles = StyleSheet.create({
     fontFamily: 'PressStart2P',
     fontSize: 14,
     color: COLORS.primary,
-    backgroundColor: COLORS.background,
+    backgroundColor: '#40c4ff',
     paddingVertical: 8,
     paddingHorizontal: 12,
     marginTop: 15,
