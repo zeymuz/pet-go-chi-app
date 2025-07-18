@@ -974,9 +974,11 @@ const styles = StyleSheet.create({
   container: {
     flex: 1,
     overflow: 'hidden',
+    
   },
   skyBackground: {
     backgroundColor: '#87CEEB',
+    
   },
   spaceBackground: {
     backgroundColor: '#000033',
@@ -1024,9 +1026,9 @@ const styles = StyleSheet.create({
   },
   galaxyContainer: {
     position: 'absolute',
-    left: screenWidth / 2 - 150,
-    top: screenHeight / 2 - 150,
-    width: 300,
+    left: screenWidth / 2 - 191,
+    top: screenHeight / 2 - 250,
+    width: 350,
     height: 300,
   },
   galaxyImage: {
@@ -1035,15 +1037,15 @@ const styles = StyleSheet.create({
   },
   monsterContainer: {
     position: 'absolute',
-    left: screenWidth / 2 - 150,
-    top: screenHeight / 2 - 200,
+    left: screenWidth / 2 - 170,
+    top: screenHeight / 2 - 500,
     width: 300,
     height: 400,
     zIndex: 5,
   },
   monsterImage: {
-    width: '100%',
-    height: '100%',
+    width: '110%',
+    height: '110%',
   },
   platform: {
     position: 'absolute',
