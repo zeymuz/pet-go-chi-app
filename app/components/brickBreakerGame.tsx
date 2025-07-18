@@ -702,10 +702,10 @@ export default function BrickBreakerGame({ onExit }: { onExit?: (coins: number) 
   }
 
   const powerUpColors: Record<PowerUpType, string> = {
-    expand: '#0f0', 
-    shrink: '#f00',
-    multiBall: '#f0f', 
-    slowBall: '#0ff', 
+    expand: 'yellow', 
+    shrink: 'green',
+    multiBall: 'white', 
+    slowBall: 'red', 
     fastBall: '#fa0',
     sticky: '#fff', 
     shield: '#ff0',
@@ -713,8 +713,8 @@ export default function BrickBreakerGame({ onExit }: { onExit?: (coins: number) 
   };
 
   const powerUpSymbols: Record<PowerUpType, string> = {
-    expand: '⬛', 
-    shrink: '⬜',
+    expand: '↔️', 
+    shrink: '✂️',
     multiBall: '🎱', 
     slowBall: '🐢', 
     fastBall: '⚡',
@@ -863,7 +863,7 @@ export default function BrickBreakerGame({ onExit }: { onExit?: (coins: number) 
 
       <View style={styles.instructions}>
         <Text style={styles.instructionsText}>
-          Drag paddle to move. Tap screen to release sticky ball.
+          Drag paddle to move. Hold onto screen to release sticky ball.
         </Text>
       </View>
     </View>
@@ -873,7 +873,7 @@ export default function BrickBreakerGame({ onExit }: { onExit?: (coins: number) 
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    backgroundColor: '#222',
+    backgroundColor: '#40c4ff',
     alignItems: 'center',
     paddingTop: 40,
   },
@@ -885,13 +885,13 @@ const styles = StyleSheet.create({
   },
   coins: {
     color: '#ff0',
-    fontWeight: 'bold',
     fontSize: 16,
+    fontFamily: 'PressStart2P',
   },
   level: {
-    color: '#0ff',
-    fontWeight: 'bold',
+    color: 'COLORS.text',
     fontSize: 16,
+    fontFamily: 'PressStart2P',
   },
   gameArea: {
     backgroundColor: '#000',
@@ -930,8 +930,8 @@ const styles = StyleSheet.create({
   },
   powerUpText: {
     color: '#000',
-    fontWeight: 'bold',
     fontSize: 12,
+    fontFamily: 'PressStart2P',
   },
   gameOverOverlay: {
     position: 'absolute',
@@ -946,16 +946,19 @@ const styles = StyleSheet.create({
     fontSize: 30,
     color: 'white',
     marginBottom: 10,
+    fontFamily: 'PressStart2P',
   },
   coinsText: {
     fontSize: 20,
     color: '#ff0',
     marginBottom: 10,
+    fontFamily: 'PressStart2P',
   },
   levelText: {
     fontSize: 18,
     color: '#0ff',
     marginBottom: 20,
+    fontFamily: 'PressStart2P',
   },
   button: {
     backgroundColor: 'tomato',
@@ -971,8 +974,8 @@ const styles = StyleSheet.create({
   },
   buttonText: {
     color: 'white',
-    fontWeight: 'bold',
     fontSize: 16,
+    fontFamily: 'PressStart2P',
   },
   instructions: {
     marginTop: 20,
@@ -981,8 +984,10 @@ const styles = StyleSheet.create({
   instructionsText: {
     color: 'white', 
     textAlign: 'center', 
-    fontSize: 12
-  },
+    fontSize: 12,
+    fontFamily: 'PressStart2P',
+    bottom: '90%'
+   },
   exitButton: {
     position: 'absolute',
     top: 8,
@@ -998,6 +1003,7 @@ const styles = StyleSheet.create({
     color: '#fff',
     fontSize: 20,
     lineHeight: 28,
+    fontFamily: 'PressStart2P',
   },
   shield: {
     position: 'absolute',
