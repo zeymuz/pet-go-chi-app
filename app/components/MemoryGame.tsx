@@ -5,10 +5,11 @@ import {
   Animated,
   Dimensions,
   Image,
+  Platform,
   StyleSheet,
   Text,
   TouchableOpacity,
-  View,
+  View
 } from 'react-native';
 import COLORS from '../constants/colors';
 
@@ -201,7 +202,7 @@ export default function MemoryGame({ onClose }: MemoryGameProps) {
               activeOpacity={0.7}
             >
               <Animated.View style={[styles.card, styles.cardBack, backAnimatedStyle]}>
-                <Ionicons name="trash" size={cardSize * 0.4} color="white" />
+                <Ionicons name="swap-horizontal" size={cardSize * 0.4} color="#FF6B6B" />
               </Animated.View>
               <Animated.View style={[styles.card, styles.cardFlipped, frontAnimatedStyle]}>
                 <Image
@@ -230,8 +231,16 @@ export default function MemoryGame({ onClose }: MemoryGameProps) {
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    backgroundColor: COLORS.background,
+    backgroundColor: '#40c4ff',
     padding: 16,
+    ...Platform.select({
+          ios: {
+            shadowColor: '#000',
+            shadowOffset: { width: 0, height: 2 },
+            shadowOpacity: 0.25,
+            shadowRadius: 3.84,
+          }
+        }),
   },
   closeButton: {
     position: 'absolute',
@@ -273,7 +282,7 @@ const styles = StyleSheet.create({
     flexWrap: 'wrap',
     justifyContent: 'center',
     alignContent: 'center',
-    marginTop: 50,
+    marginTop: 15,
   },
   card: {
     borderRadius: 6,
@@ -285,10 +294,10 @@ const styles = StyleSheet.create({
     height: '100%',
   },
   cardBack: {
-    backgroundColor: COLORS.secondary,
+    backgroundColor: '#fff9b0',
   },
   cardFlipped: {
-    backgroundColor: COLORS.accent,
+    backgroundColor: '#fff9b0',
   },
   startOverlay: {
     ...StyleSheet.absoluteFillObject,
