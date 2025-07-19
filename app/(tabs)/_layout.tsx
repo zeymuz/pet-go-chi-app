@@ -1,3 +1,4 @@
+// app/_layout.tsx
 import { Ionicons } from '@expo/vector-icons';
 import { Tabs } from 'expo-router';
 import COLORS from '../constants/colors';
@@ -12,11 +13,10 @@ export default function TabLayout() {
           borderTopWidth: 0,
           elevation: 0,
         },
-        // 👇 Add these for the header (top bar)
         headerStyle: {
-          backgroundColor: '#ffe3d7', // Your desired header color
+          backgroundColor: '#ffe3d7',
         },
-        headerTintColor: '#FF6B6B', // Text & icons color (e.g., back button)
+        headerTintColor: '#FF6B6B',
         headerTitleStyle: {
           fontWeight: 'bold',
           fontFamily: 'PressStart2P', 
@@ -26,28 +26,25 @@ export default function TabLayout() {
       }}
     >
       <Tabs.Screen
-  name="home"
-  options={{
-    title: 'Pet',
-    tabBarIcon: ({ color }) => <Ionicons name="paw" size={24} color={color} />,
-    // 👇 Override label style for this tab only
-    tabBarLabelStyle: {
-      fontFamily: 'PressStart2P',
-      fontSize: 14,
-      
-    },
-  }}
-/>
+        name="home"
+        options={{
+          title: 'Pet',
+          tabBarIcon: ({ color }) => <Ionicons name="paw" size={24} color={color} />,
+          tabBarLabelStyle: {
+            fontFamily: 'PressStart2P',
+            fontSize: 14,
+          },
+        }}
+      />
       <Tabs.Screen
         name="store"
         options={{
           title: 'Store',
           tabBarIcon: ({ color }) => <Ionicons name="cart" size={24} color={color} />,
-           tabBarLabelStyle: {
-              fontFamily: 'PressStart2P',
-              fontSize: 14,
-            }
-          ,
+          tabBarLabelStyle: {
+            fontFamily: 'PressStart2P',
+            fontSize: 14,
+          },
         }}
       />
       <Tabs.Screen
@@ -55,11 +52,21 @@ export default function TabLayout() {
         options={{
           title: 'Games',
           tabBarIcon: ({ color }) => <Ionicons name="game-controller" size={24} color={color} />,
-           tabBarLabelStyle: {
+          tabBarLabelStyle: {
             fontFamily: 'PressStart2P',
             fontSize: 14,
           },
-          
+        }}
+      />
+      <Tabs.Screen
+        name="coins"
+        options={{
+          title: 'Coins',
+          tabBarIcon: ({ color }) => <Ionicons name="logo-bitcoin" size={24} color={color} />,
+          tabBarLabelStyle: {
+            fontFamily: 'PressStart2P',
+            fontSize: 14,
+          },
         }}
       />
     </Tabs>
