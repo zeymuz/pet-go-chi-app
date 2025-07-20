@@ -1,5 +1,6 @@
 import React, { useState } from 'react';
 import { Alert, StyleSheet, Text, View } from 'react-native';
+import { scaleFont, verticalScale } from '../../utils/scaling';
 import BrickBreaker from '../components/brickBreakerGame';
 import FlappyBirdGame from '../components/FlappyBirdGame';
 import GameButton from '../components/GameButton';
@@ -8,6 +9,7 @@ import PlatformJumperGame from '../components/PlatformJumperGame';
 import COLORS from '../constants/colors';
 import usePet from '../hooks/usePet';
 import useStore from '../hooks/useStore';
+
 
 // Import game images (create these files in your assets folder)
 const gameImages = {
@@ -111,25 +113,23 @@ const styles = StyleSheet.create({
   container: {
     flex: 1,
     backgroundColor: '#40c4ff',
-    padding: 16,
-
+    padding: verticalScale(16),
   },
   header: {
-    marginBottom: 20,
-  
+    marginBottom: verticalScale(20),
   },
   title: {
     fontFamily: 'PressStart2P',
-    fontSize: 24,
+    fontSize: scaleFont(24),
     color: COLORS.primary,
     textAlign: 'center',
   },
   subtitle: {
     fontFamily: 'PressStart2P',
-    fontSize: 12,
+    fontSize: scaleFont(12),
     color: COLORS.text,
     textAlign: 'center',
-    marginTop: 8,
+    marginTop: verticalScale(8),
   },
   gamesContainer: {
     flex: 1,

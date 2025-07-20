@@ -2,6 +2,7 @@
 import { Ionicons } from '@expo/vector-icons';
 import React from 'react';
 import { Platform, StyleSheet, Text, TouchableOpacity } from 'react-native';
+import { scale, scaleFont, verticalScale } from '../../utils/scaling';
 import COLORS from '../constants/colors';
 
 interface ButtonProps {
@@ -27,29 +28,29 @@ export default function Button({ icon, text, onPress, disabled = false }: Button
 const styles = StyleSheet.create({
   button: {
     backgroundColor: '#fff9b0',
-    padding: 12,
-    borderRadius: 8,
+    padding: verticalScale(12),
+    borderRadius: scale(8),
     alignItems: 'center',
     justifyContent: 'center',
-    width: 120,
-    height: 60,
+    width: scale(120),
+    height: verticalScale(60),
     ...Platform.select({
-          ios: {
-            shadowColor: '#000',
-            shadowOffset: { width: 0, height: 2 },
-            shadowOpacity: 0.25,
-            shadowRadius: 3.84,
-          }
-        }),
+      ios: {
+        shadowColor: '#000',
+        shadowOffset: { width: 0, height: scale(2) },
+        shadowOpacity: 0.25,
+        shadowRadius: scale(3.84),
+      }
+    }),
   },
   disabledButton: {
     backgroundColor: '#e0e0e0',
   },
   buttonText: {
     fontFamily: 'PressStart2P',
-    fontSize: 10,
+    fontSize: scaleFont(10),
     color: COLORS.text,
-    marginTop: 4,
+    marginTop: verticalScale(4),
   },
   disabledText: {
     color: '#999',
