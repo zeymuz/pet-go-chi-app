@@ -1,5 +1,6 @@
 import React from 'react';
 import { Image, Platform, StyleSheet, Text, TouchableOpacity } from 'react-native';
+import { scale, scaleFont, verticalScale } from '../../utils/scaling';
 import COLORS from '../constants/colors';
 
 interface GameButtonProps {
@@ -24,30 +25,30 @@ export default function GameButton({ image, text, onPress }: GameButtonProps) {
 const styles = StyleSheet.create({
   button: {
     backgroundColor: '#fff9b0',
-    padding: 20,
-    borderRadius: 12,
+    padding: verticalScale(20),
+    borderRadius: scale(12),
     alignItems: 'center',
     justifyContent: 'center',
-    marginBottom: 15,
+    marginBottom: verticalScale(15),
     width: '80%',
     alignSelf: 'center',
     ...Platform.select({
-              ios: {
-                shadowColor: '#000',
-                shadowOffset: { width: 0, height: 2 },
-                shadowOpacity: 0.25,
-                shadowRadius: 3.84,
-              }
-            }),
+      ios: {
+        shadowColor: '#000',
+        shadowOffset: { width: 0, height: scale(2) },
+        shadowOpacity: 0.25,
+        shadowRadius: scale(3.84),
+      }
+    }),
   },
   gameImage: {
-    width: 80,
-    height: 80,
-    marginBottom: 10,
+    width: scale(80),
+    height: scale(80),
+    marginBottom: verticalScale(10),
   },
   buttonText: {
     fontFamily: 'PressStart2P',
-    fontSize: 14,
+    fontSize: scaleFont(14),
     color: COLORS.text,
     textAlign: 'center',
   },
