@@ -1,5 +1,6 @@
 import React from 'react';
 import { Platform, StyleSheet, Text, View } from 'react-native';
+import { scale, scaleFont, verticalScale } from '../../utils/scaling';
 import COLORS from '../constants/colors';
 
 interface StatusBarProps {
@@ -59,64 +60,64 @@ export default function StatusBar({
 const styles = StyleSheet.create({
   container: {
     width: '100%',
-    padding: 10,
+    padding: verticalScale(10),
     backgroundColor: '#fff9b0',
-    borderRadius: 8,
+    borderRadius: scale(8),
     ...Platform.select({
-          ios: {
-            shadowColor: '#000',
-            shadowOffset: { width: 0, height: 2 },
-            shadowOpacity: 0.25,
-            shadowRadius: 3.84,
-          }
-        }),
+      ios: {
+        shadowColor: '#000',
+        shadowOffset: { width: 0, height: scale(2) },
+        shadowOpacity: 0.25,
+        shadowRadius: scale(3.84),
+      }
+    }),
   },
   barContainer: {
     flexDirection: 'row',
     alignItems: 'center',
-    marginBottom: 8,
+    marginBottom: verticalScale(8),
   },
   experienceContainer: {
     flexDirection: 'row',
     alignItems: 'center',
-    marginTop: 8,
+    marginTop: verticalScale(8),
   },
   label: {
     fontFamily: 'PressStart2P',
-    fontSize: 10,
+    fontSize: scaleFont(10),
     color: COLORS.text,
-    marginRight: 8,
-    minWidth: 50,
+    marginRight: scale(8),
+    minWidth: scale(50),
   },
   barBackground: {
     flex: 1,
-    height: 10,
+    height: verticalScale(10),
     backgroundColor: '#ddd',
-    borderRadius: 5,
+    borderRadius: scale(5),
     overflow: 'hidden',
   },
   barFill: {
     height: '100%',
-    borderRadius: 5,
+    borderRadius: scale(5),
   },
   value: {
     fontFamily: 'PressStart2P',
-    fontSize: 10,
+    fontSize: scaleFont(10),
     color: COLORS.text,
-    marginLeft: 8,
-    minWidth: 30,
+    marginLeft: scale(8),
+    minWidth: scale(30),
     textAlign: 'right',
   },
   experienceBar: {
     flex: 1,
-    height: 8,
+    height: verticalScale(8),
     backgroundColor: '#ddd',
-    borderRadius: 4,
+    borderRadius: scale(4),
     overflow: 'hidden',
   },
   experienceFill: {
     height: '100%',
     backgroundColor: COLORS.primary,
-    borderRadius: 4,
+    borderRadius: scale(4),
   },
 });

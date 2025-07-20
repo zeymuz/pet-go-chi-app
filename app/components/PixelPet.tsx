@@ -1,5 +1,6 @@
 import React, { useEffect, useRef } from 'react'; // Added useEffect import here
 import { Animated, Easing, Image, ImageSourcePropType, StyleSheet, View } from 'react-native';
+import { scale, verticalScale } from '../../utils/scaling';
 import { OUTFITS } from '../constants/pets';
 
 interface PixelPetProps {
@@ -88,14 +89,14 @@ const styles = StyleSheet.create({
     justifyContent: 'center',
   },
   petImage: {
-    width: 300,
-    height: 300,
+    width: scale(300),
+    height: verticalScale(300),
     resizeMode: 'contain',
   },
   outfitImage: {
     position: 'absolute',
-    width: 300,
-    height: 300,
+    width: scale(300),
+    height: verticalScale(300),
     resizeMode: 'contain',
     top: 0,
     left: 0,
