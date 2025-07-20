@@ -1,5 +1,6 @@
 import React, { useState } from 'react';
 import { Image, Platform, StyleSheet, Text, TouchableOpacity, View } from 'react-native';
+import { scale, scaleFont, verticalScale } from '../../utils/scaling';
 import COLORS from '../constants/colors';
 
 interface StoreItemProps {
@@ -117,86 +118,84 @@ export default function StoreItem({
 }
 
 const styles = StyleSheet.create({
-    container: {
+  container: {
     backgroundColor: '#fff9b0',
-    borderRadius: 8,
-    padding: 6,
-    margin: 12,
-    width: 100,
+    borderRadius: scale(8),
+    padding: verticalScale(6),
+    margin: scale(12),
+    width: scale(100),
     alignItems: 'center',
     ...Platform.select({
       ios: {
         shadowColor: '#000',
-        shadowOffset: { width: 0, height: 2 },
+        shadowOffset: { width: 0, height: scale(2) },
         shadowOpacity: 0.25,
-        shadowRadius: 3.84,
+        shadowRadius: scale(3.84),
       }
     }),
   },
   image: {
-    width: 85,
-    height: 85,
+    width: scale(85),
+    height: scale(85),
     resizeMode: 'contain',
-    marginBottom: 5,
+    marginBottom: verticalScale(5),
   },
   name: {
     fontFamily: 'PressStart2P',
-    fontSize: 10,
+    fontSize: scaleFont(10),
     color: COLORS.text,
     textAlign: 'center',
-    marginBottom: 4,
+    marginBottom: verticalScale(4),
   },
   price: {
     fontFamily: 'PressStart2P',
-    fontSize: 8,
+    fontSize: scaleFont(8),
     color: COLORS.text,
-    marginBottom: 4,
+    marginBottom: verticalScale(4),
   },
   hungerRestore: {
     fontFamily: 'PressStart2P',
-    fontSize: 8,
+    fontSize: scaleFont(8),
     color: COLORS.hunger,
-    marginBottom: 5,
+    marginBottom: verticalScale(5),
   },
   quantityContainer: {
     flexDirection: 'row',
     alignItems: 'center',
     justifyContent: 'space-between',
     width: '100%',
-    marginBottom: 4,
+    marginBottom: verticalScale(4),
   },
   quantityButton: {
     backgroundColor: COLORS.primary,
-    width: 30,
-    height: 30,
-    borderRadius: 15,
+    width: scale(30),
+    height: scale(30),
+    borderRadius: scale(15),
     justifyContent: 'center',
     alignItems: 'center',
   },
   quantityDisplay: {
     fontFamily: 'PressStart2P',
-    fontSize: 12,
+    fontSize: scaleFont(12),
     color: COLORS.text,
-    marginHorizontal: 8,
+    marginHorizontal: scale(8),
   },
   quantityText: {
     fontFamily: 'PressStart2P',
-    fontSize: 12,
+    fontSize: scaleFont(12),
     color: 'white',
-    
-      
   },
   buyButton: {
     backgroundColor: COLORS.primary,
-    padding: 8,
-    borderRadius: 4,
+    padding: verticalScale(8),
+    borderRadius: scale(4),
     width: '100%',
     alignItems: 'center',
   },
   equipButton: {
     backgroundColor: '#4CAF50',
-    padding: 8,
-    borderRadius: 4,
+    padding: verticalScale(8),
+    borderRadius: scale(4),
     width: '100%',
     alignItems: 'center',
   },
@@ -205,7 +204,7 @@ const styles = StyleSheet.create({
   },
   buttonText: {
     fontFamily: 'PressStart2P',
-    fontSize: 8,
+    fontSize: scaleFont(8),
     color: '#fff',
   },
 });
