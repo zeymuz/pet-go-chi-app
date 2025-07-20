@@ -11,6 +11,7 @@ import {
   TouchableOpacity,
   View
 } from 'react-native';
+import { scale, scaleFont, verticalScale } from '../../utils/scaling';
 import COLORS from '../constants/colors';
 
 const { width, height } = Dimensions.get('window');
@@ -232,49 +233,49 @@ const styles = StyleSheet.create({
   container: {
     flex: 1,
     backgroundColor: '#40c4ff',
-    padding: 16,
+    padding: verticalScale(16),
     ...Platform.select({
-          ios: {
-            shadowColor: '#000',
-            shadowOffset: { width: 0, height: 2 },
-            shadowOpacity: 0.25,
-            shadowRadius: 3.84,
-          }
-        }),
+      ios: {
+        shadowColor: '#000',
+        shadowOffset: { width: 0, height: scale(2) },
+        shadowOpacity: 0.25,
+        shadowRadius: scale(3.84),
+      }
+    }),
   },
   closeButton: {
     position: 'absolute',
-    top: 40,
-    right: 20,
+    top: verticalScale(40),
+    right: scale(20),
     zIndex: 10,
     backgroundColor: COLORS.primary,
-    width: 40,
-    height: 40,
-    borderRadius: 20,
+    width: scale(40),
+    height: scale(40),
+    borderRadius: scale(20),
     alignItems: 'center',
     justifyContent: 'center',
   },
   title: {
     fontFamily: 'PressStart2P',
-    fontSize: 20,
+    fontSize: scaleFont(20),
     color: COLORS.primary,
     textAlign: 'center',
-    marginTop: 5,
-    marginBottom: 5,
+    marginTop: verticalScale(5),
+    marginBottom: verticalScale(5),
   },
   stats: {
     fontFamily: 'PressStart2P',
-    fontSize: 12,
+    fontSize: scaleFont(12),
     color: COLORS.text,
     textAlign: 'center',
-    marginBottom: 5,
+    marginBottom: verticalScale(5),
   },
   coins: {
     fontFamily: 'PressStart2P',
-    fontSize: 12,
+    fontSize: scaleFont(12),
     color: 'gold',
     textAlign: 'center',
-    marginBottom: 10,
+    marginBottom: verticalScale(10),
   },
   gameArea: {
     flex: 1,
@@ -282,10 +283,10 @@ const styles = StyleSheet.create({
     flexWrap: 'wrap',
     justifyContent: 'center',
     alignContent: 'center',
-    marginTop: 15,
+    marginTop: verticalScale(15),
   },
   card: {
-    borderRadius: 6,
+    borderRadius: scale(6),
     alignItems: 'center',
     justifyContent: 'center',
     backfaceVisibility: 'hidden',
@@ -293,13 +294,13 @@ const styles = StyleSheet.create({
     width: '100%',
     height: '100%',
     ...Platform.select({
-          ios: {
-            shadowColor: '#000',
-            shadowOffset: { width: 0, height: 2 },
-            shadowOpacity: 0.25,
-            shadowRadius: 3.84,
-          }
-        }),
+      ios: {
+        shadowColor: '#000',
+        shadowOffset: { width: 0, height: scale(2) },
+        shadowOpacity: 0.25,
+        shadowRadius: scale(3.84),
+      }
+    }),
   },
   cardBack: {
     backgroundColor: '#fff9b0',
@@ -316,10 +317,10 @@ const styles = StyleSheet.create({
   },
   startText: {
     fontFamily: 'PressStart2P',
-    fontSize: 18,
+    fontSize: scaleFont(18),
     color: 'white',
-    padding: 20,
+    padding: verticalScale(20),
     backgroundColor: 'rgba(0,0,0,0.5)',
-    borderRadius: 10,
+    borderRadius: scale(10),
   },
 });
