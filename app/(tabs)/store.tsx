@@ -1,6 +1,7 @@
 import { useIsFocused } from '@react-navigation/native';
 import React, { useEffect, useState } from 'react';
 import { FlatList, ScrollView, StyleSheet, Text, View } from 'react-native';
+import { scale, scaleFont, verticalScale } from '../../utils/scaling';
 import StoreItem from '../components/StoreItem';
 import COLORS from '../constants/colors';
 import useStore from '../hooks/useStore';
@@ -91,41 +92,40 @@ const styles = StyleSheet.create({
   container: {
     flex: 1,
     backgroundColor: '#40c4ff',
-    padding: 16,
+    padding: verticalScale(16),
   },
   header: {
     flexDirection: 'row',
     justifyContent: 'space-between',
     alignItems: 'center',
-    marginBottom: 20,
+    marginBottom: verticalScale(20),
   },
   title: {
     fontFamily: 'PressStart2P',
-    fontSize: 24,
+    fontSize: scaleFont(24),
     color: COLORS.primary,
   },
   coins: {
     fontFamily: 'PressStart2P',
-    fontSize: 16,
+    fontSize: scaleFont(16),
     color: COLORS.text,
   },
   listContent: {
-    paddingBottom: 20,
+    paddingBottom: verticalScale(20),
   },
   sectionHeader: {
     fontFamily: 'PressStart2P',
-    fontSize: 20,
+    fontSize: scaleFont(20),
     color: COLORS.text,
     backgroundColor: '#40c4ff',
-    paddingVertical: 8,
-    paddingHorizontal: 12,
-    marginTop: 15,
-    borderBottomWidth: 2,
+    paddingVertical: verticalScale(8),
+    paddingHorizontal: scale(12),
+    marginTop: verticalScale(15),
+    borderBottomWidth: scale(2),
     borderBottomColor: '#fff9b0',
-    
   },
   columnWrapper: {
     justifyContent: 'space-between',
-    paddingHorizontal: 8,
+    paddingHorizontal: scale(8),
   },
 });
