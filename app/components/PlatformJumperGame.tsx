@@ -11,6 +11,7 @@ import {
   TouchableOpacity,
   View
 } from 'react-native';
+import { scale, scaleFont, verticalScale } from '../../utils/scaling';
 
 const window = Dimensions.get('window');
 const screenWidth = window.width;
@@ -970,15 +971,15 @@ if (scoreUI >= 40000) {
   );
 }
 
+// Add this at the top 
+// Then update the styles to use these dimensions
 const styles = StyleSheet.create({
   container: {
     flex: 1,
     overflow: 'hidden',
-    
   },
   skyBackground: {
     backgroundColor: '#87CEEB',
-    
   },
   spaceBackground: {
     backgroundColor: '#000033',
@@ -994,10 +995,10 @@ const styles = StyleSheet.create({
   },
   cloud: {
     position: 'absolute',
-    width: CLOUD_WIDTH,
-    height: CLOUD_HEIGHT,
+    width: scale(100),
+    height: verticalScale(60),
     backgroundColor: 'rgba(255,255,255,0.8)',
-    borderRadius: 30,
+    borderRadius: scale(30),
   },
   star: {
     position: 'absolute',
@@ -1008,15 +1009,15 @@ const styles = StyleSheet.create({
     backgroundColor: 'white',
     shadowColor: 'white',
     shadowOffset: { width: 0, height: 0 },
-    shadowRadius: 5,
+    shadowRadius: scale(5),
     shadowOpacity: 0.8,
   },
   sunContainer: {
     position: 'absolute',
-    left: screenWidth / 2 - 100,
-    top: 50,
-    width: 200,
-    height: 200,
+    left: screenWidth / 2 - scale(100),
+    top: verticalScale(50),
+    width: scale(200),
+    height: verticalScale(200),
     justifyContent: 'center',
     alignItems: 'center',
   },
@@ -1026,10 +1027,10 @@ const styles = StyleSheet.create({
   },
   galaxyContainer: {
     position: 'absolute',
-    left: screenWidth / 2 - 191,
-    top: screenHeight / 2 - 250,
-    width: 350,
-    height: 300,
+    left: screenWidth / 2 - scale(191),
+    top: screenHeight / 2 - verticalScale(250),
+    width: scale(350),
+    height: verticalScale(300),
   },
   galaxyImage: {
     width: '100%',
@@ -1037,10 +1038,10 @@ const styles = StyleSheet.create({
   },
   monsterContainer: {
     position: 'absolute',
-    left: screenWidth / 2 - 170,
-    top: screenHeight / 2 - 500,
-    width: 300,
-    height: 400,
+    left: screenWidth / 2 - scale(170),
+    top: screenHeight / 2 - verticalScale(500),
+    width: scale(300),
+    height: verticalScale(400),
     zIndex: 5,
   },
   monsterImage: {
@@ -1049,15 +1050,15 @@ const styles = StyleSheet.create({
   },
   platform: {
     position: 'absolute',
-    width: PLATFORM_WIDTH,
-    height: PLATFORM_HEIGHT,
-    borderRadius: 10,
+    width: scale(100),
+    height: verticalScale(20),
+    borderRadius: scale(10),
     zIndex: 10,
   },
   characterContainer: {
     position: 'absolute',
-    width: PLAYER_SIZE,
-    height: PLAYER_SIZE,
+    width: scale(50),
+    height: verticalScale(50),
     zIndex: 20,
   },
   character: {
@@ -1066,45 +1067,45 @@ const styles = StyleSheet.create({
   },
   rod: {
     position: 'absolute',
-    width: ROD_WIDTH,
-    height: ROD_HEIGHT,
+    width: scale(10),
+    height: verticalScale(30),
     backgroundColor: '#ff0000',
     zIndex: 15,
   },
   scoreContainer: {
     position: 'absolute',
-    top: 20,
-    left: 20,
+    top: verticalScale(20),
+    left: scale(20),
     backgroundColor: 'rgba(0,0,0,0.5)',
-    padding: 10,
-    borderRadius: 10,
+    padding: verticalScale(10),
+    borderRadius: scale(10),
     zIndex: 30,
   },
   score: {
-    fontSize: 18,
+    fontSize: scaleFont(18),
     color: '#fff',
     fontFamily: 'PressStart2P',
   },
   highScore: {
-    fontSize: 16,
+    fontSize: scaleFont(16),
     color: '#fff',
     fontFamily: 'PressStart2P',
   },
   coins: {
-    fontSize: 16,
+    fontSize: scaleFont(16),
     color: 'gold',
     fontFamily: 'PressStart2P',
   },
   totalCoins: {
-    fontSize: 16,
+    fontSize: scaleFont(16),
     color: '#ff9900',
     fontFamily: 'PressStart2P',
-    marginTop: 5,
+    marginTop: verticalScale(5),
   },
   monsterWarning: {
-    fontSize: 14,
+    fontSize: scaleFont(14),
     color: '#ff0000',
-    marginVertical: 10,
+    marginVertical: verticalScale(10),
     fontStyle: 'italic',
     fontFamily: 'PressStart2P',
   },
@@ -1117,51 +1118,51 @@ const styles = StyleSheet.create({
     backgroundColor: 'rgba(0,0,0,0.7)',
     justifyContent: 'center',
     alignItems: 'center',
-    paddingHorizontal: 20,
+    paddingHorizontal: scale(20),
     zIndex: 40,
   },
   title: {
-    fontSize: 36,
+    fontSize: scaleFont(36),
     color: '#fff',
-    marginBottom: 20,
+    marginBottom: verticalScale(20),
     textAlign: 'center',
     fontFamily: 'PressStart2P',
   },
   instructions: {
-    fontSize: 16,
+    fontSize: scaleFont(16),
     color: '#fff',
-    marginBottom: 40,
+    marginBottom: verticalScale(40),
     textAlign: 'center',
-    lineHeight: 24,
+    lineHeight: verticalScale(24),
     fontFamily: 'PressStart2P',
   },
   button: {
     backgroundColor: '#4CAF50',
-    paddingVertical: 15,
-    paddingHorizontal: 50,
-    borderRadius: 30,
+    paddingVertical: verticalScale(15),
+    paddingHorizontal: scale(50),
+    borderRadius: scale(30),
   },
   buttonText: {
-    fontSize: 20,
+    fontSize: scaleFont(20),
     color: '#fff',
     fontFamily: 'PressStart2P',
   },
   exitButton: {
     position: 'absolute',
-    top: 10,
-    right: 15,
+    top: verticalScale(10),
+    right: scale(15),
     zIndex: 50,
     backgroundColor: 'rgba(0,0,0,0.4)',
-    borderRadius: 20,
-    width: 35,
-    height: 35,
+    borderRadius: scale(20),
+    width: scale(35),
+    height: verticalScale(35),
     justifyContent: 'center',
     alignItems: 'center',
   },
   exitButtonText: {
     color: 'white',
-    fontSize: 24,
-    lineHeight: 24,
+    fontSize: scaleFont(24),
+    lineHeight: verticalScale(24),
     fontFamily: 'PressStart2P',
   },
   gifContainer: {

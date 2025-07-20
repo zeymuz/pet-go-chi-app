@@ -2,6 +2,7 @@ import React, { useEffect, useRef, useState } from 'react';
 import { Dimensions, Image, Platform, StyleSheet, Text, TouchableOpacity, View } from 'react-native';
 import { scale, scaleFont, verticalScale } from '../../utils/scaling';
 
+
 const { width, height } = Dimensions.get('window');
 const BIRD_WIDTH = 40;
 const BIRD_HEIGHT = 30;
