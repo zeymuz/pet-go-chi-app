@@ -3,8 +3,9 @@ interface StoreItem {
   id: string;
   name: string;
   price: number;
-  image: string;
+  image: any;
   owned: boolean;
+  petImage: any; 
 }
 
 interface Outfit extends StoreItem {

@@ -1,9 +1,10 @@
+// hooks/useStore.ts
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import { useEffect, useState } from 'react';
 import { FOODS, OUTFITS } from '../constants/pets';
 
 const STORAGE_KEY = 'pet_store_data';
-const STORE_VERSION = 3; // Updated version to support new food system
+const STORE_VERSION = 4; // Updated version to support both images
 
 // Global store state
 let globalStore = {
@@ -53,19 +54,39 @@ const saveStore = async () => {
         return;
       }
 
+      // Create a map of default outfits by ID for reference
+      const defaultOutfitsById: Record<string, Outfit> = {};
+      OUTFITS.forEach(outfit => {
+        defaultOutfitsById[outfit.id] = outfit;
+      });
+
+      // Create a map of default foods by ID for reference
+      const defaultFoodsById: Record<string, Food> = {};
+      FOODS.forEach(food => {
+        defaultFoodsById[food.id] = food;
+      });
+
       globalStore = {
         ...globalStore,
         coins: saved.coins ?? globalStore.coins,
         foodQuantities: saved.foodQuantities ?? globalStore.foodQuantities,
         equippedOutfits: saved.equippedOutfits ?? globalStore.equippedOutfits,
-        outfits: OUTFITS.map(defaultOutfit => {
-          const savedOutfit = saved.outfits?.find((o: any) => o.id === defaultOutfit.id);
-          return savedOutfit ? { ...defaultOutfit, ...savedOutfit } : defaultOutfit;
-        }),
-        foods: FOODS.map(defaultFood => {
-          const savedFood = saved.foods?.find((f: any) => f.id === defaultFood.id);
-          return savedFood ? { ...defaultFood, ...savedFood } : defaultFood;
-        }),
+        
+        // Merge saved outfits with defaults to preserve images
+        outfits: saved.outfits?.map((savedOutfit: Outfit) => {
+          return {
+            ...defaultOutfitsById[savedOutfit.id], // Default properties
+            ...savedOutfit,                       // Saved properties
+          };
+        }) ?? OUTFITS,
+        
+        // Merge saved foods with defaults
+        foods: saved.foods?.map((savedFood: Food) => {
+          return {
+            ...defaultFoodsById[savedFood.id], // Default properties
+            ...savedFood,                     // Saved properties
+          };
+        }) ?? FOODS,
       };
     }
   } catch (error) {

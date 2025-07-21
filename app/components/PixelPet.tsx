@@ -1,4 +1,5 @@
-import React, { useEffect, useRef } from 'react'; // Added useEffect import here
+// PixelPet.tsx
+import React, { useEffect, useRef } from 'react';
 import { Animated, Easing, Image, ImageSourcePropType, StyleSheet, View } from 'react-native';
 import { scale, verticalScale } from '../../utils/scaling';
 import { OUTFITS } from '../constants/pets';
@@ -11,10 +12,10 @@ interface PixelPetProps {
 export default function PixelPet({ activeAction, equippedOutfits }: PixelPetProps) {
   const bounceAnim = useRef(new Animated.Value(0)).current;
 
-  const getOutfitSource = (outfitId: string | null): ImageSourcePropType | undefined => {
+  const getOutfitSource = (outfitId: any | null): ImageSourcePropType | undefined => {
     if (!outfitId) return undefined;
     const outfit = OUTFITS.find(o => o.id === outfitId);
-    return outfit?.image;
+    return outfit?.petImage; // Changed from image to petImage
   };
 
   useEffect(() => {

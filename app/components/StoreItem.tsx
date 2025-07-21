@@ -32,11 +32,11 @@ export default function StoreItem({
   const [purchaseQuantity, setPurchaseQuantity] = useState(1);
 
   // Fallback to default image if loading fails
-  const imageSource = imageError 
-    ? require('../../assets/images/adaptive-icon.png')
-    : typeof item.image === 'string' 
-      ? { uri: item.image } 
-      : item.image;
+const imageSource = imageError 
+  ? require('../../assets/images/adaptive-icon.png')
+  : typeof item.image === 'string' 
+    ? { uri: item.image } 
+    : item.image; // Still using item.image here
 
   const handleQuantityChange = (change: number) => {
     const newQuantity = Math.max(1, purchaseQuantity + change);

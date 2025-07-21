@@ -1,3 +1,4 @@
+// pets.ts
 import { Food, Outfit } from '../types/types';
 
 const OUTFITS: Outfit[] = [
@@ -7,7 +8,8 @@ const OUTFITS: Outfit[] = [
     name: 'Baseball Cap',
     price: 50,
     owned: false,
-    image: require('../../assets/images/favicon.png'),
+    image: require('../../assets/images/favicon.png'), // Store/outfits menu image
+    petImage: require('../../assets/images/galaxy.gif'), // Pet display image
     type: 'hat',
   },
   {
@@ -16,6 +18,7 @@ const OUTFITS: Outfit[] = [
     price: 100,
     owned: false,
     image: require('../../assets/images/favicon.png'),
+    petImage: require('../../assets/images/galaxy.gif'),
     type: 'hat',
   },
   {
@@ -24,6 +27,7 @@ const OUTFITS: Outfit[] = [
     price: 75,
     owned: false,
     image: require('../../assets/images/favicon.png'),
+    petImage: require('../../assets/images/galaxy.gif'),
     type: 'hat',
   },
   {
@@ -32,6 +36,7 @@ const OUTFITS: Outfit[] = [
     price: 40,
     owned: false,
     image: require('../../assets/images/favicon.png'),
+    petImage: require('../../assets/images/galaxy.gif'),
     type: 'hat',
   },
   {
@@ -40,6 +45,7 @@ const OUTFITS: Outfit[] = [
     price: 200,
     owned: false,
     image: require('../../assets/images/favicon.png'),
+    petImage: require('../../assets/images/galaxy.gif'),
     type: 'hat',
   },
   // Jackets
@@ -49,6 +55,7 @@ const OUTFITS: Outfit[] = [
     price: 150,
     owned: false,
     image: require('../../assets/images/adaptive-icon.png'),
+    petImage: require('../../assets/images/galaxy.gif'),
     type: 'jacket',
   },
   {
@@ -57,6 +64,7 @@ const OUTFITS: Outfit[] = [
     price: 250,
     owned: false,
     image: require('../../assets/images/adaptive-icon.png'),
+    petImage: require('../../assets/images/galaxy.gif'),
     type: 'jacket',
   },
   {
@@ -65,6 +73,7 @@ const OUTFITS: Outfit[] = [
     price: 120,
     owned: false,
     image: require('../../assets/images/adaptive-icon.png'),
+    petImage: require('../../assets/images/galaxy.gif'),
     type: 'jacket',
   },
   {
@@ -73,6 +82,7 @@ const OUTFITS: Outfit[] = [
     price: 180,
     owned: false,
     image: require('../../assets/images/adaptive-icon.png'),
+    petImage: require('../../assets/images/galaxy.gif'),
     type: 'jacket',
   },
   {
@@ -81,6 +91,7 @@ const OUTFITS: Outfit[] = [
     price: 100,
     owned: false,
     image: require('../../assets/images/adaptive-icon.png'),
+    petImage: require('../../assets/images/galaxy.gif'),
     type: 'jacket',
   },
   // Shirts
@@ -90,6 +101,7 @@ const OUTFITS: Outfit[] = [
     price: 30,
     owned: false,
     image: require('../../assets/images/adaptive-icon.png'),
+    petImage: require('../../assets/images/galaxy.gif'),
     type: 'shirt',
   },
   {
@@ -98,6 +110,7 @@ const OUTFITS: Outfit[] = [
     price: 60,
     owned: false,
     image: require('../../assets/images/adaptive-icon.png'),
+    petImage: require('../../assets/images/galaxy.gif'),
     type: 'shirt',
   },
   {
@@ -106,6 +119,7 @@ const OUTFITS: Outfit[] = [
     price: 25,
     owned: false,
     image: require('../../assets/images/adaptive-icon.png'),
+    petImage: require('../../assets/images/galaxy.gif'),
     type: 'shirt',
   },
   {
@@ -114,6 +128,7 @@ const OUTFITS: Outfit[] = [
     price: 80,
     owned: false,
     image: require('../../assets/images/adaptive-icon.png'),
+    petImage: require('../../assets/images/galaxy.gif'),
     type: 'shirt',
   },
   {
@@ -122,6 +137,7 @@ const OUTFITS: Outfit[] = [
     price: 50,
     owned: false,
     image: require('../../assets/images/adaptive-icon.png'),
+    petImage: require('../../assets/images/galaxy.gif'),
     type: 'shirt',
   },
   // Pants
@@ -131,6 +147,7 @@ const OUTFITS: Outfit[] = [
     price: 100,
     owned: false,
     image: require('../../assets/images/adaptive-icon.png'),
+    petImage: require('../../assets/images/galaxy.gif'),
     type: 'pants',
   },
   {
@@ -139,6 +156,7 @@ const OUTFITS: Outfit[] = [
     price: 60,
     owned: false,
     image: require('../../assets/images/adaptive-icon.png'),
+    petImage: require('../../assets/images/galaxy.gif'),
     type: 'pants',
   },
   {
@@ -147,6 +165,7 @@ const OUTFITS: Outfit[] = [
     price: 70,
     owned: false,
     image: require('../../assets/images/adaptive-icon.png'),
+    petImage: require('../../assets/images/galaxy.gif'),
     type: 'pants',
   },
   {
@@ -155,6 +174,7 @@ const OUTFITS: Outfit[] = [
     price: 90,
     owned: false,
     image: require('../../assets/images/adaptive-icon.png'),
+    petImage: require('../../assets/images/galaxy.gif'),
     type: 'pants',
   },
   {
@@ -163,6 +183,7 @@ const OUTFITS: Outfit[] = [
     price: 120,
     owned: false,
     image: require('../../assets/images/adaptive-icon.png'),
+    petImage: require('../../assets/images/galaxy.gif'),
     type: 'pants',
   },
   // Shoes
@@ -172,6 +193,7 @@ const OUTFITS: Outfit[] = [
     price: 80,
     owned: false,
     image: require('../../assets/images/adaptive-icon.png'),
+    petImage: require('../../assets/images/galaxy.gif'),
     type: 'shoes',
   },
   {
@@ -180,6 +202,7 @@ const OUTFITS: Outfit[] = [
     price: 150,
     owned: false,
     image: require('../../assets/images/adaptive-icon.png'),
+    petImage: require('../../assets/images/galaxy.gif'),
     type: 'shoes',
   },
   {
@@ -188,6 +211,7 @@ const OUTFITS: Outfit[] = [
     price: 50,
     owned: false,
     image: require('../../assets/images/adaptive-icon.png'),
+    petImage: require('../../assets/images/galaxy.gif'),
     type: 'shoes',
   },
   {
@@ -196,6 +220,7 @@ const OUTFITS: Outfit[] = [
     price: 120,
     owned: false,
     image: require('../../assets/images/adaptive-icon.png'),
+    petImage: require('../../assets/images/galaxy.gif'),
     type: 'shoes',
   },
   {
@@ -204,6 +229,7 @@ const OUTFITS: Outfit[] = [
     price: 30,
     owned: false,
     image: require('../../assets/images/adaptive-icon.png'),
+    petImage: require('../../assets/images/galaxy.gif'),
     type: 'shoes',
   },
 ];
@@ -215,6 +241,7 @@ const FOODS: Food[] = [
     price: 10,
     owned: false,
     image: require('../../assets/images/adaptive-icon.png'),
+    petImage: require('../../assets/images/galaxy.gif'),
     type: 'food',
     hungerRestore: 15
   },
@@ -224,6 +251,7 @@ const FOODS: Food[] = [
     price: 30,
     owned: false,
     image: require('../../assets/images/adaptive-icon.png'),
+    petImage: require('../../assets/images/galaxy.gif'),
     type: 'food',
     hungerRestore: 40
   },
@@ -233,6 +261,7 @@ const FOODS: Food[] = [
     price: 25,
     owned: false,
     image: require('../../assets/images/adaptive-icon.png'),
+    petImage: require('../../assets/images/galaxy.gif'),
     type: 'food',
     hungerRestore: 35
   },
@@ -242,6 +271,7 @@ const FOODS: Food[] = [
     price: 15,
     owned: false,
     image: require('../../assets/images/adaptive-icon.png'),
+    petImage: require('../../assets/images/galaxy.gif'),
     type: 'food',
     hungerRestore: 20
   },
@@ -251,6 +281,7 @@ const FOODS: Food[] = [
     price: 50,
     owned: false,
     image: require('../../assets/images/adaptive-icon.png'),
+    petImage: require('../../assets/images/galaxy.gif'),
     type: 'food',
     hungerRestore: 60
   }

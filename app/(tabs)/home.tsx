@@ -22,6 +22,7 @@ interface OutfitItem {
   owned: boolean;
 }
 
+// home.tsx (only showing the relevant part)
 const OutfitItemComponent = ({
   item,
   equipped,
@@ -37,7 +38,7 @@ const OutfitItemComponent = ({
     ? require('../../assets/images/adaptive-icon.png')
     : typeof item.image === 'string'
     ? { uri: item.image }
-    : item.image;
+    : item.image; // Still using item.image here
 
   return (
     <TouchableOpacity
