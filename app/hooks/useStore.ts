@@ -4,9 +4,27 @@ import { useEffect, useState } from 'react';
 import { FOODS, OUTFITS } from '../constants/pets';
 
 const STORAGE_KEY = 'pet_store_data';
-const STORE_VERSION = 4; // Updated version to support both images
+const STORE_VERSION = 4; // Current version of data structure
 
-// Global store state
+// 1. First create reference maps for default items
+const createReferenceMaps = () => {
+  const defaultOutfitsById: Record<string, typeof OUTFITS[0]> = {};
+  const defaultFoodsById: Record<string, typeof FOODS[0]> = {};
+
+  OUTFITS.forEach(outfit => {
+    defaultOutfitsById[outfit.id] = outfit;
+  });
+
+  FOODS.forEach(food => {
+    defaultFoodsById[food.id] = food;
+  });
+
+  return { defaultOutfitsById, defaultFoodsById };
+};
+
+const { defaultOutfitsById, defaultFoodsById } = createReferenceMaps();
+
+// 2. Define initial global state
 let globalStore = {
   coins: 100,
   outfits: OUTFITS,
@@ -24,6 +42,7 @@ let globalStore = {
   }
 };
 
+// 3. Store management utilities
 const listeners = new Set<() => void>();
 
 const notifyListeners = () => {
@@ -37,63 +56,79 @@ const saveStore = async () => {
       _version: STORE_VERSION,
     }));
   } catch (error) {
-    console.log('Error saving store data:', error);
+    console.error('Error saving store:', error);
   }
 };
 
-// Load saved store
+// 4. Migration handling
+const migrateData = (oldData: any) => {
+  if (!oldData) return globalStore;
+
+  // Migration from v3 to v4
+  if (oldData._version === 3) {
+    return {
+      ...globalStore,
+      coins: oldData.coins || globalStore.coins,
+      foodQuantities: oldData.foodQuantities || globalStore.foodQuantities,
+      equippedOutfits: oldData.equippedOutfits || globalStore.equippedOutfits,
+      outfits: oldData.outfits?.map((outfit: any) => ({
+        ...defaultOutfitsById[outfit.id],
+        ...outfit,
+        // Add new petImage field from defaults
+        petImage: defaultOutfitsById[outfit.id]?.petImage 
+      })) || OUTFITS,
+      foods: oldData.foods?.map((food: any) => ({
+        ...defaultFoodsById[food.id],
+        ...food
+      })) || FOODS
+    };
+  }
+
+  return null;
+};
+
+// 5. Load initial data
 (async () => {
   try {
     const savedData = await AsyncStorage.getItem(STORAGE_KEY);
     if (savedData) {
       const saved = JSON.parse(savedData);
 
-      if (saved._version !== STORE_VERSION) {
-        console.log('Store version outdated. Resetting store data.');
-        await AsyncStorage.removeItem(STORAGE_KEY);
+      // Handle version migrations
+      if (saved._version && saved._version !== STORE_VERSION) {
+        const migrated = migrateData(saved);
+        if (migrated) {
+          globalStore = migrated;
+          await saveStore(); // Save migrated data
+        } else {
+          await AsyncStorage.removeItem(STORAGE_KEY); // Reset if no migration path
+        }
         return;
       }
 
-      // Create a map of default outfits by ID for reference
-      const defaultOutfitsById: Record<string, Outfit> = {};
-      OUTFITS.forEach(outfit => {
-        defaultOutfitsById[outfit.id] = outfit;
-      });
-
-      // Create a map of default foods by ID for reference
-      const defaultFoodsById: Record<string, Food> = {};
-      FOODS.forEach(food => {
-        defaultFoodsById[food.id] = food;
-      });
-
+      // Normal load for current version
       globalStore = {
         ...globalStore,
         coins: saved.coins ?? globalStore.coins,
         foodQuantities: saved.foodQuantities ?? globalStore.foodQuantities,
         equippedOutfits: saved.equippedOutfits ?? globalStore.equippedOutfits,
-        
-        // Merge saved outfits with defaults to preserve images
-        outfits: saved.outfits?.map((savedOutfit: Outfit) => {
-          return {
-            ...defaultOutfitsById[savedOutfit.id], // Default properties
-            ...savedOutfit,                       // Saved properties
-          };
-        }) ?? OUTFITS,
-        
-        // Merge saved foods with defaults
-        foods: saved.foods?.map((savedFood: Food) => {
-          return {
-            ...defaultFoodsById[savedFood.id], // Default properties
-            ...savedFood,                     // Saved properties
-          };
-        }) ?? FOODS,
+        outfits: saved.outfits?.map((outfit: any) => ({
+          ...defaultOutfitsById[outfit.id],
+          ...outfit
+        })) ?? OUTFITS,
+        foods: saved.foods?.map((food: any) => ({
+          ...defaultFoodsById[food.id],
+          ...food
+        })) ?? FOODS
       };
     }
   } catch (error) {
-    console.log('Error loading store data:', error);
+    console.error('Error loading store:', error);
+    await AsyncStorage.removeItem(STORAGE_KEY); // Reset on error
   }
 })();
 
+// 6. React hook
 const useStore = () => {
   const [state, setState] = useState(globalStore);
 
@@ -102,6 +137,7 @@ const useStore = () => {
       setState({ ...globalStore });
       saveStore();
     };
+
     listeners.add(listener);
     return () => {
       listeners.delete(listener);
@@ -113,13 +149,13 @@ const useStore = () => {
     notifyListeners();
   };
 
+  // Store actions
   const purchaseItem = (itemId: string, quantity: number = 1) => {
     updateStore(store => {
       const item = [...store.outfits, ...store.foods].find(o => o.id === itemId);
       if (!item || store.coins < item.price * quantity) return store;
 
       const newCoins = store.coins - (item.price * quantity);
-      console.log(`Purchasing ${quantity} items, coins: ${store.coins} -> ${newCoins}`);
 
       if (item.type === 'food') {
         const currentQuantity = store.foodQuantities[itemId] || 0;
@@ -163,7 +199,6 @@ const useStore = () => {
 
     updateStore(store => {
       const newCoins = store.coins + amount;
-      console.log(`Earning coins: ${store.coins} -> ${newCoins}`);
       return {
         ...store,
         coins: newCoins
