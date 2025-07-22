@@ -1,3 +1,4 @@
+// hooks/usePet.ts
 import * as SecureStore from 'expo-secure-store';
 import { useEffect, useState } from 'react';
 import useStore from './useStore';
@@ -13,7 +14,7 @@ const usePet = () => {
   const [showFood, setShowFood] = useState(false);
   const [isSleeping, setIsSleeping] = useState(false);
   const [sleepStartTime, setSleepStartTime] = useState<number | null>(null);
-  const { foodQuantities, purchaseItem } = useStore();
+  const { foodQuantities, consumeFood } = useStore(); // Changed from purchaseItem to consumeFood
 
   // Load sleep state on app start
   useEffect(() => {
@@ -87,8 +88,8 @@ const usePet = () => {
       setHappiness(prev => Math.min(100, prev + 5));
       setExperience(prev => prev + 10);
       
-      // Decrement food quantity
-      purchaseItem(foodItem.id, -1);
+      // Consume food without refunding coins
+      consumeFood(foodItem.id);
     }
   };
 

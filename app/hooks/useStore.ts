@@ -179,6 +179,22 @@ const useStore = () => {
     });
   };
 
+  // New function to consume food without refunding coins
+  const consumeFood = (itemId: string) => {
+    updateStore(store => {
+      const currentQuantity = store.foodQuantities[itemId] || 0;
+      if (currentQuantity <= 0) return store;
+
+      return {
+        ...store,
+        foodQuantities: {
+          ...store.foodQuantities,
+          [itemId]: currentQuantity - 1
+        }
+      };
+    });
+  };
+
   const equipOutfit = (outfitId: string) => {
     updateStore(store => {
       const outfit = store.outfits.find(o => o.id === outfitId);
@@ -215,6 +231,7 @@ const useStore = () => {
     foodQuantities: state.foodQuantities,
     equippedOutfits: state.equippedOutfits,
     purchaseItem,
+    consumeFood, // Added the new function
     equipOutfit,
     earnCoins,
   };
