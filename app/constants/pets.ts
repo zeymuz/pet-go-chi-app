@@ -284,8 +284,54 @@ const FOODS: Food[] = [
     petImage: require('../../assets/images/galaxy.gif'),
     type: 'food',
     hungerRestore: 60
+  },
+   {
+    id: 'energy_potion_small',
+    name: 'Small Energy Potion',
+    price: 30,
+    owned: false,
+    image: require('../../assets/images/adaptive-icon.png'),
+    petImage: require('../../assets/images/galaxy.gif'),
+    type: 'food',
+    hungerRestore: 0, // Doesn't affect hunger
+    energyRestore: 20 // New property for energy restoration
+  },
+  {
+    id: 'energy_potion_medium',
+    name: 'Medium Energy Potion',
+    price: 60,
+    owned: false,
+    image: require('../../assets/images/adaptive-icon.png'),
+    petImage: require('../../assets/images/galaxy.gif'),
+    type: 'food',
+    hungerRestore: 0,
+    energyRestore: 40
+  },
+  {
+    id: 'energy_potion_large',
+    name: 'Large Energy Potion',
+    price: 100,
+    owned: false,
+    image: require('../../assets/images/adaptive-icon.png'),
+    petImage: require('../../assets/images/galaxy.gif'),
+    type: 'food',
+    hungerRestore: 0,
+    energyRestore: 70
+  },
+  {
+    id: 'energy_potion_epic',
+    name: 'Epic Energy Potion',
+    price: 150,
+    owned: false,
+    image: require('../../assets/images/adaptive-icon.png'),
+    petImage: require('../../assets/images/galaxy.gif'),
+    type: 'food',
+    hungerRestore: 0,
+    energyRestore: 100
   }
 ];
+
+
 
 export { FOODS, OUTFITS };
 

@@ -12,6 +12,7 @@ interface StoreItemProps {
     owned: boolean;
     type: string;
     hungerRestore?: number;
+    energyRestore: number;
   };
   onPurchase: (quantity: number) => void;
   onEquip: () => void;
@@ -63,6 +64,9 @@ const imageSource = imageError
       {item.type === 'food' && item.hungerRestore && (
         <Text style={styles.hungerRestore}>Restores: {item.hungerRestore}%</Text>
       )}
+      {item.type === 'food' && item.energyRestore && (
+  <Text style={styles.energyRestore}>Energy: +{item.energyRestore}%</Text>
+)}
       
       {item.type === 'food' ? (
         <View style={styles.quantityContainer}>
@@ -159,6 +163,12 @@ const styles = StyleSheet.create({
     color: COLORS.hunger,
     marginBottom: verticalScale(5),
   },
+  energyRestore: {
+  fontFamily: 'PressStart2P',
+  fontSize: scaleFont(8),
+  color: COLORS.energy,
+  marginBottom: verticalScale(5),
+},
   quantityContainer: {
     flexDirection: 'row',
     alignItems: 'center',

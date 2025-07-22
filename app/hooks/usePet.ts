@@ -82,16 +82,26 @@ const usePet = () => {
     }
   }, [experience, level]);
 
-  const feed = (foodItem?: { id: string; hungerRestore: number }) => {
-    if (foodItem && foodQuantities[foodItem.id] > 0) {
+  // hooks/usePet.ts
+const feed = (foodItem?: { id: string; hungerRestore: number; energyRestore?: number }) => {
+  if (foodItem && foodQuantities[foodItem.id] > 0) {
+    // Handle hunger restoration (if any)
+    if (foodItem.hungerRestore) {
       setHunger(prev => Math.max(0, prev - foodItem.hungerRestore));
-      setHappiness(prev => Math.min(100, prev + 5));
-      setExperience(prev => prev + 10);
-      
-      // Consume food without refunding coins
-      consumeFood(foodItem.id);
     }
-  };
+    
+    // Handle energy restoration (if any)
+    if (foodItem.energyRestore) {
+      setEnergy(prev => Math.min(100, prev + foodItem.energyRestore!));
+    }
+    
+    setHappiness(prev => Math.min(100, prev + 5));
+    setExperience(prev => prev + 10);
+    
+    // Consume food without refunding coins
+    consumeFood(foodItem.id);
+  }
+};
 
   const play = () => {
     if (energy < 15 || hunger > 85) return;

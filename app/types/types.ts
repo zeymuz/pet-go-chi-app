@@ -6,6 +6,7 @@ interface StoreItem {
   image: any;
   owned: boolean;
   petImage: any; 
+   energyRestore?: number;
 }
 
 interface Outfit extends StoreItem {
