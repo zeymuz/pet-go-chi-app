@@ -24,7 +24,7 @@ export default function GameButton({ image, text, onPress }: GameButtonProps) {
 
 const styles = StyleSheet.create({
   button: {
-    backgroundColor: '#fff9b0',
+    backgroundColor: '#FFD700',
     padding: verticalScale(20),
     borderRadius: scale(12),
     alignItems: 'center',

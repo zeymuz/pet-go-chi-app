@@ -122,7 +122,7 @@ const styles = StyleSheet.create({
     paddingHorizontal: scale(12),
     marginTop: verticalScale(15),
     borderBottomWidth: scale(2),
-    borderBottomColor: '#fff9b0',
+    borderBottomColor: '#FFD700',
   },
   columnWrapper: {
     justifyContent: 'space-between',

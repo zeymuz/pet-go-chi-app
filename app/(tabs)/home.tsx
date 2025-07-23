@@ -362,7 +362,7 @@ const styles = StyleSheet.create({
     marginBottom: verticalScale(12),
   },
   outfitsButton: {
-    backgroundColor: '#fff9b0',
+    backgroundColor: '#FFD700',
     padding: verticalScale(10),
     borderRadius: scale(8),
     alignItems: 'center',

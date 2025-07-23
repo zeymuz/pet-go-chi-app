@@ -61,7 +61,7 @@ const styles = StyleSheet.create({
   container: {
     width: '100%',
     padding: verticalScale(10),
-    backgroundColor: '#fff9b0',
+    backgroundColor: '#FFD700',
     borderRadius: scale(8),
     ...Platform.select({
       ios: {
@@ -92,7 +92,7 @@ const styles = StyleSheet.create({
   barBackground: {
     flex: 1,
     height: verticalScale(10),
-    backgroundColor: '#ddd',
+    backgroundColor: 'lightgrey',
     borderRadius: scale(5),
     overflow: 'hidden',
   },
@@ -111,7 +111,7 @@ const styles = StyleSheet.create({
   experienceBar: {
     flex: 1,
     height: verticalScale(8),
-    backgroundColor: '#ddd',
+    backgroundColor: 'lightgrey',
     borderRadius: scale(4),
     overflow: 'hidden',
   },

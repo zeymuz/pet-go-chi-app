@@ -124,7 +124,7 @@ export default function StoreItem({
 
 const styles = StyleSheet.create({
   container: {
-    backgroundColor: '#fff9b0',
+    backgroundColor: '#FFD700',
     borderRadius: scale(8),
     padding: verticalScale(6),
     margin: scale(12),
