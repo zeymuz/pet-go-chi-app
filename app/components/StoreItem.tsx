@@ -12,7 +12,7 @@ interface StoreItemProps {
     owned: boolean;
     type: string;
     hungerRestore?: number;
-    energyRestore: number;
+    energyRestore?: number;
   };
   onPurchase: (quantity: number) => void;
   onEquip: () => void;
@@ -32,12 +32,11 @@ export default function StoreItem({
   const [imageError, setImageError] = React.useState(false);
   const [purchaseQuantity, setPurchaseQuantity] = useState(1);
 
-  // Fallback to default image if loading fails
-const imageSource = imageError 
-  ? require('../../assets/images/adaptive-icon.png')
-  : typeof item.image === 'string' 
-    ? { uri: item.image } 
-    : item.image; // Still using item.image here
+  const imageSource = imageError 
+    ? require('../../assets/images/adaptive-icon.png')
+    : typeof item.image === 'string' 
+      ? { uri: item.image } 
+      : item.image;
 
   const handleQuantityChange = (change: number) => {
     const newQuantity = Math.max(1, purchaseQuantity + change);
@@ -61,12 +60,14 @@ const imageSource = imageError
       />
       <Text style={styles.name}>{item.name}</Text>
       <Text style={styles.price}>{item.price} coins</Text>
-      {item.type === 'food' && item.hungerRestore && (
+      
+      {item.type === 'food' && item.hungerRestore !== undefined && (
         <Text style={styles.hungerRestore}>Restores: {item.hungerRestore}%</Text>
       )}
-      {item.type === 'food' && item.energyRestore && (
-  <Text style={styles.energyRestore}>Energy: +{item.energyRestore}%</Text>
-)}
+      
+      {item.type === 'food' && item.energyRestore !== undefined && (
+        <Text style={styles.energyRestore}>Energy: +{item.energyRestore}%</Text>
+      )}
       
       {item.type === 'food' ? (
         <View style={styles.quantityContainer}>
@@ -164,11 +165,11 @@ const styles = StyleSheet.create({
     marginBottom: verticalScale(5),
   },
   energyRestore: {
-  fontFamily: 'PressStart2P',
-  fontSize: scaleFont(8),
-  color: COLORS.energy,
-  marginBottom: verticalScale(5),
-},
+    fontFamily: 'PressStart2P',
+    fontSize: scaleFont(8),
+    color: COLORS.energy,
+    marginBottom: verticalScale(5),
+  },
   quantityContainer: {
     flexDirection: 'row',
     alignItems: 'center',
