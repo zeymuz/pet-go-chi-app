@@ -1,18 +1,20 @@
 // utils/revenueCat.ts
+import { Platform } from 'react-native';
 import Purchases from 'react-native-purchases';
 
 export const configureRevenueCat = () => {
-  if (Platform.OS === 'ios') {
-    Purchases.configure({
-      apiKey: "appl_YOUR_REVENUECAT_API_KEY", // Replace with your actual RevenueCat API key
-      appUserID: null,
-    });
-  }
+  Purchases.configure({
+    apiKey: Platform.OS === 'ios' 
+      ? "appl_dIsyngMoPJOuOqFKzckdSCPNhgf" // Replace with your iOS key
+      : "public_YOUR_ANDROID_API_KEY", // Replace with your Android key
+    appUserID: null,
+  });
 };
 
 export const getOfferings = async () => {
   try {
     const offerings = await Purchases.getOfferings();
+    console.log('Offerings:', offerings);
     return offerings.current;
   } catch (error) {
     console.log('Error fetching offerings:', error);
@@ -35,5 +37,14 @@ export const restorePurchases = async () => {
     return customerInfo;
   } catch (error) {
     throw error;
+  }
+};
+
+export const getCustomerInfo = async () => {
+  try {
+    return await Purchases.getCustomerInfo();
+  } catch (error) {
+    console.log('Error getting customer info:', error);
+    return null;
   }
 };

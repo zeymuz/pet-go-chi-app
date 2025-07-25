@@ -1,9 +1,12 @@
+// app/_layout.tsx
 import { useFonts } from 'expo-font';
 import { Stack } from 'expo-router';
 import * as SplashScreen from 'expo-splash-screen';
 import { StatusBar } from 'expo-status-bar';
 import { useEffect } from 'react';
 import { StyleSheet, View } from 'react-native';
+import Purchases from 'react-native-purchases';
+import { configureRevenueCat } from '../utils/revenueCat';
 
 SplashScreen.preventAutoHideAsync();
 
@@ -14,6 +17,12 @@ export default function RootLayout() {
 
   useEffect(() => {
     if (fontsLoaded) {
+      // Initialize RevenueCat
+      configureRevenueCat();
+      
+      // Set debug logs (remove in production)
+      Purchases.setDebugLogsEnabled(true);
+      
       SplashScreen.hideAsync();
     }
   }, [fontsLoaded]);

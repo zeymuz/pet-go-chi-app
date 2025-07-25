@@ -2,7 +2,8 @@
 import { useIsFocused } from '@react-navigation/native';
 import React, { useEffect, useState } from 'react';
 import { Alert, Platform, StyleSheet, Text, TouchableOpacity, View } from 'react-native';
-import Purchases, { PurchasesOffering } from 'react-native-purchases';
+import { PurchasesOffering } from 'react-native-purchases';
+import { configureRevenueCat, getOfferings, purchasePackage, restorePurchases } from '../../utils/revenueCat';
 import { scale, scaleFont, verticalScale } from '../../utils/scaling';
 import COLORS from '../constants/colors';
 
@@ -78,17 +79,11 @@ export default function CoinsScreen() {
     }
 
     try {
-      Purchases.setDebugLogsEnabled(true);
-      Purchases.configure({
-        apiKey: Platform.OS === 'ios' 
-          ? "appl_YOUR_REVENUECAT_IOS_API_KEY" 
-          : "appl_YOUR_REVENUECAT_ANDROID_API_KEY",
-        appUserID: null,
-      });
-
-      const offerings = await Purchases.getOfferings();
-      if (offerings.current && offerings.current.availablePackages.length > 0) {
-        setOfferings(offerings.current);
+      configureRevenueCat();
+      const offerings = await getOfferings();
+      
+      if (offerings && offerings.availablePackages.length > 0) {
+        setOfferings(offerings);
       } else {
         setUsingMockData(true);
       }
@@ -105,12 +100,11 @@ export default function CoinsScreen() {
       setIsLoading(true);
       
       if (usingMockData) {
-        // Mock purchase for development
         Alert.alert('Success', 'Mock purchase completed!');
         return;
       }
 
-      const { customerInfo } = await Purchases.purchasePackage(packageIdentifier);
+      const customerInfo = await purchasePackage(packageIdentifier);
       
       if (customerInfo.entitlements.active['premium']) {
         Alert.alert('Success', 'Your purchase was successful!');
@@ -133,7 +127,7 @@ export default function CoinsScreen() {
         return;
       }
 
-      const customerInfo = await Purchases.restorePurchases();
+      const customerInfo = await restorePurchases();
       
       if (customerInfo.entitlements.active['premium']) {
         Alert.alert('Success', 'Your purchases have been restored!');

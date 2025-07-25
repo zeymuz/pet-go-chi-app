@@ -150,6 +150,13 @@ const useStore = () => {
   };
 
   // Store actions
+   const addCoins = (amount: number) => {
+    updateStore(store => ({
+      ...store,
+      coins: store.coins + amount
+    }));
+  };
+
   const purchaseItem = (itemId: string, quantity: number = 1) => {
     updateStore(store => {
       const item = [...store.outfits, ...store.foods].find(o => o.id === itemId);
@@ -234,6 +241,7 @@ const useStore = () => {
     consumeFood, // Added the new function
     equipOutfit,
     earnCoins,
+    addCoins,
   };
 };
 
