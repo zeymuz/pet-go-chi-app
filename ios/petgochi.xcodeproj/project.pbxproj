@@ -7,12 +7,12 @@
 	objects = {
 
 /* Begin PBXBuildFile section */
-		0A2967515009DDA16109EA10 /* ExpoModulesProvider.swift in Sources */ = {isa = PBXBuildFile; fileRef = 25A2915CD76915F0E02868C0 /* ExpoModulesProvider.swift */; };
+		0E848A29ADC13349ACD893B4 /* PrivacyInfo.xcprivacy in Resources */ = {isa = PBXBuildFile; fileRef = 7562A7D0243FFC9AD8C3E1A8 /* PrivacyInfo.xcprivacy */; };
 		13B07FBF1A68108700A75B9A /* Images.xcassets in Resources */ = {isa = PBXBuildFile; fileRef = 13B07FB51A68108700A75B9A /* Images.xcassets */; };
-		3081AA357378B50BC2006DFE /* PrivacyInfo.xcprivacy in Resources */ = {isa = PBXBuildFile; fileRef = FDEE286618173D0E1DB3CC27 /* PrivacyInfo.xcprivacy */; };
+		309A87ACB26EA910715EB8CB /* ExpoModulesProvider.swift in Sources */ = {isa = PBXBuildFile; fileRef = C537676AABB1D39243D07842 /* ExpoModulesProvider.swift */; };
 		3E461D99554A48A4959DE609 /* SplashScreen.storyboard in Resources */ = {isa = PBXBuildFile; fileRef = AA286B85B6C04FC6940260E9 /* SplashScreen.storyboard */; };
-		B25BB238534989F119E0F7DF /* libPods-petgochi.a in Frameworks */ = {isa = PBXBuildFile; fileRef = AFCF77365CDF05BD4C13E9B9 /* libPods-petgochi.a */; };
 		BB2F792D24A3F905000567C9 /* Expo.plist in Resources */ = {isa = PBXBuildFile; fileRef = BB2F792C24A3F905000567C9 /* Expo.plist */; };
+		D086A513298CB8080547F1B4 /* libPods-petgochi.a in Frameworks */ = {isa = PBXBuildFile; fileRef = ED6D5C350A5D54FB4B21D8C8 /* libPods-petgochi.a */; };
 		F11748422D0307B40044C1D9 /* AppDelegate.swift in Sources */ = {isa = PBXBuildFile; fileRef = F11748412D0307B40044C1D9 /* AppDelegate.swift */; };
 /* End PBXBuildFile section */
 
@@ -20,16 +20,16 @@
 		13B07F961A680F5B00A75B9A /* petgochi.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = petgochi.app; sourceTree = BUILT_PRODUCTS_DIR; };
 		13B07FB51A68108700A75B9A /* Images.xcassets */ = {isa = PBXFileReference; lastKnownFileType = folder.assetcatalog; name = Images.xcassets; path = petgochi/Images.xcassets; sourceTree = "<group>"; };
 		13B07FB61A68108700A75B9A /* Info.plist */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text.plist.xml; name = Info.plist; path = petgochi/Info.plist; sourceTree = "<group>"; };
-		25A2915CD76915F0E02868C0 /* ExpoModulesProvider.swift */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.swift; name = ExpoModulesProvider.swift; path = "Pods/Target Support Files/Pods-petgochi/ExpoModulesProvider.swift"; sourceTree = "<group>"; };
-		63EEAF55C99AFA670BB566D0 /* Pods-petgochi.release.xcconfig */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = text.xcconfig; name = "Pods-petgochi.release.xcconfig"; path = "Target Support Files/Pods-petgochi/Pods-petgochi.release.xcconfig"; sourceTree = "<group>"; };
-		679ABBDE83E398F9E1F8F5E9 /* Pods-petgochi.debug.xcconfig */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = text.xcconfig; name = "Pods-petgochi.debug.xcconfig"; path = "Target Support Files/Pods-petgochi/Pods-petgochi.debug.xcconfig"; sourceTree = "<group>"; };
+		7562A7D0243FFC9AD8C3E1A8 /* PrivacyInfo.xcprivacy */ = {isa = PBXFileReference; includeInIndex = 1; name = PrivacyInfo.xcprivacy; path = petgochi/PrivacyInfo.xcprivacy; sourceTree = "<group>"; };
+		7C29EE73536B2874350A1D03 /* Pods-petgochi.release.xcconfig */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = text.xcconfig; name = "Pods-petgochi.release.xcconfig"; path = "Target Support Files/Pods-petgochi/Pods-petgochi.release.xcconfig"; sourceTree = "<group>"; };
+		A33A98C4D04BB85C61338836 /* Pods-petgochi.debug.xcconfig */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = text.xcconfig; name = "Pods-petgochi.debug.xcconfig"; path = "Target Support Files/Pods-petgochi/Pods-petgochi.debug.xcconfig"; sourceTree = "<group>"; };
 		AA286B85B6C04FC6940260E9 /* SplashScreen.storyboard */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = file.storyboard; name = SplashScreen.storyboard; path = petgochi/SplashScreen.storyboard; sourceTree = "<group>"; };
-		AFCF77365CDF05BD4C13E9B9 /* libPods-petgochi.a */ = {isa = PBXFileReference; explicitFileType = archive.ar; includeInIndex = 0; path = "libPods-petgochi.a"; sourceTree = BUILT_PRODUCTS_DIR; };
 		BB2F792C24A3F905000567C9 /* Expo.plist */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text.plist.xml; path = Expo.plist; sourceTree = "<group>"; };
+		C537676AABB1D39243D07842 /* ExpoModulesProvider.swift */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.swift; name = ExpoModulesProvider.swift; path = "Pods/Target Support Files/Pods-petgochi/ExpoModulesProvider.swift"; sourceTree = "<group>"; };
 		ED297162215061F000B7C4FE /* JavaScriptCore.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = JavaScriptCore.framework; path = System/Library/Frameworks/JavaScriptCore.framework; sourceTree = SDKROOT; };
+		ED6D5C350A5D54FB4B21D8C8 /* libPods-petgochi.a */ = {isa = PBXFileReference; explicitFileType = archive.ar; includeInIndex = 0; path = "libPods-petgochi.a"; sourceTree = BUILT_PRODUCTS_DIR; };
 		F11748412D0307B40044C1D9 /* AppDelegate.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; name = AppDelegate.swift; path = petgochi/AppDelegate.swift; sourceTree = "<group>"; };
 		F11748442D0722820044C1D9 /* petgochi-Bridging-Header.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; name = "petgochi-Bridging-Header.h"; path = "petgochi/petgochi-Bridging-Header.h"; sourceTree = "<group>"; };
-		FDEE286618173D0E1DB3CC27 /* PrivacyInfo.xcprivacy */ = {isa = PBXFileReference; includeInIndex = 1; name = PrivacyInfo.xcprivacy; path = petgochi/PrivacyInfo.xcprivacy; sourceTree = "<group>"; };
 /* End PBXFileReference section */
 
 /* Begin PBXFrameworksBuildPhase section */
@@ -37,7 +37,7 @@
 			isa = PBXFrameworksBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
-				B25BB238534989F119E0F7DF /* libPods-petgochi.a in Frameworks */,
+				D086A513298CB8080547F1B4 /* libPods-petgochi.a in Frameworks */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -53,44 +53,26 @@
 				13B07FB51A68108700A75B9A /* Images.xcassets */,
 				13B07FB61A68108700A75B9A /* Info.plist */,
 				AA286B85B6C04FC6940260E9 /* SplashScreen.storyboard */,
-				FDEE286618173D0E1DB3CC27 /* PrivacyInfo.xcprivacy */,
+				7562A7D0243FFC9AD8C3E1A8 /* PrivacyInfo.xcprivacy */,
 			);
 			name = petgochi;
+			sourceTree = "<group>";
+		};
+		19B51D30AAF66EF6285C6A0D /* ExpoModulesProviders */ = {
+			isa = PBXGroup;
+			children = (
+				FEF4A26CED4959D76BA4943C /* petgochi */,
+			);
+			name = ExpoModulesProviders;
 			sourceTree = "<group>";
 		};
 		2D16E6871FA4F8E400B85C8A /* Frameworks */ = {
 			isa = PBXGroup;
 			children = (
 				ED297162215061F000B7C4FE /* JavaScriptCore.framework */,
-				AFCF77365CDF05BD4C13E9B9 /* libPods-petgochi.a */,
+				ED6D5C350A5D54FB4B21D8C8 /* libPods-petgochi.a */,
 			);
 			name = Frameworks;
-			sourceTree = "<group>";
-		};
-		55957EC3313BEA7EBC2397FD /* ExpoModulesProviders */ = {
-			isa = PBXGroup;
-			children = (
-				7A8FFC88500C69674A643798 /* petgochi */,
-			);
-			name = ExpoModulesProviders;
-			sourceTree = "<group>";
-		};
-		6E8F7A41BD730F6599DC2BE2 /* Pods */ = {
-			isa = PBXGroup;
-			children = (
-				679ABBDE83E398F9E1F8F5E9 /* Pods-petgochi.debug.xcconfig */,
-				63EEAF55C99AFA670BB566D0 /* Pods-petgochi.release.xcconfig */,
-			);
-			name = Pods;
-			path = Pods;
-			sourceTree = "<group>";
-		};
-		7A8FFC88500C69674A643798 /* petgochi */ = {
-			isa = PBXGroup;
-			children = (
-				25A2915CD76915F0E02868C0 /* ExpoModulesProvider.swift */,
-			);
-			name = petgochi;
 			sourceTree = "<group>";
 		};
 		832341AE1AAA6A7D00B99B32 /* Libraries */ = {
@@ -107,8 +89,8 @@
 				832341AE1AAA6A7D00B99B32 /* Libraries */,
 				83CBBA001A601CBA00E9B192 /* Products */,
 				2D16E6871FA4F8E400B85C8A /* Frameworks */,
-				6E8F7A41BD730F6599DC2BE2 /* Pods */,
-				55957EC3313BEA7EBC2397FD /* ExpoModulesProviders */,
+				8F3F053BFBCA7F60B355866F /* Pods */,
+				19B51D30AAF66EF6285C6A0D /* ExpoModulesProviders */,
 			);
 			indentWidth = 2;
 			sourceTree = "<group>";
@@ -123,6 +105,16 @@
 			name = Products;
 			sourceTree = "<group>";
 		};
+		8F3F053BFBCA7F60B355866F /* Pods */ = {
+			isa = PBXGroup;
+			children = (
+				A33A98C4D04BB85C61338836 /* Pods-petgochi.debug.xcconfig */,
+				7C29EE73536B2874350A1D03 /* Pods-petgochi.release.xcconfig */,
+			);
+			name = Pods;
+			path = Pods;
+			sourceTree = "<group>";
+		};
 		BB2F792B24A3F905000567C9 /* Supporting */ = {
 			isa = PBXGroup;
 			children = (
@@ -130,6 +122,14 @@
 			);
 			name = Supporting;
 			path = petgochi/Supporting;
+			sourceTree = "<group>";
+		};
+		FEF4A26CED4959D76BA4943C /* petgochi */ = {
+			isa = PBXGroup;
+			children = (
+				C537676AABB1D39243D07842 /* ExpoModulesProvider.swift */,
+			);
+			name = petgochi;
 			sourceTree = "<group>";
 		};
 /* End PBXGroup section */
@@ -140,13 +140,13 @@
 			buildConfigurationList = 13B07F931A680F5B00A75B9A /* Build configuration list for PBXNativeTarget "petgochi" */;
 			buildPhases = (
 				08A4A3CD28434E44B6B9DE2E /* [CP] Check Pods Manifest.lock */,
-				5B7D3C09F8E389C01771DE96 /* [Expo] Configure project */,
+				97A89106BFCC9252C4523AF0 /* [Expo] Configure project */,
 				13B07F871A680F5B00A75B9A /* Sources */,
 				13B07F8C1A680F5B00A75B9A /* Frameworks */,
 				13B07F8E1A680F5B00A75B9A /* Resources */,
 				00DD1BFF1BD5951E006B06BC /* Bundle React Native code and images */,
 				800E24972A6A228C8D4807E9 /* [CP] Copy Pods Resources */,
-				2CB8E5B2FD8F6F0A487D71AF /* [CP] Embed Pods Frameworks */,
+				8E3CABA26BED68E6E5CF0601 /* [CP] Embed Pods Frameworks */,
 			);
 			buildRules = (
 			);
@@ -196,7 +196,7 @@
 				BB2F792D24A3F905000567C9 /* Expo.plist in Resources */,
 				13B07FBF1A68108700A75B9A /* Images.xcassets in Resources */,
 				3E461D99554A48A4959DE609 /* SplashScreen.storyboard in Resources */,
-				3081AA357378B50BC2006DFE /* PrivacyInfo.xcprivacy in Resources */,
+				0E848A29ADC13349ACD893B4 /* PrivacyInfo.xcprivacy in Resources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -239,43 +239,6 @@
 			shellPath = /bin/sh;
 			shellScript = "diff \"${PODS_PODFILE_DIR_PATH}/Podfile.lock\" \"${PODS_ROOT}/Manifest.lock\" > /dev/null\nif [ $? != 0 ] ; then\n    # print error to STDERR\n    echo \"error: The sandbox is not in sync with the Podfile.lock. Run 'pod install' or update your CocoaPods installation.\" >&2\n    exit 1\nfi\n# This output is used by Xcode 'outputs' to avoid re-running this script phase.\necho \"SUCCESS\" > \"${SCRIPT_OUTPUT_FILE_0}\"\n";
 			showEnvVarsInLog = 0;
-		};
-		2CB8E5B2FD8F6F0A487D71AF /* [CP] Embed Pods Frameworks */ = {
-			isa = PBXShellScriptBuildPhase;
-			buildActionMask = 2147483647;
-			files = (
-			);
-			inputPaths = (
-				"${PODS_ROOT}/Target Support Files/Pods-petgochi/Pods-petgochi-frameworks.sh",
-				"${PODS_XCFRAMEWORKS_BUILD_DIR}/hermes-engine/Pre-built/hermes.framework/hermes",
-			);
-			name = "[CP] Embed Pods Frameworks";
-			outputPaths = (
-				"${TARGET_BUILD_DIR}/${FRAMEWORKS_FOLDER_PATH}/hermes.framework",
-			);
-			runOnlyForDeploymentPostprocessing = 0;
-			shellPath = /bin/sh;
-			shellScript = "\"${PODS_ROOT}/Target Support Files/Pods-petgochi/Pods-petgochi-frameworks.sh\"\n";
-			showEnvVarsInLog = 0;
-		};
-		5B7D3C09F8E389C01771DE96 /* [Expo] Configure project */ = {
-			isa = PBXShellScriptBuildPhase;
-			alwaysOutOfDate = 1;
-			buildActionMask = 2147483647;
-			files = (
-			);
-			inputFileListPaths = (
-			);
-			inputPaths = (
-			);
-			name = "[Expo] Configure project";
-			outputFileListPaths = (
-			);
-			outputPaths = (
-			);
-			runOnlyForDeploymentPostprocessing = 0;
-			shellPath = /bin/sh;
-			shellScript = "# This script configures Expo modules and generates the modules provider file.\nbash -l -c \"./Pods/Target\\ Support\\ Files/Pods-petgochi/expo-configure-project.sh\"\n";
 		};
 		800E24972A6A228C8D4807E9 /* [CP] Copy Pods Resources */ = {
 			isa = PBXShellScriptBuildPhase;
@@ -323,6 +286,43 @@
 			shellScript = "\"${PODS_ROOT}/Target Support Files/Pods-petgochi/Pods-petgochi-resources.sh\"\n";
 			showEnvVarsInLog = 0;
 		};
+		8E3CABA26BED68E6E5CF0601 /* [CP] Embed Pods Frameworks */ = {
+			isa = PBXShellScriptBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+			);
+			inputPaths = (
+				"${PODS_ROOT}/Target Support Files/Pods-petgochi/Pods-petgochi-frameworks.sh",
+				"${PODS_XCFRAMEWORKS_BUILD_DIR}/hermes-engine/Pre-built/hermes.framework/hermes",
+			);
+			name = "[CP] Embed Pods Frameworks";
+			outputPaths = (
+				"${TARGET_BUILD_DIR}/${FRAMEWORKS_FOLDER_PATH}/hermes.framework",
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+			shellPath = /bin/sh;
+			shellScript = "\"${PODS_ROOT}/Target Support Files/Pods-petgochi/Pods-petgochi-frameworks.sh\"\n";
+			showEnvVarsInLog = 0;
+		};
+		97A89106BFCC9252C4523AF0 /* [Expo] Configure project */ = {
+			isa = PBXShellScriptBuildPhase;
+			alwaysOutOfDate = 1;
+			buildActionMask = 2147483647;
+			files = (
+			);
+			inputFileListPaths = (
+			);
+			inputPaths = (
+			);
+			name = "[Expo] Configure project";
+			outputFileListPaths = (
+			);
+			outputPaths = (
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+			shellPath = /bin/sh;
+			shellScript = "# This script configures Expo modules and generates the modules provider file.\nbash -l -c \"./Pods/Target\\ Support\\ Files/Pods-petgochi/expo-configure-project.sh\"\n";
+		};
 /* End PBXShellScriptBuildPhase section */
 
 /* Begin PBXSourcesBuildPhase section */
@@ -331,7 +331,7 @@
 			buildActionMask = 2147483647;
 			files = (
 				F11748422D0307B40044C1D9 /* AppDelegate.swift in Sources */,
-				0A2967515009DDA16109EA10 /* ExpoModulesProvider.swift in Sources */,
+				309A87ACB26EA910715EB8CB /* ExpoModulesProvider.swift in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -340,7 +340,7 @@
 /* Begin XCBuildConfiguration section */
 		13B07F941A680F5B00A75B9A /* Debug */ = {
 			isa = XCBuildConfiguration;
-			baseConfigurationReference = 679ABBDE83E398F9E1F8F5E9 /* Pods-petgochi.debug.xcconfig */;
+			baseConfigurationReference = A33A98C4D04BB85C61338836 /* Pods-petgochi.debug.xcconfig */;
 			buildSettings = {
 				ASSETCATALOG_COMPILER_APPICON_NAME = AppIcon;
 				CLANG_ENABLE_MODULES = YES;
@@ -376,7 +376,7 @@
 		};
 		13B07F951A680F5B00A75B9A /* Release */ = {
 			isa = XCBuildConfiguration;
-			baseConfigurationReference = 63EEAF55C99AFA670BB566D0 /* Pods-petgochi.release.xcconfig */;
+			baseConfigurationReference = 7C29EE73536B2874350A1D03 /* Pods-petgochi.release.xcconfig */;
 			buildSettings = {
 				ASSETCATALOG_COMPILER_APPICON_NAME = AppIcon;
 				CLANG_ENABLE_MODULES = YES;
