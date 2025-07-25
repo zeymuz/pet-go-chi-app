@@ -6,6 +6,7 @@ import { PurchasesOffering } from 'react-native-purchases';
 import { configureRevenueCat, getOfferings, purchasePackage, restorePurchases } from '../../utils/revenueCat';
 import { scale, scaleFont, verticalScale } from '../../utils/scaling';
 import COLORS from '../constants/colors';
+import useStore from '../hooks/useStore'; // Import your store hook
 
 // Mock package data for testing when RevenueCat isn't configured
 const MOCK_PACKAGES = [
@@ -64,6 +65,7 @@ export default function CoinsScreen() {
   const [isLoading, setIsLoading] = useState(true);
   const [usingMockData, setUsingMockData] = useState(false);
   const isFocused = useIsFocused();
+  const { earnCoins } = useStore(); // Get the earnCoins function from your store
 
   useEffect(() => {
     if (isFocused) {
@@ -96,50 +98,61 @@ export default function CoinsScreen() {
   };
 
   const handlePurchase = async (packageIdentifier: string) => {
-    try {
-      setIsLoading(true);
-      
-      if (usingMockData) {
-        Alert.alert('Success', 'Mock purchase completed!');
-        return;
-      }
-
-      const customerInfo = await purchasePackage(packageIdentifier);
-      
-      if (customerInfo.entitlements.active['premium']) {
-        Alert.alert('Success', 'Your purchase was successful!');
-      }
-    } catch (error: any) {
-      if (!error.userCancelled) {
-        Alert.alert('Error', 'There was an error with your purchase. Please try again.');
-      }
-    } finally {
-      setIsLoading(false);
+  try {
+    setIsLoading(true);
+    
+    if (usingMockData) {
+      // For mock purchases in development/simulator
+      const coins = parseInt(packageIdentifier.replace(/\D/g, '')) || 0; // Fixed this line
+      earnCoins(coins); // Update store with mock coins
+      Alert.alert('Success', `Added ${coins} coins to your balance!`);
+      return;
     }
-  };
 
-  const handleRestorePurchases = async () => {
-    try {
-      setIsLoading(true);
-      
-      if (usingMockData) {
-        Alert.alert('Mock Restore', 'No purchases to restore in development mode');
-        return;
-      }
-
-      const customerInfo = await restorePurchases();
-      
-      if (customerInfo.entitlements.active['premium']) {
-        Alert.alert('Success', 'Your purchases have been restored!');
-      } else {
-        Alert.alert('No Purchases', 'No previous purchases found to restore.');
-      }
-    } catch (error) {
-      Alert.alert('Error', 'Failed to restore purchases. Please try again.');
-    } finally {
-      setIsLoading(false);
+    const customerInfo = await purchasePackage(packageIdentifier);
+    
+    if (customerInfo.entitlements.active['premium']) {
+      // For real purchases
+      const coins = parseInt(packageIdentifier.replace(/\D/g, '')) || 0; // And this line
+      earnCoins(coins); // Update store with actual purchased coins
+      Alert.alert('Success', `Added ${coins} coins to your balance!`);
     }
-  };
+  } catch (error: any) {
+    if (!error.userCancelled) {
+      Alert.alert('Error', 'There was an error with your purchase. Please try again.');
+    }
+  } finally {
+    setIsLoading(false);
+  }
+};
+
+const handleRestorePurchases = async () => {
+  try {
+    setIsLoading(true);
+    
+    if (usingMockData) {
+      Alert.alert('Mock Restore', 'No purchases to restore in development mode');
+      return;
+    }
+
+    const customerInfo = await restorePurchases();
+    
+    if (customerInfo.entitlements.active['premium']) {
+      // Calculate total coins from all restored purchases
+      const restoredCoins = customerInfo.allPurchasedProductIdentifiers
+        .reduce((total, id) => total + (parseInt(id.replace(/\D/g, '')) || 0), 0);
+      
+      earnCoins(restoredCoins); // Update store with restored coins
+      Alert.alert('Success', `Restored ${restoredCoins} coins to your balance!`);
+    } else {
+      Alert.alert('No Purchases', 'No previous purchases found to restore.');
+    }
+  } catch (error) {
+    Alert.alert('Error', 'Failed to restore purchases. Please try again.');
+  } finally {
+    setIsLoading(false);
+  }
+};
 
   const getPackages = () => {
     if (usingMockData) {
@@ -231,6 +244,8 @@ export default function CoinsScreen() {
     </View>
   );
 }
+
+// ... (keep your existing styles)
 
 const styles = StyleSheet.create({
   container: {

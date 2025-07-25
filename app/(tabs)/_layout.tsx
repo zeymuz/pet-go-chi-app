@@ -73,4 +73,5 @@ export default function TabLayout() {
   );
 }
 
+
 //looking at these files how do I set up the revenue cat stuff from zero and do I need new files tell me step by step and what to do please and give me the entire files completely 
