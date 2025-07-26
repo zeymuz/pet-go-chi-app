@@ -5,7 +5,7 @@ import Purchases from 'react-native-purchases';
 export const configureRevenueCat = () => {
   Purchases.configure({
     apiKey: Platform.OS === 'ios' 
-      ? "appl_dIsyngMoPJOuOqFKzckdSCPNhgf" // Replace with your iOS key
+      ? "appl_RFfBKhGVnSyVXbigoEGvjQYhtkH" // Replace with your iOS key
       : "public_YOUR_ANDROID_API_KEY", // Replace with your Android key
     appUserID: null,
   });
