@@ -261,9 +261,9 @@ const styles = StyleSheet.create({
   },
   coinPackage: {
     backgroundColor: '#fff9b0',
-    padding: verticalScale(20),
+    padding: verticalScale(3),
     borderRadius: scale(12),
-    marginVertical: verticalScale(10),
+    marginVertical: verticalScale(8),
     width: '100%',
     alignItems: 'center',
     borderWidth: scale(2),
@@ -292,7 +292,7 @@ const styles = StyleSheet.create({
     fontFamily: 'PressStart2P',
     fontSize: scaleFont(20),
     color: COLORS.text,
-    marginBottom: verticalScale(5),
+    marginBottom: verticalScale(5.5),
   },
   coinPrice: {
     fontFamily: 'PressStart2P',
