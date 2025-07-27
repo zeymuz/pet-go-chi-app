@@ -14,11 +14,38 @@ const usePet = () => {
   const [showFood, setShowFood] = useState(false);
   const [isSleeping, setIsSleeping] = useState(false);
   const [sleepStartTime, setSleepStartTime] = useState<number | null>(null);
-  const { foodQuantities, consumeFood } = useStore(); // Changed from purchaseItem to consumeFood
+  const { foodQuantities, consumeFood } = useStore();
 
-  // Load sleep state on app start
+  // Load all pet data on app start
   useEffect(() => {
-    const loadSleepState = async () => {
+    const loadPetState = async () => {
+      const storedPet = await SecureStore.getItemAsync('petState');
+      if (storedPet) {
+        const { 
+          happiness: storedHappiness,
+          hunger: storedHunger,
+          energy: storedEnergy,
+          cleanliness: storedCleanliness,
+          level: storedLevel,
+          experience: storedExp,
+          showOutfits: storedShowOutfits,
+          showFood: storedShowFood,
+          isSleeping: storedIsSleeping,
+          sleepStartTime: storedSleepStartTime
+        } = JSON.parse(storedPet);
+        
+        setHappiness(storedHappiness ?? 70);
+        setHunger(storedHunger ?? 30);
+        setEnergy(storedEnergy ?? 80);
+        setCleanliness(storedCleanliness ?? 90);
+        setLevel(storedLevel ?? 1);
+        setExperience(storedExp ?? 0);
+        setShowOutfits(storedShowOutfits ?? false);
+        setShowFood(storedShowFood ?? false);
+        setIsSleeping(storedIsSleeping ?? false);
+        setSleepStartTime(storedSleepStartTime ?? null);
+      }
+
       const storedSleep = await SecureStore.getItemAsync('petSleep');
       if (storedSleep) {
         const { isSleeping, sleepStartTime } = JSON.parse(storedSleep);
@@ -38,8 +65,28 @@ const usePet = () => {
         }
       }
     };
-    loadSleepState();
+    loadPetState();
   }, []);
+
+  // Save pet state whenever it changes
+  useEffect(() => {
+    const savePetState = async () => {
+      const petState = {
+        happiness,
+        hunger,
+        energy,
+        cleanliness,
+        level,
+        experience,
+        showOutfits,
+        showFood,
+        isSleeping,
+        sleepStartTime
+      };
+      await SecureStore.setItemAsync('petState', JSON.stringify(petState));
+    };
+    savePetState();
+  }, [happiness, hunger, energy, cleanliness, level, experience, showOutfits, showFood, isSleeping, sleepStartTime]);
 
   // Update energy while sleeping
   useEffect(() => {
@@ -82,29 +129,24 @@ const usePet = () => {
     }
   }, [experience, level]);
 
-  // hooks/usePet.ts
-const feed = (foodItem?: { id: string; hungerRestore: number; energyRestore?: number }) => {
-  if (foodItem && foodQuantities[foodItem.id] > 0) {
-    // Handle hunger restoration (if any)
-    if (foodItem.hungerRestore) {
-      setHunger(prev => Math.max(0, prev - foodItem.hungerRestore));
+  const feed = (foodItem?: { id: string; hungerRestore: number; energyRestore?: number }) => {
+    if (foodItem && foodQuantities[foodItem.id] > 0) {
+      if (foodItem.hungerRestore) {
+        setHunger(prev => Math.max(0, prev - foodItem.hungerRestore));
+      }
+      
+      if (foodItem.energyRestore) {
+        setEnergy(prev => Math.min(100, prev + foodItem.energyRestore!));
+      }
+      
+      setHappiness(prev => Math.min(100, prev + 5));
+      setExperience(prev => prev + 10);
+      consumeFood(foodItem.id);
     }
-    
-    // Handle energy restoration (if any)
-    if (foodItem.energyRestore) {
-      setEnergy(prev => Math.min(100, prev + foodItem.energyRestore!));
-    }
-    
-    setHappiness(prev => Math.min(100, prev + 5));
-    setExperience(prev => prev + 10);
-    
-    // Consume food without refunding coins
-    consumeFood(foodItem.id);
-  }
-};
+  };
 
   const play = () => {
-    if (energy < 15 || hunger > 85) return;
+    if (energy <= 15 || hunger > 85) return;
     setHappiness(prev => Math.min(100, prev + 15));
     setEnergy(prev => Math.max(0, prev - 10));
     setHunger(prev => Math.min(100, prev + 5));
@@ -152,6 +194,6 @@ const feed = (foodItem?: { id: string; hungerRestore: number; energyRestore?: nu
     setShowFood,
     isSleeping
   };
-}
+};
 
 export default usePet;

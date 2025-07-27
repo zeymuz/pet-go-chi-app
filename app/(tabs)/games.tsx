@@ -1,3 +1,4 @@
+// app/games.tsx
 import React, { useState } from 'react';
 import { Alert, StyleSheet, Text, View } from 'react-native';
 import { scaleFont, verticalScale } from '../../utils/scaling';
@@ -10,8 +11,6 @@ import COLORS from '../constants/colors';
 import usePet from '../hooks/usePet';
 import useStore from '../hooks/useStore';
 
-
-// Import game images (create these files in your assets folder)
 const gameImages = {
   flappy: require('../../assets/images/favicon.png'),
   jumper: require('../../assets/images/favicon.png'),
@@ -48,7 +47,7 @@ export default function GamesScreen() {
   ];
 
   const handleGameStart = (gameId: string) => {
-    if (energy < 15) {
+    if (energy <= 15) {
       Alert.alert('Too Tired', 'Your pet is too tired to play! Energy must be above 15%');
       return;
     }
