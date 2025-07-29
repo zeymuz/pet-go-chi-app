@@ -1,7 +1,7 @@
 // app/coins.tsx
 import { useIsFocused } from '@react-navigation/native';
 import React, { useEffect, useState } from 'react';
-import { Alert, Platform, StyleSheet, Text, TouchableOpacity, View } from 'react-native';
+import { Alert, Linking, Platform, StyleSheet, Text, TouchableOpacity, View } from 'react-native';
 import { PurchasesOffering } from 'react-native-purchases';
 import { configureRevenueCat, getOfferings, purchasePackage, restorePurchases } from '../../utils/revenueCat';
 import { scale, scaleFont, verticalScale } from '../../utils/scaling';
@@ -118,6 +118,16 @@ export default function CoinsScreen() {
     }
   };
 
+  const handleOpenTerms = () => {
+    // Replace with your actual terms URL
+    Linking.openURL('https://www.apple.com/legal/internet-services/itunes/dev/stdeula/');
+  };
+
+  const handleOpenPrivacyPolicy = () => {
+    // Replace with your actual privacy policy URL
+    Linking.openURL('https://www.freeprivacypolicy.com/live/b305aad1-99d2-41ac-b4ff-1e63659b8118');
+  };
+
   const getPackages = () => {
     if (usingMockData) {
       return MOCK_PACKAGES;
@@ -203,6 +213,15 @@ export default function CoinsScreen() {
         >
           <Text style={styles.restoreButtonText}>Restore Purchases</Text>
         </TouchableOpacity>
+
+        <View style={styles.legalLinksContainer}>
+          <TouchableOpacity onPress={handleOpenTerms}>
+            <Text style={styles.legalLinkText}>Terms of Use</Text>
+          </TouchableOpacity>
+          <TouchableOpacity onPress={handleOpenPrivacyPolicy}>
+            <Text style={styles.legalLinkText}>Privacy Policy</Text>
+          </TouchableOpacity>
+        </View>
       </View>
     </View>
   );
@@ -323,10 +342,22 @@ const styles = StyleSheet.create({
     borderRadius: scale(8),
     width: '80%',
     alignItems: 'center',
+    marginBottom: verticalScale(20),
   },
   restoreButtonText: {
     fontFamily: 'PressStart2P',
     fontSize: scaleFont(14),
     color: 'white',
+  },
+  legalLinksContainer: {
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    width: '80%',
+  },
+  legalLinkText: {
+    fontFamily: 'PressStart2P',
+    fontSize: scaleFont(10),
+    color: COLORS.text,
+    textDecorationLine: 'underline',
   },
 });
