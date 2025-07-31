@@ -12,7 +12,8 @@
         "buildType": "app-bundle"
       },
       "ios": {
-        "simulator": false
+        "simulator": false,
+        "buildNumber": "1.0.$(echo $(( $(date +%s) / 60 )))"
       }
     }
   }
