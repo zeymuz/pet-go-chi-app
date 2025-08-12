@@ -41,7 +41,7 @@ export default function PixelPet({ activeAction, equippedOutfits }: PixelPetProp
     <View style={styles.container}>
       <Animated.View style={{ transform: [{ translateY: bounceAnim }] }}>
         <Image 
-          source={require('../../assets/images/adaptive-icon.png')} 
+          source={require('../assets/images/clothes/clothes/pixel-pet/pixel-pet.png')} 
           style={styles.petImage} 
         />
         
