@@ -5,38 +5,38 @@ const OUTFITS: Outfit[] = [
   // Hats
   {
     id: 'hat1',
-    name: 'Baseball Cap',
-    price: 50,
+    name: 'Black Cap',
+    price: 500,
     owned: false,
-    image: require('../../assets/images/favicon.png'), // Store/outfits menu image
-    petImage: require('../../assets/images/galaxy.gif'), // Pet display image
+    image: require('../../assets/images/clothes/clothes/all-hats/cap.png'), // Store/outfits menu image
+    petImage: require('../../assets/images/clothes-on/clothes-on/hats-ON/cap-on.png'), // Pet display image
     type: 'hat',
   },
   {
     id: 'hat2',
-    name: 'Wizard Hat',
-    price: 100,
+    name: 'Shiesty',
+    price: 1000,
     owned: false,
-    image: require('../../assets/images/favicon.png'),
-    petImage: require('../../assets/images/galaxy.gif'),
+    image: require('../../assets/images/clothes/clothes/all-hats/shiesty-hat.png'),
+    petImage: require('../../assets/images/clothes-on/clothes-on/hats-ON/shiesty-on.png'),
     type: 'hat',
   },
   {
     id: 'hat3',
-    name: 'Cowboy Hat',
-    price: 75,
+    name: 'Sombrero',
+    price: 700,
     owned: false,
-    image: require('../../assets/images/favicon.png'),
-    petImage: require('../../assets/images/galaxy.gif'),
+    image: require('../../assets/images/clothes/clothes/all-hats/sombrero.png'),
+    petImage: require('../../assets/images/clothes-on/clothes-on/hats-ON/sombrero-on.png'),
     type: 'hat',
   },
   {
     id: 'hat4',
-    name: 'Beanie',
-    price: 40,
+    name: 'Spike Touque',
+    price: 1500,
     owned: false,
-    image: require('../../assets/images/favicon.png'),
-    petImage: require('../../assets/images/galaxy.gif'),
+    image: require('../../assets/images/clothes/clothes/all-hats/spike-hat.png'),
+    petImage: require('../../assets/images/clothes-on/clothes-on/hats-ON/spike-hat-on.png'),
     type: 'hat',
   },
   {
