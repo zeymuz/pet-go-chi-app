@@ -8,7 +8,7 @@ const OUTFITS: Outfit[] = [
     name: 'Baseball Cap',
     price: 50,
     owned: false,
-    image: require('../../assets/images/favicon.png'), // Store/outfits menu image
+    image: require('../../assets/images/clothes/clothes/all-hats/cap.png'), // Store/outfits menu image
     petImage: require('../../assets/images/galaxy.gif'), // Pet display image
     type: 'hat',
   },
@@ -17,7 +17,7 @@ const OUTFITS: Outfit[] = [
     name: 'Wizard Hat',
     price: 100,
     owned: false,
-    image: require('../../assets/images/favicon.png'),
+    image: require('../../assets/images/clothes/clothes/all-hats/shiesty-hat.png'),
     petImage: require('../../assets/images/galaxy.gif'),
     type: 'hat',
   },

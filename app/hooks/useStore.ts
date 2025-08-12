@@ -4,7 +4,7 @@ import { useEffect, useState } from 'react';
 import { FOODS, OUTFITS } from '../constants/pets';
 
 const STORAGE_KEY = 'pet_store_data';
-const STORE_VERSION = 4; // Current version of data structure
+const STORE_VERSION = 5; // Current version of data structure
 
 // 1. First create reference maps for default items
 const createReferenceMaps = () => {
