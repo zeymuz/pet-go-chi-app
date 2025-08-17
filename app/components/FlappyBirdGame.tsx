@@ -182,7 +182,7 @@ export default function FlappyBirdGame({ onClose }: FlappyBirdGameProps) {
 
       <TouchableOpacity style={styles.gameArea} activeOpacity={1} onPress={jump}>
         <Image
-          source={require('../../assets/images/favicon.png')}
+          source={require('../../assets/images/gifs/PIXELHEAD.png')}
           style={[
             styles.bird,
             {

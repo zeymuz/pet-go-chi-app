@@ -780,7 +780,7 @@ if (scoreUI >= 40000) {
       collapsable={false}
     >
       <Image
-        source={require('../../assets/images/sun.gif')}
+        source={require('../../assets/images/gifs/sunanimation-ezgif.com-apng-to-gif-converter.gif')}
         style={styles.sunImage}
         resizeMode="contain"
       />
@@ -807,7 +807,7 @@ if (scoreUI >= 40000) {
       collapsable={false}
     >
       <Image
-        source={require('../../assets/images/galaxy.gif')}
+        source={require('../../assets/images/gifs/blackhole-ezgif.com-apng-to-gif-converter.gif')}
         style={styles.galaxyImage}
         resizeMode="contain"
       />
@@ -835,7 +835,7 @@ if (scoreUI >= 40000) {
       collapsable={false}
     >
       <Image
-        source={require('../../assets/images/monster.gif')}
+        source={require('../../assets/images/gifs/MONSTERANIMATION.gif')}
         style={styles.monsterImage}
         resizeMode="contain"
       />
@@ -890,7 +890,7 @@ if (scoreUI >= 40000) {
       ]}
     >
       <Image
-        source={require('../../assets/images/favicon.png')}
+        source={require('../../assets/images/gifs/jumpingpet-ezgif.com-apng-to-gif-converter.gif')}
         style={styles.character}
         resizeMode="contain"
       />

@@ -20,7 +20,31 @@ interface MemoryGameProps {
   onClose: (score: number) => void;
 }
 
-const ALL_IMAGES = new Array(100).fill(require('../../assets/images/favicon.png'));
+// ============= ADDED 12 UNIQUE IMAGE PAIRS =============
+const ALL_IMAGES = [
+  require('../../assets/images/clothes/clothes/all-jackets/badson-jacket.png'),
+  require('../../assets/images/clothes/clothes/all-jackets/carhartt-jacket.png'),
+  require('../../assets/images/clothes/clothes/all-jackets/dulse-jacket.png'),
+  require('../../assets/images/clothes/clothes/all-jackets/dulse1000-jacket.png'),
+  require('../../assets/images/clothes/clothes/all-jackets/gap-jacket.png'),
+  require('../../assets/images/clothes/clothes/all-jackets/puffer-jacket.png'),
+  require('../../assets/images/clothes/clothes/all-jeans/badson-jeans.png'),
+  require('../../assets/images/clothes/clothes/all-jeans/cargo-pants.png'),
+  require('../../assets/images/clothes/clothes/all-jeans/dulse1000-jeans.png'),
+  require('../../assets/images/clothes/clothes/all-jeans/myjeans.png'),
+  require('../../assets/images/clothes/clothes/all-jeans/stripped-jeans.png'),
+  require('../../assets/images/clothes/clothes/all-jeans/sweat-pants.png'),
+  require('../../assets/images/clothes/clothes/all-shirts/badson-shirt.png'),
+  require('../../assets/images/clothes/clothes/all-shirts/buble-shirt.png'),
+  require('../../assets/images/clothes/clothes/all-shirts/dressing-shirt.png'),
+  require('../../assets/images/clothes/clothes/all-shirts/dulse1000-shirt.png'),
+  require('../../assets/images/clothes/clothes/all-shirts/jersey-shirt.png'),
+  require('../../assets/images/clothes/clothes/all-shirts/muscle-shirt.png'),
+  
+  
+  
+];
+// =======================================================
 
 interface Card {
   id: number;
@@ -46,7 +70,11 @@ export default function MemoryGame({ onClose }: MemoryGameProps) {
   }, [level]);
 
   const initializeGame = () => {
-    const selectedImages = [...ALL_IMAGES].sort(() => 0.5 - Math.random()).slice(0, pairs);
+    const availablePairs = Math.min(pairs, Math.floor(ALL_IMAGES.length));
+    const selectedImages = [...ALL_IMAGES]
+      .sort(() => 0.5 - Math.random())
+      .slice(0, availablePairs);
+
     const cardPairs = [...selectedImages, ...selectedImages]
       .map((image, index) => ({
         id: index,
@@ -57,7 +85,7 @@ export default function MemoryGame({ onClose }: MemoryGameProps) {
       }))
       .sort(() => 0.5 - Math.random());
 
-    const newMaxMoves = Math.max(pairs * 2 - level * 2, pairs);
+    const newMaxMoves = Math.max(availablePairs * 2 - level * 2, availablePairs);
     setCards(cardPairs);
     setFlippedCards([]);
     setMoves(0);
