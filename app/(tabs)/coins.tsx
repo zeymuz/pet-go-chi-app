@@ -206,13 +206,6 @@ export default function CoinsScreen() {
           Payment will be charged to your Apple ID/Google Play account at confirmation of purchase.
         </Text>
         
-        <TouchableOpacity
-          style={styles.restoreButton}
-          onPress={handleRestorePurchases}
-          disabled={isLoading}
-        >
-          <Text style={styles.restoreButtonText}>Restore Purchases</Text>
-        </TouchableOpacity>
 
         <View style={styles.legalLinksContainer}>
           <TouchableOpacity onPress={handleOpenTerms}>
