@@ -1,12 +1,10 @@
-// hooks/useStore.ts
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import { useEffect, useState } from 'react';
 import { FOODS, OUTFITS } from '../constants/pets';
 
 const STORAGE_KEY = 'pet_store_data';
-const STORE_VERSION = 5; // Current version of data structure
+const STORE_VERSION = 5;
 
-// 1. First create reference maps for default items
 const createReferenceMaps = () => {
   const defaultOutfitsById: Record<string, typeof OUTFITS[0]> = {};
   const defaultFoodsById: Record<string, typeof FOODS[0]> = {};
@@ -24,7 +22,6 @@ const createReferenceMaps = () => {
 
 const { defaultOutfitsById, defaultFoodsById } = createReferenceMaps();
 
-// 2. Define initial global state
 let globalStore = {
   coins: 100,
   outfits: OUTFITS,
@@ -42,7 +39,6 @@ let globalStore = {
   }
 };
 
-// 3. Store management utilities
 const listeners = new Set<() => void>();
 
 const notifyListeners = () => {
@@ -60,11 +56,9 @@ const saveStore = async () => {
   }
 };
 
-// 4. Migration handling
 const migrateData = (oldData: any) => {
   if (!oldData) return globalStore;
 
-  // Migration from v3 to v4
   if (oldData._version === 3) {
     return {
       ...globalStore,
@@ -74,7 +68,6 @@ const migrateData = (oldData: any) => {
       outfits: oldData.outfits?.map((outfit: any) => ({
         ...defaultOutfitsById[outfit.id],
         ...outfit,
-        // Add new petImage field from defaults
         petImage: defaultOutfitsById[outfit.id]?.petImage 
       })) || OUTFITS,
       foods: oldData.foods?.map((food: any) => ({
@@ -87,26 +80,23 @@ const migrateData = (oldData: any) => {
   return null;
 };
 
-// 5. Load initial data
 (async () => {
   try {
     const savedData = await AsyncStorage.getItem(STORAGE_KEY);
     if (savedData) {
       const saved = JSON.parse(savedData);
 
-      // Handle version migrations
       if (saved._version && saved._version !== STORE_VERSION) {
         const migrated = migrateData(saved);
         if (migrated) {
           globalStore = migrated;
-          await saveStore(); // Save migrated data
+          await saveStore();
         } else {
-          await AsyncStorage.removeItem(STORAGE_KEY); // Reset if no migration path
+          await AsyncStorage.removeItem(STORAGE_KEY);
         }
         return;
       }
 
-      // Normal load for current version
       globalStore = {
         ...globalStore,
         coins: saved.coins ?? globalStore.coins,
@@ -124,11 +114,10 @@ const migrateData = (oldData: any) => {
     }
   } catch (error) {
     console.error('Error loading store:', error);
-    await AsyncStorage.removeItem(STORAGE_KEY); // Reset on error
+    await AsyncStorage.removeItem(STORAGE_KEY);
   }
 })();
 
-// 6. React hook
 const useStore = () => {
   const [state, setState] = useState(globalStore);
 
@@ -149,8 +138,7 @@ const useStore = () => {
     notifyListeners();
   };
 
-  // Store actions
-   const addCoins = (amount: number) => {
+  const addCoins = (amount: number) => {
     updateStore(store => ({
       ...store,
       coins: store.coins + amount
@@ -186,7 +174,6 @@ const useStore = () => {
     });
   };
 
-  // New function to consume food without refunding coins
   const consumeFood = (itemId: string) => {
     updateStore(store => {
       const currentQuantity = store.foodQuantities[itemId] || 0;
@@ -204,13 +191,35 @@ const useStore = () => {
 
   const equipOutfit = (outfitId: string) => {
     updateStore(store => {
+      if (!outfitId) {
+        return {
+          ...store,
+          equippedOutfits: {
+            ...store.equippedOutfits,
+            ...Object.entries(store.equippedOutfits).reduce((acc, [type, id]) => {
+              if (id === outfitId) {
+                acc[type] = null;
+              }
+              return acc;
+            }, {} as Record<string, string | null>)
+          }
+        };
+      }
+
       const outfit = store.outfits.find(o => o.id === outfitId);
       if (!outfit || !outfit.owned) return store;
+
+      const newEquipped = { ...store.equippedOutfits };
+      if (outfit.type === 'jacket') {
+        newEquipped.shirt = null;
+      } else if (outfit.type === 'shirt') {
+        newEquipped.jacket = null;
+      }
 
       return {
         ...store,
         equippedOutfits: {
-          ...store.equippedOutfits,
+          ...newEquipped,
           [outfit.type]: outfitId
         }
       };
@@ -238,7 +247,7 @@ const useStore = () => {
     foodQuantities: state.foodQuantities,
     equippedOutfits: state.equippedOutfits,
     purchaseItem,
-    consumeFood, // Added the new function
+    consumeFood,
     equipOutfit,
     earnCoins,
     addCoins,

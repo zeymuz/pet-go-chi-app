@@ -1,4 +1,3 @@
-// hooks/usePet.ts
 import * as SecureStore from 'expo-secure-store';
 import { useEffect, useState } from 'react';
 import useStore from './useStore';
@@ -16,7 +15,6 @@ const usePet = () => {
   const [sleepStartTime, setSleepStartTime] = useState<number | null>(null);
   const { foodQuantities, consumeFood } = useStore();
 
-  // Load all pet data on app start
   useEffect(() => {
     const loadPetState = async () => {
       const storedPet = await SecureStore.getItemAsync('petState');
@@ -68,7 +66,6 @@ const usePet = () => {
     loadPetState();
   }, []);
 
-  // Save pet state whenever it changes
   useEffect(() => {
     const savePetState = async () => {
       const petState = {
@@ -88,7 +85,6 @@ const usePet = () => {
     savePetState();
   }, [happiness, hunger, energy, cleanliness, level, experience, showOutfits, showFood, isSleeping, sleepStartTime]);
 
-  // Update energy while sleeping
   useEffect(() => {
     let interval: NodeJS.Timeout;
     if (isSleeping && sleepStartTime) {
@@ -102,12 +98,11 @@ const usePet = () => {
           wakeUp();
           clearInterval(interval);
         }
-      }, 10000); // Update every 10 seconds
+      }, 10000);
     }
     return () => clearInterval(interval);
   }, [isSleeping, sleepStartTime]);
 
-  // Decrease stats over time
   useEffect(() => {
     const interval = setInterval(() => {
       if (!isSleeping) {
@@ -116,12 +111,11 @@ const usePet = () => {
         setEnergy(prev => Math.max(0, prev - 1));
         setCleanliness(prev => Math.max(0, prev - 0.5));
       }
-    }, 60000); // Every minute
+    }, 60000);
 
     return () => clearInterval(interval);
   }, [isSleeping]);
 
-  // Check for level up
   useEffect(() => {
     if (experience >= level * 100) {
       setLevel(prev => prev + 1);
@@ -136,21 +130,24 @@ const usePet = () => {
       }
       
       if (foodItem.energyRestore) {
-        setEnergy(prev => Math.min(100, prev + foodItem.energyRestore!));
+        setEnergy(prev => Math.min(100, prev + (foodItem.energyRestore || 0)));
       }
       
       setHappiness(prev => Math.min(100, prev + 5));
       setExperience(prev => prev + 10);
       consumeFood(foodItem.id);
+      return true;
     }
+    return false;
   };
 
   const play = () => {
-    if (energy <= 15 || hunger > 85) return;
+    if (energy <= 15 || hunger > 85) return false;
     setHappiness(prev => Math.min(100, prev + 15));
     setEnergy(prev => Math.max(0, prev - 10));
     setHunger(prev => Math.min(100, prev + 5));
     setExperience(prev => prev + 15);
+    return true;
   };
 
   const sleep = async () => {

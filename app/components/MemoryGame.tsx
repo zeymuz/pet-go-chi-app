@@ -1,3 +1,4 @@
+
 import { Ionicons } from '@expo/vector-icons';
 import React, { useEffect, useState } from 'react';
 import {
@@ -20,7 +21,6 @@ interface MemoryGameProps {
   onClose: (score: number) => void;
 }
 
-// ============= ADDED 12 UNIQUE IMAGE PAIRS =============
 const ALL_IMAGES = [
   require('../../assets/images/clothes/clothes/all-jackets/badson-jacket.png'),
   require('../../assets/images/clothes/clothes/all-jackets/carhartt-jacket.png'),
@@ -40,11 +40,7 @@ const ALL_IMAGES = [
   require('../../assets/images/clothes/clothes/all-shirts/dulse1000-shirt.png'),
   require('../../assets/images/clothes/clothes/all-shirts/jersey-shirt.png'),
   require('../../assets/images/clothes/clothes/all-shirts/muscle-shirt.png'),
-  
-  
-  
 ];
-// =======================================================
 
 interface Card {
   id: number;
@@ -132,7 +128,6 @@ export default function MemoryGame({ onClose }: MemoryGameProps) {
       setFlippedCards(newFlipped);
 
       if (newFlipped.length === 2) {
-        setMoves((prev) => prev + 1);
         const [firstId, secondId] = newFlipped;
         const first = newCards.find((c) => c.id === firstId);
         const second = newCards.find((c) => c.id === secondId);
@@ -171,6 +166,7 @@ export default function MemoryGame({ onClose }: MemoryGameProps) {
             }
           }, 300);
         } else {
+          setMoves((prev) => prev + 1); // Only increment moves for incorrect matches
           setTimeout(() => {
             flipCard(firstId, 0);
             flipCard(secondId, 0, () => {

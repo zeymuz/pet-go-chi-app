@@ -22,15 +22,16 @@ interface OutfitItem {
   owned: boolean;
 }
 
-// home.tsx (only showing the relevant part)
 const OutfitItemComponent = ({
   item,
   equipped,
   onEquip,
+  onUnequip
 }: {
   item: Outfit;
   equipped: boolean;
   onEquip: () => void;
+  onUnequip: () => void;
 }) => {
   const [imageError, setImageError] = useState(false);
 
@@ -38,12 +39,12 @@ const OutfitItemComponent = ({
     ? require('../../assets/images/adaptive-icon.png')
     : typeof item.image === 'string'
     ? { uri: item.image }
-    : item.image; // Still using item.image here
+    : item.image;
 
   return (
     <TouchableOpacity
       style={[styles.outfitItem, equipped && styles.equippedOutfit]}
-      onPress={onEquip}
+      onPress={equipped ? onUnequip : onEquip}
     >
       <View style={styles.outfitImageContainer}>
         <Image
@@ -53,6 +54,7 @@ const OutfitItemComponent = ({
         />
       </View>
       <Text style={styles.outfitName}>{item.name}</Text>
+      <Text style={styles.equipText}>{equipped ? 'Unequip' : 'Equip'}</Text>
     </TouchableOpacity>
   );
 };
@@ -191,7 +193,6 @@ export default function HomeScreen() {
     ]).start();
   };
 
-  // Group outfits by type
   const groupedOutfits = outfits.reduce((acc: Record<string, Outfit[]>, outfit) => {
     if (!acc[outfit.type]) {
       acc[outfit.type] = [];
@@ -204,7 +205,15 @@ export default function HomeScreen() {
     <OutfitItemComponent
       item={item}
       equipped={equippedOutfits[item.type] === item.id}
-      onEquip={() => equipOutfit(item.id)}
+      onEquip={() => {
+        if (item.type === 'jacket' && equippedOutfits.shirt) {
+          equipOutfit('');
+        } else if (item.type === 'shirt' && equippedOutfits.jacket) {
+          equipOutfit('');
+        }
+        equipOutfit(item.id);
+      }}
+      onUnequip={() => equipOutfit('')}
     />
   );
 
@@ -264,7 +273,6 @@ export default function HomeScreen() {
           <Ionicons name="chevron-up" size={24} color={COLORS.primary} />
         </TouchableOpacity>
         
-        {/* Grouped outfits by type */}
         <FlatList
           data={Object.entries(groupedOutfits)}
           keyExtractor={([type]) => type}
@@ -461,6 +469,12 @@ const styles = StyleSheet.create({
     fontSize: scaleFont(10),
     color: COLORS.text,
     textAlign: 'center',
+  },
+  equipText: {
+    fontFamily: 'PressStart2P',
+    fontSize: scaleFont(8),
+    color: COLORS.primary,
+    marginTop: verticalScale(4),
   },
   foodContainer: {
     position: 'absolute',

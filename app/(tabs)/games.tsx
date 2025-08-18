@@ -1,4 +1,3 @@
-// app/games.tsx
 import React, { useState } from 'react';
 import { Alert, StyleSheet, Text, View } from 'react-native';
 import { scaleFont, verticalScale } from '../../utils/scaling';
@@ -23,40 +22,21 @@ export default function GamesScreen() {
   const { energy, play, hunger } = usePet();
   const { earnCoins } = useStore();
 
-  const games = [
-    { 
-      id: 'flappy', 
-      name: 'Flappy Pet', 
-      image: gameImages.flappy 
-    },
-    { 
-      id: 'jumper', 
-      name: 'Platform Jumper', 
-      image: gameImages.jumper 
-    },
-    { 
-      id: 'memory', 
-      name: 'Memory Game', 
-      image: gameImages.memory 
-    },
-    { 
-      id: 'brick', 
-      name: 'Brick Breaker', 
-      image: gameImages.brick 
-    },
-  ];
-
   const handleGameStart = (gameId: string) => {
     if (energy <= 15) {
       Alert.alert('Too Tired', 'Your pet is too tired to play! Energy must be above 15%');
-      return;
+      return false;
     }
     if (hunger > 85) {
       Alert.alert('Too Hungry', 'Your pet is too hungry to play! Feed your pet first.');
-      return;
+      return false;
     }
-    play();
-    setActiveGame(gameId);
+    const played = play();
+    if (played) {
+      setActiveGame(gameId);
+      return true;
+    }
+    return false;
   };
 
   const handleGameEnd = async (coinsEarned: number) => {
@@ -82,14 +62,26 @@ export default function GamesScreen() {
       default:
         return (
           <View style={styles.gamesContainer}>
-            {games.map((game) => (
-              <GameButton
-                key={game.id}
-                image={game.image}
-                text={game.name}
-                onPress={() => handleGameStart(game.id)}
-              />
-            ))}
+            <GameButton
+              image={gameImages.flappy}
+              text="Flappy Pet"
+              onPress={() => handleGameStart('flappy') && setActiveGame('flappy')}
+            />
+            <GameButton
+              image={gameImages.jumper}
+              text="Platform Jumper"
+              onPress={() => handleGameStart('jumper') && setActiveGame('jumper')}
+            />
+            <GameButton
+              image={gameImages.memory}
+              text="Memory Game"
+              onPress={() => handleGameStart('memory') && setActiveGame('memory')}
+            />
+            <GameButton
+              image={gameImages.brick}
+              text="Brick Breaker"
+              onPress={() => handleGameStart('brick') && setActiveGame('brick')}
+            />
           </View>
         );
     }
