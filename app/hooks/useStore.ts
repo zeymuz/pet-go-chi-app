@@ -1,3 +1,4 @@
+// hooks/useStore.ts
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import { useEffect, useState } from 'react';
 import { FOODS, OUTFITS } from '../constants/pets';
@@ -80,6 +81,7 @@ const migrateData = (oldData: any) => {
   return null;
 };
 
+// Load initial data
 (async () => {
   try {
     const savedData = await AsyncStorage.getItem(STORAGE_KEY);
@@ -124,7 +126,6 @@ const useStore = () => {
   useEffect(() => {
     const listener = () => {
       setState({ ...globalStore });
-      saveStore();
     };
 
     listeners.add(listener);
@@ -136,6 +137,7 @@ const useStore = () => {
   const updateStore = (updater: (store: typeof globalStore) => typeof globalStore) => {
     globalStore = updater(globalStore);
     notifyListeners();
+    saveStore(); // Save immediately after update
   };
 
   const addCoins = (amount: number) => {
@@ -143,6 +145,7 @@ const useStore = () => {
       ...store,
       coins: store.coins + amount
     }));
+    return amount;
   };
 
   const purchaseItem = (itemId: string, quantity: number = 1) => {
@@ -189,19 +192,26 @@ const useStore = () => {
     });
   };
 
-  const equipOutfit = (outfitId: string) => {
+  const equipOutfit = (outfitId: string, type?: string) => {
     updateStore(store => {
-      if (!outfitId) {
+      if (outfitId === '') {
+        if (type) {
+          return {
+            ...store,
+            equippedOutfits: {
+              ...store.equippedOutfits,
+              [type]: null
+            }
+          };
+        }
         return {
           ...store,
           equippedOutfits: {
-            ...store.equippedOutfits,
-            ...Object.entries(store.equippedOutfits).reduce((acc, [type, id]) => {
-              if (id === outfitId) {
-                acc[type] = null;
-              }
-              return acc;
-            }, {} as Record<string, string | null>)
+            hat: null,
+            jacket: null,
+            shirt: null,
+            pants: null,
+            shoes: null,
           }
         };
       }
@@ -228,16 +238,12 @@ const useStore = () => {
 
   const earnCoins = (amount: number) => {
     if (amount <= 0) return 0;
-
-    updateStore(store => {
-      const newCoins = store.coins + amount;
-      return {
-        ...store,
-        coins: newCoins
-      };
-    });
-
-    return amount;
+    const actualAmount = Math.floor(amount);
+    updateStore(store => ({
+      ...store,
+      coins: store.coins + actualAmount
+    }));
+    return actualAmount;
   };
 
   return {

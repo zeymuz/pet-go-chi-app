@@ -1,3 +1,4 @@
+
 import React, { useState } from 'react';
 import { Image, Platform, StyleSheet, Text, TouchableOpacity, View } from 'react-native';
 import { scale, scaleFont, verticalScale } from '../../utils/scaling';
@@ -15,7 +16,7 @@ interface StoreItemProps {
     energyRestore?: number;
   };
   onPurchase: (quantity: number) => void;
-  onEquip: () => void;
+  onEquip: (id: string, type?: string) => void;
   isEquipped: boolean;
   owned: boolean;
   quantity: number;
@@ -111,10 +112,10 @@ export default function StoreItem({
       ) : (
         <TouchableOpacity 
           style={[styles.equipButton, isEquipped && styles.equippedButton]} 
-          onPress={onEquip}
+          onPress={isEquipped ? () => onEquip('', item.type) : () => onEquip(item.id)}
         >
           <Text style={styles.buttonText}>
-            {isEquipped ? 'Equipped' : 'Equip'}
+            {isEquipped ? 'Unequip' : 'Equip'}
           </Text>
         </TouchableOpacity>
       )}
