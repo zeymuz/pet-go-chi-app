@@ -23,14 +23,20 @@ export default function GamesScreen() {
   const { earnCoins } = useStore();
 
   const handleGameStart = (gameId: string) => {
-    if (energy <= 15) {
+    // Get current values directly from state to ensure they're fresh
+    const currentEnergy = energy;
+    const currentHunger = hunger;
+    
+    if (currentEnergy <= 15) {
       Alert.alert('Too Tired', 'Your pet is too tired to play! Energy must be above 15%');
       return false;
     }
-    if (hunger > 85) {
+    if (currentHunger > 85) {
       Alert.alert('Too Hungry', 'Your pet is too hungry to play! Feed your pet first.');
       return false;
     }
+    
+    // Call play and check its return value
     const played = play();
     if (played) {
       setActiveGame(gameId);

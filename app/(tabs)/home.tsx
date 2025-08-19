@@ -207,13 +207,13 @@ export default function HomeScreen() {
       equipped={equippedOutfits[item.type] === item.id}
       onEquip={() => {
         if (item.type === 'jacket' && equippedOutfits.shirt) {
-          equipOutfit('');
+          equipOutfit('', 'shirt');
         } else if (item.type === 'shirt' && equippedOutfits.jacket) {
-          equipOutfit('');
+          equipOutfit('', 'jacket');
         }
-        equipOutfit(item.id);
+        equipOutfit(item.id, item.type);
       }}
-      onUnequip={() => equipOutfit('')}
+      onUnequip={() => equipOutfit('', item.type)}
     />
   );
 
