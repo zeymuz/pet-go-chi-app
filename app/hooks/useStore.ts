@@ -4,7 +4,7 @@ import { useEffect, useState } from 'react';
 import { FOODS, OUTFITS } from '../constants/pets';
 
 const STORAGE_KEY = 'pet_store_data';
-const STORE_VERSION = 5;
+const STORE_VERSION = 4;
 
 const createReferenceMaps = () => {
   const defaultOutfitsById: Record<string, typeof OUTFITS[0]> = {};
