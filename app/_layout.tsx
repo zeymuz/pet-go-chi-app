@@ -7,6 +7,7 @@ import { useEffect } from 'react';
 import { StyleSheet, View } from 'react-native';
 import Purchases from 'react-native-purchases';
 import { configureRevenueCat } from '../utils/revenueCat';
+import { PetProvider } from './hooks/PetContext';
 
 SplashScreen.preventAutoHideAsync();
 
@@ -30,10 +31,12 @@ export default function RootLayout() {
   if (!fontsLoaded) return null;
 
   return (
-    <View style={styles.container}>
-      <StatusBar style="dark" />
-      <Stack screenOptions={{ headerShown: false }} />
-    </View>
+    <PetProvider>
+      <View style={styles.container}>
+        <StatusBar style="dark" />
+        <Stack screenOptions={{ headerShown: false }} />
+      </View>
+    </PetProvider>
   );
 }
 

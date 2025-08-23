@@ -1,24 +1,30 @@
 // hooks/usePet.ts
 import * as SecureStore from 'expo-secure-store';
-import { useEffect, useState } from 'react';
+import { useCallback, useEffect, useState } from 'react';
+import { usePetContext } from './PetContext';
 import useStore from './useStore';
 
 const usePet = () => {
-  const [happiness, setHappiness] = useState(70);
-  const [hunger, setHunger] = useState(30);
-  const [energy, setEnergy] = useState(80);
-  const [cleanliness, setCleanliness] = useState(90);
-  const [level, setLevel] = useState(1);
-  const [experience, setExperience] = useState(0);
+  const {
+    happiness,
+    hunger,
+    energy,
+    cleanliness,
+    level,
+    experience,
+    isSleeping,
+    updatePetState
+  } = usePetContext();
+
   const [showOutfits, setShowOutfits] = useState(false);
   const [showFood, setShowFood] = useState(false);
-  const [isSleeping, setIsSleeping] = useState(false);
   const [sleepStartTime, setSleepStartTime] = useState<number | null>(null);
   const { foodQuantities, consumeFood } = useStore();
 
-  // Add this state to track when energy was last updated
-  const [lastEnergyUpdate, setLastEnergyUpdate] = useState(Date.now());
+  // Add this state to track when stats were last updated
+  const [lastUpdateTime, setLastUpdateTime] = useState(Date.now());
 
+  // Load pet state on component mount
   useEffect(() => {
     const loadPetState = async () => {
       try {
@@ -29,17 +35,19 @@ const usePet = () => {
 
         if (storedPet) {
           const parsedPet = JSON.parse(storedPet);
-          setHappiness(parsedPet.happiness ?? 70);
-          setHunger(parsedPet.hunger ?? 30);
-          setEnergy(parsedPet.energy ?? 80);
-          setCleanliness(parsedPet.cleanliness ?? 90);
-          setLevel(parsedPet.level ?? 1);
-          setExperience(parsedPet.experience ?? 0);
+          updatePetState({
+            happiness: parsedPet.happiness ?? 70,
+            hunger: parsedPet.hunger ?? 30,
+            energy: parsedPet.energy ?? 80,
+            cleanliness: parsedPet.cleanliness ?? 90,
+            level: parsedPet.level ?? 1,
+            experience: parsedPet.experience ?? 0,
+            isSleeping: parsedPet.isSleeping ?? false,
+          });
           setShowOutfits(parsedPet.showOutfits ?? false);
           setShowFood(parsedPet.showFood ?? false);
-          setIsSleeping(parsedPet.isSleeping ?? false);
           setSleepStartTime(parsedPet.sleepStartTime ?? null);
-          setLastEnergyUpdate(parsedPet.lastEnergyUpdate ?? Date.now());
+          setLastUpdateTime(parsedPet.lastUpdateTime ?? Date.now());
         }
 
         if (storedSleep) {
@@ -49,14 +57,13 @@ const usePet = () => {
             const elapsedHours = (now - storedSleepStart) / (1000 * 60 * 60);
             
             if (elapsedHours >= 1.5) {
-              setEnergy(100);
-              setIsSleeping(false);
+              updatePetState({ energy: 100, isSleeping: false });
               await SecureStore.deleteItemAsync('petSleep');
             } else {
-              setIsSleeping(true);
+              updatePetState({ isSleeping: true });
               setSleepStartTime(storedSleepStart);
               const energyToAdd = Math.min(100, Math.floor(elapsedHours * (100 / 1.5)));
-              setEnergy(energyToAdd);
+              updatePetState({ energy: energyToAdd });
             }
           }
         }
@@ -66,8 +73,9 @@ const usePet = () => {
     };
 
     loadPetState();
-  }, []);
+  }, [updatePetState]);
 
+  // Save pet state whenever it changes
   useEffect(() => {
     const savePetState = async () => {
       try {
@@ -82,7 +90,7 @@ const usePet = () => {
           showFood,
           isSleeping,
           sleepStartTime,
-          lastEnergyUpdate
+          lastUpdateTime
         };
         await SecureStore.setItemAsync('petState', JSON.stringify(petState));
       } catch (error) {
@@ -91,7 +99,7 @@ const usePet = () => {
     };
 
     savePetState();
-  }, [happiness, hunger, energy, cleanliness, level, experience, showOutfits, showFood, isSleeping, sleepStartTime, lastEnergyUpdate]);
+  }, [happiness, hunger, energy, cleanliness, level, experience, showOutfits, showFood, isSleeping, sleepStartTime, lastUpdateTime]);
 
   // Handle sleep timer
   useEffect(() => {
@@ -102,8 +110,8 @@ const usePet = () => {
         const now = Date.now();
         const elapsedHours = (now - sleepStartTime) / (1000 * 60 * 60);
         const energyToAdd = Math.min(100, Math.floor(elapsedHours * (100 / 1.5)));
-        setEnergy(energyToAdd);
-        setLastEnergyUpdate(Date.now());
+        updatePetState({ energy: energyToAdd });
+        setLastUpdateTime(Date.now());
         
         if (elapsedHours >= 1.5) {
           wakeUp();
@@ -111,94 +119,115 @@ const usePet = () => {
         }
       };
 
-      // Immediate update
       updateEnergyFromSleep();
-      
-      // Set up interval for periodic updates
       interval = setInterval(updateEnergyFromSleep, 60000);
     }
     
     return () => {
       if (interval) clearInterval(interval);
     };
-  }, [isSleeping, sleepStartTime]);
+  }, [isSleeping, sleepStartTime, updatePetState]);
 
-  // Degradation over time
+  // Degradation over time with immediate update on mount
   useEffect(() => {
-    const interval = setInterval(() => {
-      if (!isSleeping) {
-        setHappiness(prev => Math.max(0, prev - 1));
-        setHunger(prev => Math.min(100, prev + 2));
-        setEnergy(prev => Math.max(0, prev - 1));
-        setCleanliness(prev => Math.max(0, prev - 0.5));
-        setLastEnergyUpdate(Date.now());
+    const updateDegradation = () => {
+      const now = Date.now();
+      const minutesPassed = (now - lastUpdateTime) / (1000 * 60);
+      
+      if (minutesPassed >= 1 && !isSleeping) {
+        const degradationFactor = Math.floor(minutesPassed);
+        
+        updatePetState({
+          happiness: Math.max(0, happiness - degradationFactor),
+          hunger: Math.min(100, hunger + (2 * degradationFactor)),
+          energy: Math.max(0, energy - degradationFactor),
+          cleanliness: Math.max(0, cleanliness - (0.5 * degradationFactor)),
+        });
+        setLastUpdateTime(now);
       }
-    }, 60000);
+    };
+
+    updateDegradation();
+    const interval = setInterval(updateDegradation, 60000);
 
     return () => clearInterval(interval);
-  }, [isSleeping]);
+  }, [isSleeping, lastUpdateTime, happiness, hunger, energy, cleanliness, updatePetState]);
 
   // Level up check
   useEffect(() => {
     if (experience >= level * 100) {
-      setLevel(prev => prev + 1);
-      setExperience(0);
+      updatePetState({ level: level + 1, experience: 0 });
     }
-  }, [experience, level]);
+  }, [experience, level, updatePetState]);
 
-  const feed = (foodItem?: { id: string; hungerRestore: number; energyRestore?: number }) => {
+  const feed = useCallback((foodItem?: { id: string; hungerRestore: number; energyRestore?: number }) => {
     if (foodItem && foodQuantities[foodItem.id] > 0) {
+      const updates: any = {
+        happiness: Math.min(100, happiness + 5),
+        experience: experience + 10,
+      };
+      
       if (foodItem.hungerRestore) {
-        setHunger(prev => Math.max(0, prev - foodItem.hungerRestore));
+        updates.hunger = Math.max(0, hunger - foodItem.hungerRestore);
       }
       
       if (foodItem.energyRestore) {
-        setEnergy(prev => Math.min(100, prev + (foodItem.energyRestore || 0)));
-        setLastEnergyUpdate(Date.now());
+        updates.energy = Math.min(100, energy + (foodItem.energyRestore || 0));
       }
       
-      setHappiness(prev => Math.min(100, prev + 5));
-      setExperience(prev => prev + 10);
+      updatePetState(updates);
       consumeFood(foodItem.id);
+      setLastUpdateTime(Date.now());
       return true;
     }
     return false;
-  };
+  }, [foodQuantities, consumeFood, happiness, hunger, energy, experience, updatePetState]);
 
-  const play = () => {
-    if (energy <= 15 || hunger > 85) return false;
-    setHappiness(prev => Math.min(100, prev + 15));
-    setEnergy(prev => Math.max(0, prev - 10));
-    setHunger(prev => Math.min(100, prev + 5));
-    setExperience(prev => prev + 15);
-    setLastEnergyUpdate(Date.now());
+  const play = useCallback(() => {
+    if (energy <= 15 || hunger > 85) {
+      return false;
+    }
+    
+    updatePetState({
+      happiness: Math.min(100, happiness + 15),
+      energy: Math.max(0, energy - 10),
+      hunger: Math.min(100, hunger + 5),
+      experience: experience + 15,
+    });
+    setLastUpdateTime(Date.now());
     return true;
-  };
+  }, [energy, hunger, happiness, experience, updatePetState]);
 
-  const sleep = async () => {
+  const sleep = useCallback(async () => {
     if (isSleeping) return;
-    setIsSleeping(true);
+    
+    updatePetState({ isSleeping: true });
     const now = Date.now();
     setSleepStartTime(now);
-    setLastEnergyUpdate(now);
+    setLastUpdateTime(now);
+    
     await SecureStore.setItemAsync('petSleep', JSON.stringify({
       isSleeping: true,
-      sleepStartTime: now
+      sleepStartTime: now,
+      initialEnergy: energy
     }));
-  };
+  }, [isSleeping, energy, updatePetState]);
 
-  const wakeUp = async () => {
-    setIsSleeping(false);
+  const wakeUp = useCallback(async () => {
+    updatePetState({ isSleeping: false });
     setSleepStartTime(null);
-    setLastEnergyUpdate(Date.now());
+    setLastUpdateTime(Date.now());
     await SecureStore.deleteItemAsync('petSleep');
-  };
+  }, [updatePetState]);
 
-  const clean = () => {
-    setCleanliness(100);
-    setHappiness(prev => Math.min(100, prev + 10));
-    setExperience(prev => prev + 5);
-  };
+  const clean = useCallback(() => {
+    updatePetState({
+      cleanliness: 100,
+      happiness: Math.min(100, happiness + 10),
+      experience: experience + 5,
+    });
+    setLastUpdateTime(Date.now());
+  }, [happiness, experience, updatePetState]);
 
   return {
     feed,
@@ -217,7 +246,6 @@ const usePet = () => {
     showFood,
     setShowFood,
     isSleeping,
-    lastEnergyUpdate
   };
 };
 

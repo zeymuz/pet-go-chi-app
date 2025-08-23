@@ -19,19 +19,23 @@ const gameImages = {
 
 export default function GamesScreen() {
   const [activeGame, setActiveGame] = useState<string | null>(null);
-  const { energy, play, hunger } = usePet();
+  const { play, energy, hunger } = usePet();
   const { earnCoins } = useStore();
 
+  // REMOVE THIS CODE BLOCK - it's no longer needed
+  // const [, forceUpdate] = useState(0);
+  // usePetUpdates(() => {
+  //   forceUpdate(prev => prev + 1);
+  // });
+
   const handleGameStart = (gameId: string) => {
-    // Get current values directly from state to ensure they're fresh
-    const currentEnergy = energy;
-    const currentHunger = hunger;
+    console.log('Game start check - Energy:', energy, 'Hunger:', hunger);
     
-    if (currentEnergy <= 15) {
+    if (energy <= 15) {
       Alert.alert('Too Tired', 'Your pet is too tired to play! Energy must be above 15%');
       return false;
     }
-    if (currentHunger > 85) {
+    if (hunger > 85) {
       Alert.alert('Too Hungry', 'Your pet is too hungry to play! Feed your pet first.');
       return false;
     }
@@ -42,6 +46,8 @@ export default function GamesScreen() {
       setActiveGame(gameId);
       return true;
     }
+    
+    Alert.alert('Cannot Play', 'Your pet cannot play right now. Check energy and hunger levels.');
     return false;
   };
 
@@ -71,22 +77,22 @@ export default function GamesScreen() {
             <GameButton
               image={gameImages.flappy}
               text="Flappy Pet"
-              onPress={() => handleGameStart('flappy') && setActiveGame('flappy')}
+              onPress={() => handleGameStart('flappy')}
             />
             <GameButton
               image={gameImages.jumper}
               text="Platform Jumper"
-              onPress={() => handleGameStart('jumper') && setActiveGame('jumper')}
+              onPress={() => handleGameStart('jumper')}
             />
             <GameButton
               image={gameImages.memory}
               text="Memory Game"
-              onPress={() => handleGameStart('memory') && setActiveGame('memory')}
+              onPress={() => handleGameStart('memory')}
             />
             <GameButton
               image={gameImages.brick}
               text="Brick Breaker"
-              onPress={() => handleGameStart('brick') && setActiveGame('brick')}
+              onPress={() => handleGameStart('brick')}
             />
           </View>
         );
@@ -99,6 +105,7 @@ export default function GamesScreen() {
         <View style={styles.header}>
           <Text style={styles.title}>Mini Games</Text>
           <Text style={styles.subtitle}>Earn coins for your pet!</Text>
+          <Text style={styles.stats}>Energy: {energy}% | Hunger: {hunger}%</Text>
         </View>
       )}
       {renderGame()}
@@ -114,6 +121,7 @@ const styles = StyleSheet.create({
   },
   header: {
     marginBottom: verticalScale(20),
+    alignItems: 'center',
   },
   title: {
     fontFamily: 'PressStart2P',
@@ -127,6 +135,13 @@ const styles = StyleSheet.create({
     color: COLORS.text,
     textAlign: 'center',
     marginTop: verticalScale(8),
+  },
+  stats: {
+    fontFamily: 'PressStart2P',
+    fontSize: scaleFont(10),
+    color: COLORS.text,
+    textAlign: 'center',
+    marginTop: verticalScale(5),
   },
   gamesContainer: {
     flex: 1,

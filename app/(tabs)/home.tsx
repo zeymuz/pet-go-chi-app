@@ -89,10 +89,15 @@ const FoodItemComponent = ({
       />
       <Text style={styles.foodName}>{item.name}</Text>
       <Text style={styles.foodRestore}>Restores: {item.hungerRestore}%</Text>
+      {item.energyRestore && (
+        <Text style={styles.energyRestore}>Energy: +{item.energyRestore}%</Text>
+      )}
       <Text style={styles.quantityText}>Qty: {quantity}</Text>
     </TouchableOpacity>
   );
 };
+
+// ... (previous imports remain the same)
 
 export default function HomeScreen() {
   const navigation = useNavigation();
@@ -129,6 +134,12 @@ export default function HomeScreen() {
   const buttonsOpacity = useRef(new Animated.Value(1)).current;
   const [lastCleanTime, setLastCleanTime] = useState<number | null>(null);
   const [canClean, setCanClean] = useState(true);
+  
+
+  // Force re-render when pet state changes
+  
+
+  // ... (rest of the code remains the same)
 
   const handleAction = (action: string) => {
     setActiveAction(action);
@@ -206,6 +217,7 @@ export default function HomeScreen() {
       item={item}
       equipped={equippedOutfits[item.type] === item.id}
       onEquip={() => {
+        // Only unequip conflicting items (jacket/shirt) if needed
         if (item.type === 'jacket' && equippedOutfits.shirt) {
           equipOutfit('', 'shirt');
         } else if (item.type === 'shirt' && equippedOutfits.jacket) {
@@ -248,14 +260,14 @@ export default function HomeScreen() {
 
       <Animated.View style={[styles.buttonsContainer, { opacity: buttonsOpacity }]}>
         <View style={styles.buttonRow}>
-          <Button icon="fast-food" text="Feed" onPress={() => handleAction('feed')} disabled={isSleeping || showFood} />
-          <Button icon="game-controller" text="Play" onPress={() => handleAction('play')} disabled={isSleeping || energy < 15 || hunger > 85 || showFood} />
+          <Button icon="fast-food" text="Feed" onPress={() => handleAction('feed')} disabled={isSleeping} />
+          <Button icon="game-controller" text="Play" onPress={() => handleAction('play')} disabled={isSleeping} />
         </View>
         <View style={styles.buttonRow}>
-          <Button icon="moon" text={isSleeping ? "Sleeping..." : "Sleep"} onPress={() => handleAction('sleep')} disabled={isSleeping || showFood} />
-          <Button icon="water" text="Clean" onPress={() => handleAction('clean')} disabled={!canClean || isSleeping || showFood} />
+          <Button icon="moon" text={isSleeping ? "Sleeping..." : "Sleep"} onPress={() => handleAction('sleep')} disabled={isSleeping} />
+          <Button icon="water" text="Clean" onPress={() => handleAction('clean')} disabled={!canClean || isSleeping} />
         </View>
-        <TouchableOpacity style={styles.outfitsButton} onPress={toggleOutfitsMenu} disabled={isSleeping || showFood}>
+        <TouchableOpacity style={styles.outfitsButton} onPress={toggleOutfitsMenu} disabled={isSleeping}>
           <Text style={styles.outfitsButtonText}>Outfits</Text>
           <Ionicons name={showOutfits ? "chevron-up" : "chevron-down"} size={16} color="white" style={styles.outfitArrow} />
         </TouchableOpacity>
@@ -533,6 +545,12 @@ const styles = StyleSheet.create({
     fontFamily: 'PressStart2P',
     fontSize: scaleFont(8),
     color: 'yellow',
+    textAlign: 'center',
+  },
+  energyRestore: {
+    fontFamily: 'PressStart2P',
+    fontSize: scaleFont(8),
+    color: '#4ECDC4',
     textAlign: 'center',
   },
   quantityText: {
