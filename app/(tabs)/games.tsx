@@ -11,10 +11,10 @@ import usePet from '../hooks/usePet';
 import useStore from '../hooks/useStore';
 
 const gameImages = {
-  flappy: require('../../assets/images/favicon.png'),
-  jumper: require('../../assets/images/favicon.png'),
-  memory: require('../../assets/images/favicon.png'),
-  brick: require('../../assets/images/favicon.png'),
+  flappy: require('../../assets/images/games-thumbnails/flappy.jpg'),
+  jumper: require('../../assets/images/games-thumbnails/platformjumper.jpg'),
+  memory: require('../../assets/images/games-thumbnails/memory-game.jpg'),
+  brick: require('../../assets/images/games-thumbnails/brickbreakergame.jpg'),
 };
 
 export default function GamesScreen() {
