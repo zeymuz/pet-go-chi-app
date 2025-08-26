@@ -2,7 +2,7 @@
   "expo": {
     "name": "pet-go-chi",
     "slug": "pet-go-chi",
-    "version": "1.0.1",
+    "version": "1.0.2",
     "orientation": "portrait",
     "icon": "./assets/images/icons-stuff/icon.PNG",
     "scheme": "petgochi",
@@ -11,7 +11,7 @@
     "ios": {
       "supportsTablet": true,
       "bundleIdentifier": "com.anonymous.petgochi",
-      "buildNumber": "1.0.1"
+      "buildNumber": "1.0.2"
     },
     "android": {
       "adaptiveIcon": {
