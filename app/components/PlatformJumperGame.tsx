@@ -938,9 +938,9 @@ if (scoreUI >= 40000) {
             Gold platforms give extra boost!{'\n\n'}
             Reach 5,000 for space{'\n'}
             10,000 for sun{'\n'}
-            15,000 for galaxy{'\n'}
+            15,000 for black hole{'\n'}
             20,000 for... something else{'\n\n'}
-            Earn coins based on your score!
+            Earn coins every 1000 points!
           </Text>
           <TouchableOpacity style={styles.button} onPress={startGame}>
             <Text style={styles.buttonText}>Start Game</Text>
