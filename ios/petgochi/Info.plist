@@ -39,7 +39,7 @@
       </dict>
     </array>
     <key>CFBundleVersion</key>
-    <string>1.0.1</string>  <!-- CHANGED FROM "1" TO "1.0.1" -->
+    <string>2</string>  <!-- CHANGED FROM "1" TO "1.0.1" -->
     <key>LSMinimumSystemVersion</key>
     <string>12.0</string>
     <key>LSRequiresIPhoneOS</key>
