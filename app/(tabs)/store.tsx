@@ -37,8 +37,8 @@ export default function StoreScreen() {
           onPurchase={(quantity) => purchaseItem(item.id, quantity)}
           onEquip={() => equipOutfit(item.id)}
           isEquipped={equippedOutfits[item.type] === item.id}
-          owned={true} // All food is always available to purchase
-          quantity={0} // Not used for food in store
+          owned={true}
+          quantity={0}
           availableCoins={coins} // Pass coins here
         />
       )

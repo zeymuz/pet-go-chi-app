@@ -19,7 +19,7 @@ interface StoreItemProps {
   isEquipped: boolean;
   owned: boolean;
   quantity: number;
-  availableCoins: number; // Add this prop
+  availableCoins: number; // This should be passed from parent
 }
 
 export default function StoreItem({
@@ -29,7 +29,7 @@ export default function StoreItem({
   isEquipped,
   owned,
   quantity,
-  availableCoins, // Receive available coins as prop
+  availableCoins, // Use this instead of global.coins
 }: StoreItemProps) {
   const [imageError, setImageError] = React.useState(false);
   const [purchaseQuantity, setPurchaseQuantity] = useState(1);
@@ -94,9 +94,9 @@ export default function StoreItem({
       
       {item.type === 'food' ? (
         <TouchableOpacity 
-          style={styles.buyButton} 
+          style={[styles.buyButton, totalPrice > availableCoins && styles.disabledButton]} 
           onPress={handleBuy}
-          disabled={totalPrice > availableCoins} // Use the prop instead of global
+          disabled={totalPrice > availableCoins}
         >
           <Text style={styles.buttonText}>
             Buy {purchaseQuantity} ({totalPrice} coins)
@@ -104,9 +104,9 @@ export default function StoreItem({
         </TouchableOpacity>
       ) : !owned ? (
         <TouchableOpacity 
-          style={styles.buyButton} 
+          style={[styles.buyButton, item.price > availableCoins && styles.disabledButton]} 
           onPress={() => onPurchase(1)}
-          disabled={item.price > availableCoins} // Use the prop instead of global
+          disabled={item.price > availableCoins}
         >
           <Text style={styles.buttonText}>Buy</Text>
         </TouchableOpacity>
@@ -204,6 +204,10 @@ const styles = StyleSheet.create({
     borderRadius: scale(4),
     width: '100%',
     alignItems: 'center',
+  },
+  disabledButton: {
+    backgroundColor: '#ccc',
+    opacity: 0.6,
   },
   equipButton: {
     backgroundColor: '#4CAF50',
