@@ -6,7 +6,6 @@ import StoreItem from '../components/StoreItem';
 import COLORS from '../constants/colors';
 import useStore from '../hooks/useStore';
 
-
 export default function StoreScreen() {
   const isFocused = useIsFocused();
   const { coins, outfits, foods, purchaseItem, equippedOutfits, equipOutfit } = useStore();
@@ -40,6 +39,7 @@ export default function StoreScreen() {
           isEquipped={equippedOutfits[item.type] === item.id}
           owned={true} // All food is always available to purchase
           quantity={0} // Not used for food in store
+          availableCoins={coins} // Pass coins here
         />
       )
     },
@@ -54,6 +54,7 @@ export default function StoreScreen() {
           isEquipped={equippedOutfits[item.type] === item.id}
           owned={item.owned}
           quantity={0}
+          availableCoins={coins} // Pass coins here
         />
       )
     }))
@@ -69,21 +70,20 @@ export default function StoreScreen() {
       </View>
 
       <ScrollView style={styles.listContent}>
-  {storeSections.map((section, index) => (
-    <View key={index}>
-      <Text style={styles.sectionHeader}>{section.title}</Text>
-      <FlatList
-        data={section.data}
-        keyExtractor={(item) => item.id}
-        renderItem={section.renderItem}
-        numColumns={3}
-        columnWrapperStyle={styles.columnWrapper}
-        scrollEnabled={false}
-      />
-    </View>
-  ))}
-</ScrollView>
-
+        {storeSections.map((section, index) => (
+          <View key={index}>
+            <Text style={styles.sectionHeader}>{section.title}</Text>
+            <FlatList
+              data={section.data}
+              keyExtractor={(item) => item.id}
+              renderItem={section.renderItem}
+              numColumns={3}
+              columnWrapperStyle={styles.columnWrapper}
+              scrollEnabled={false}
+            />
+          </View>
+        ))}
+      </ScrollView>
     </View>
   );
 }

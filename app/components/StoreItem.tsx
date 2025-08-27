@@ -1,4 +1,3 @@
-
 import React, { useState } from 'react';
 import { Image, Platform, StyleSheet, Text, TouchableOpacity, View } from 'react-native';
 import { scale, scaleFont, verticalScale } from '../../utils/scaling';
@@ -20,6 +19,7 @@ interface StoreItemProps {
   isEquipped: boolean;
   owned: boolean;
   quantity: number;
+  availableCoins: number; // Add this prop
 }
 
 export default function StoreItem({
@@ -29,6 +29,7 @@ export default function StoreItem({
   isEquipped,
   owned,
   quantity,
+  availableCoins, // Receive available coins as prop
 }: StoreItemProps) {
   const [imageError, setImageError] = React.useState(false);
   const [purchaseQuantity, setPurchaseQuantity] = useState(1);
@@ -95,7 +96,7 @@ export default function StoreItem({
         <TouchableOpacity 
           style={styles.buyButton} 
           onPress={handleBuy}
-          disabled={totalPrice > (global as any).coins}
+          disabled={totalPrice > availableCoins} // Use the prop instead of global
         >
           <Text style={styles.buttonText}>
             Buy {purchaseQuantity} ({totalPrice} coins)
@@ -105,7 +106,7 @@ export default function StoreItem({
         <TouchableOpacity 
           style={styles.buyButton} 
           onPress={() => onPurchase(1)}
-          disabled={item.price > (global as any).coins}
+          disabled={item.price > availableCoins} // Use the prop instead of global
         >
           <Text style={styles.buttonText}>Buy</Text>
         </TouchableOpacity>
