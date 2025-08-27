@@ -1,27 +1,25 @@
 // hooks/StoreProvider.tsx
-import React, { createContext, useContext, useState } from 'react';
+import React, { createContext, useContext } from 'react';
+import useStore from './useStore';
 
-const StoreContext = createContext(null);
+const StoreContext = createContext<ReturnType<typeof useStore> | null>(null);
 
-export const StoreProvider = ({ children }) => {
-  const [coins, setCoins] = useState(100);
-  // ... other state
-
-  const earnCoins = (amount) => {
-    setCoins(prev => {
-      const newAmount = prev + amount;
-      console.log(`Updating coins to ${newAmount}`);
-      return newAmount;
-    });
-  };
-
+export const StoreProvider: React.FC<{ children: React.ReactNode }> = ({ children }) => {
+  const store = useStore();
+  
   return (
-    <StoreContext.Provider value={{ coins, earnCoins /* ... */ }}>
+    <StoreContext.Provider value={store}>
       {children}
     </StoreContext.Provider>
   );
 };
 
-export const useStore = () => useContext(StoreContext);
+export const useStoreContext = () => {
+  const context = useContext(StoreContext);
+  if (!context) {
+    throw new Error('useStoreContext must be used within a StoreProvider');
+  }
+  return context;
+};
 
 export default StoreProvider;

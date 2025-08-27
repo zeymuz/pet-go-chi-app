@@ -5,11 +5,11 @@ import { ActivityIndicator, FlatList, ScrollView, StyleSheet, Text, View } from 
 import { scale, scaleFont, verticalScale } from '../../utils/scaling';
 import StoreItem from '../components/StoreItem';
 import COLORS from '../constants/colors';
-import useStore from '../hooks/useStore';
+import { useStoreContext } from '../hooks/StoreProvider';
 
 export default function StoreScreen() {
   const isFocused = useIsFocused();
-  const { coins, outfits, foods, purchaseItem, equippedOutfits, equipOutfit, isLoading } = useStore();
+  const { coins, outfits, foods, purchaseItem, equippedOutfits, equipOutfit, isLoading } = useStoreContext();
   const [displayCoins, setDisplayCoins] = useState(coins);
 
   useEffect(() => {
@@ -17,6 +17,15 @@ export default function StoreScreen() {
       setDisplayCoins(coins);
     }
   }, [isFocused, coins, isLoading]);
+
+  if (isLoading) {
+    return (
+      <View style={styles.container}>
+        <ActivityIndicator size="large" color={COLORS.primary} />
+        <Text style={styles.loadingText}>Loading store...</Text>
+      </View>
+    );
+  }
 
   // Group outfits by type
   const groupedOutfits = outfits.reduce((acc: Record<string, any[]>, outfit) => {
@@ -59,15 +68,6 @@ export default function StoreScreen() {
       )
     }))
   ];
-
-  if (isLoading) {
-    return (
-      <View style={styles.container}>
-        <ActivityIndicator size="large" color={COLORS.primary} />
-        <Text style={styles.loadingText}>Loading store...</Text>
-      </View>
-    );
-  }
 
   return (
     <View style={styles.container}>

@@ -4,24 +4,6 @@ import { useEffect, useState } from 'react';
 import { FOODS, OUTFITS } from '../constants/pets';
 
 const STORAGE_KEY = 'pet_store_data';
-const STORE_VERSION = 5;
-
-const createReferenceMaps = () => {
-  const defaultOutfitsById: Record<string, typeof OUTFITS[0]> = {};
-  const defaultFoodsById: Record<string, typeof FOODS[0]> = {};
-
-  OUTFITS.forEach(outfit => {
-    defaultOutfitsById[outfit.id] = outfit;
-  });
-
-  FOODS.forEach(food => {
-    defaultFoodsById[food.id] = food;
-  });
-
-  return { defaultOutfitsById, defaultFoodsById };
-};
-
-const { defaultOutfitsById, defaultFoodsById } = createReferenceMaps();
 
 interface StoreState {
   coins: number;
@@ -35,7 +17,6 @@ interface StoreState {
     pants: string | null;
     shoes: string | null;
   };
-  _isInitialized: boolean;
 }
 
 const defaultStoreState: StoreState = {
@@ -53,163 +34,71 @@ const defaultStoreState: StoreState = {
     pants: null,
     shoes: null,
   },
-  _isInitialized: false
 };
 
-let globalStore: StoreState = { ...defaultStoreState };
+export default function useStore() {
+  const [store, setStore] = useState<StoreState>(defaultStoreState);
+  const [isLoading, setIsLoading] = useState(true);
 
-const listeners = new Set<() => void>();
-
-const notifyListeners = () => {
-  listeners.forEach(listener => listener());
-};
-
-const saveStore = async () => {
-  try {
-    const dataToSave = { ...globalStore };
-    delete dataToSave._isInitialized; // Don't save internal flag
-    await AsyncStorage.setItem(STORAGE_KEY, JSON.stringify({
-      ...dataToSave,
-      _version: STORE_VERSION,
-    }));
-  } catch (error) {
-    console.error('Error saving store:', error);
-  }
-};
-
-const migrateData = (oldData: any): StoreState | null => {
-  if (!oldData) return null;
-
-  if (oldData._version === 3) {
-    return {
-      ...defaultStoreState,
-      coins: oldData.coins || defaultStoreState.coins,
-      foodQuantities: oldData.foodQuantities || defaultStoreState.foodQuantities,
-      equippedOutfits: oldData.equippedOutfits || defaultStoreState.equippedOutfits,
-      outfits: oldData.outfits?.map((outfit: any) => ({
-        ...defaultOutfitsById[outfit.id],
-        ...outfit,
-        petImage: defaultOutfitsById[outfit.id]?.petImage 
-      })) || OUTFITS,
-      foods: oldData.foods?.map((food: any) => ({
-        ...defaultFoodsById[food.id],
-        ...food
-      })) || FOODS,
-      _isInitialized: true
-    };
-  }
-
-  return null;
-};
-
-// Load initial data - this runs once when the module loads
-(async () => {
-  try {
-    const savedData = await AsyncStorage.getItem(STORAGE_KEY);
-    if (savedData) {
-      const saved = JSON.parse(savedData);
-
-      if (saved._version && saved._version !== STORE_VERSION) {
-        const migrated = migrateData(saved);
-        if (migrated) {
-          globalStore = migrated;
-          await saveStore();
-        } else {
-          await AsyncStorage.removeItem(STORAGE_KEY);
-          globalStore = { ...defaultStoreState, _isInitialized: true };
-        }
-        return;
-      }
-
-      globalStore = {
-        ...defaultStoreState,
-        coins: saved.coins ?? defaultStoreState.coins,
-        foodQuantities: saved.foodQuantities ?? defaultStoreState.foodQuantities,
-        equippedOutfits: saved.equippedOutfits ?? defaultStoreState.equippedOutfits,
-        outfits: saved.outfits?.map((outfit: any) => ({
-          ...defaultOutfitsById[outfit.id],
-          ...outfit
-        })) ?? OUTFITS,
-        foods: saved.foods?.map((food: any) => ({
-          ...defaultFoodsById[food.id],
-          ...food
-        })) ?? FOODS,
-        _isInitialized: true
-      };
-    } else {
-      globalStore = { ...defaultStoreState, _isInitialized: true };
-    }
-  } catch (error) {
-    console.error('Error loading store:', error);
-    await AsyncStorage.removeItem(STORAGE_KEY);
-    globalStore = { ...defaultStoreState, _isInitialized: true };
-  }
-})();
-
-const useStore = () => {
-  const [state, setState] = useState<StoreState>(globalStore);
-  const [isLoading, setIsLoading] = useState(!globalStore._isInitialized);
-
+  // Load store data on mount
   useEffect(() => {
-    const listener = () => {
-      setState({ ...globalStore });
-      setIsLoading(!globalStore._isInitialized);
-    };
+    loadStore();
+  }, []);
 
-    listeners.add(listener);
-    
-    // Initial check in case store was already loaded
-    if (globalStore._isInitialized && isLoading) {
+  const loadStore = async () => {
+    try {
+      const savedData = await AsyncStorage.getItem(STORAGE_KEY);
+      if (savedData) {
+        const parsedData = JSON.parse(savedData);
+        setStore(parsedData);
+      }
+    } catch (error) {
+      console.error('Error loading store:', error);
+    } finally {
       setIsLoading(false);
     }
-
-    return () => {
-      listeners.delete(listener);
-    };
-  }, [isLoading]);
-
-  const updateStore = (updater: (store: StoreState) => StoreState) => {
-    if (!globalStore._isInitialized) return;
-    
-    globalStore = updater(globalStore);
-    notifyListeners();
-    saveStore();
   };
 
-  const addCoins = (amount: number) => {
-    if (!globalStore._isInitialized) return 0;
-    
-    updateStore(store => ({
-      ...store,
-      coins: store.coins + amount
-    }));
-    return amount;
+  const saveStore = async (newStore: StoreState) => {
+    try {
+      await AsyncStorage.setItem(STORAGE_KEY, JSON.stringify(newStore));
+    } catch (error) {
+      console.error('Error saving store:', error);
+    }
+  };
+
+  const updateStore = (updater: (currentStore: StoreState) => StoreState) => {
+    setStore(currentStore => {
+      const newStore = updater(currentStore);
+      saveStore(newStore);
+      return newStore;
+    });
   };
 
   const purchaseItem = (itemId: string, quantity: number = 1) => {
-    if (!globalStore._isInitialized) return;
-    
-    updateStore(store => {
-      const item = [...store.outfits, ...store.foods].find(o => o.id === itemId);
-      if (!item || store.coins < item.price * quantity) return store;
+    updateStore(currentStore => {
+      const item = [...currentStore.outfits, ...currentStore.foods].find(o => o.id === itemId);
+      if (!item || currentStore.coins < item.price * quantity) {
+        return currentStore;
+      }
 
-      const newCoins = store.coins - (item.price * quantity);
+      const newCoins = currentStore.coins - (item.price * quantity);
 
       if (item.type === 'food') {
-        const currentQuantity = store.foodQuantities[itemId] || 0;
+        const currentQuantity = currentStore.foodQuantities[itemId] || 0;
         return {
-          ...store,
+          ...currentStore,
           coins: newCoins,
           foodQuantities: {
-            ...store.foodQuantities,
+            ...currentStore.foodQuantities,
             [itemId]: currentQuantity + quantity
           }
         };
       } else {
         return {
-          ...store,
+          ...currentStore,
           coins: newCoins,
-          outfits: store.outfits.map(o => 
+          outfits: currentStore.outfits.map(o => 
             o.id === itemId ? { ...o, owned: true } : o
           )
         };
@@ -218,16 +107,14 @@ const useStore = () => {
   };
 
   const consumeFood = (itemId: string) => {
-    if (!globalStore._isInitialized) return;
-    
-    updateStore(store => {
-      const currentQuantity = store.foodQuantities[itemId] || 0;
-      if (currentQuantity <= 0) return store;
+    updateStore(currentStore => {
+      const currentQuantity = currentStore.foodQuantities[itemId] || 0;
+      if (currentQuantity <= 0) return currentStore;
 
       return {
-        ...store,
+        ...currentStore,
         foodQuantities: {
-          ...store.foodQuantities,
+          ...currentStore.foodQuantities,
           [itemId]: currentQuantity - 1
         }
       };
@@ -235,21 +122,19 @@ const useStore = () => {
   };
 
   const equipOutfit = (outfitId: string, type?: string) => {
-    if (!globalStore._isInitialized) return;
-    
-    updateStore(store => {
+    updateStore(currentStore => {
       if (outfitId === '') {
         if (type) {
           return {
-            ...store,
+            ...currentStore,
             equippedOutfits: {
-              ...store.equippedOutfits,
+              ...currentStore.equippedOutfits,
               [type]: null
             }
           };
         }
         return {
-          ...store,
+          ...currentStore,
           equippedOutfits: {
             hat: null,
             jacket: null,
@@ -260,10 +145,10 @@ const useStore = () => {
         };
       }
 
-      const outfit = store.outfits.find(o => o.id === outfitId);
-      if (!outfit || !outfit.owned) return store;
+      const outfit = currentStore.outfits.find(o => o.id === outfitId);
+      if (!outfit || !outfit.owned) return currentStore;
 
-      const newEquipped = { ...store.equippedOutfits };
+      const newEquipped = { ...currentStore.equippedOutfits };
       if (outfit.type === 'jacket') {
         newEquipped.shirt = null;
       } else if (outfit.type === 'shirt') {
@@ -271,7 +156,7 @@ const useStore = () => {
       }
 
       return {
-        ...store,
+        ...currentStore,
         equippedOutfits: {
           ...newEquipped,
           [outfit.type]: outfitId
@@ -281,22 +166,30 @@ const useStore = () => {
   };
 
   const earnCoins = (amount: number) => {
-    if (!globalStore._isInitialized || amount <= 0) return 0;
+    if (amount <= 0) return 0;
     
     const actualAmount = Math.floor(amount);
-    updateStore(store => ({
-      ...store,
-      coins: store.coins + actualAmount
+    updateStore(currentStore => ({
+      ...currentStore,
+      coins: currentStore.coins + actualAmount
     }));
     return actualAmount;
   };
 
+  const addCoins = (amount: number) => {
+    updateStore(currentStore => ({
+      ...currentStore,
+      coins: currentStore.coins + amount
+    }));
+    return amount;
+  };
+
   return {
-    coins: state.coins,
-    outfits: state.outfits,
-    foods: state.foods,
-    foodQuantities: state.foodQuantities,
-    equippedOutfits: state.equippedOutfits,
+    coins: store.coins,
+    outfits: store.outfits,
+    foods: store.foods,
+    foodQuantities: store.foodQuantities,
+    equippedOutfits: store.equippedOutfits,
     isLoading,
     purchaseItem,
     consumeFood,
@@ -304,6 +197,4 @@ const useStore = () => {
     earnCoins,
     addCoins,
   };
-};
-
-export default useStore;
+}
