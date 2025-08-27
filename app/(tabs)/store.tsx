@@ -1,6 +1,7 @@
+// app/store.tsx
 import { useIsFocused } from '@react-navigation/native';
 import React, { useEffect, useState } from 'react';
-import { FlatList, ScrollView, StyleSheet, Text, View } from 'react-native';
+import { ActivityIndicator, FlatList, ScrollView, StyleSheet, Text, View } from 'react-native';
 import { scale, scaleFont, verticalScale } from '../../utils/scaling';
 import StoreItem from '../components/StoreItem';
 import COLORS from '../constants/colors';
@@ -8,15 +9,14 @@ import useStore from '../hooks/useStore';
 
 export default function StoreScreen() {
   const isFocused = useIsFocused();
-  const { coins, outfits, foods, purchaseItem, equippedOutfits, equipOutfit } = useStore();
+  const { coins, outfits, foods, purchaseItem, equippedOutfits, equipOutfit, isLoading } = useStore();
   const [displayCoins, setDisplayCoins] = useState(coins);
 
   useEffect(() => {
-    if (isFocused) {
+    if (isFocused && !isLoading) {
       setDisplayCoins(coins);
-      console.log('StoreScreen updated, current coins:', coins);
     }
-  }, [isFocused, coins]);
+  }, [isFocused, coins, isLoading]);
 
   // Group outfits by type
   const groupedOutfits = outfits.reduce((acc: Record<string, any[]>, outfit) => {
@@ -39,7 +39,7 @@ export default function StoreScreen() {
           isEquipped={equippedOutfits[item.type] === item.id}
           owned={true}
           quantity={0}
-          availableCoins={coins} // Pass coins here
+          availableCoins={coins}
         />
       )
     },
@@ -54,11 +54,20 @@ export default function StoreScreen() {
           isEquipped={equippedOutfits[item.type] === item.id}
           owned={item.owned}
           quantity={0}
-          availableCoins={coins} // Pass coins here
+          availableCoins={coins}
         />
       )
     }))
   ];
+
+  if (isLoading) {
+    return (
+      <View style={styles.container}>
+        <ActivityIndicator size="large" color={COLORS.primary} />
+        <Text style={styles.loadingText}>Loading store...</Text>
+      </View>
+    );
+  }
 
   return (
     <View style={styles.container}>
@@ -93,12 +102,15 @@ const styles = StyleSheet.create({
     flex: 1,
     backgroundColor: '#40c4ff',
     padding: verticalScale(16),
+    justifyContent: 'center',
+    alignItems: 'center',
   },
   header: {
     flexDirection: 'row',
     justifyContent: 'space-between',
     alignItems: 'center',
     marginBottom: verticalScale(20),
+    width: '100%',
   },
   title: {
     fontFamily: 'PressStart2P',
@@ -110,8 +122,15 @@ const styles = StyleSheet.create({
     fontSize: scaleFont(16),
     color: COLORS.text,
   },
+  loadingText: {
+    fontFamily: 'PressStart2P',
+    fontSize: scaleFont(16),
+    color: COLORS.text,
+    marginTop: verticalScale(16),
+  },
   listContent: {
     paddingBottom: verticalScale(20),
+    width: '100%',
   },
   sectionHeader: {
     fontFamily: 'PressStart2P',

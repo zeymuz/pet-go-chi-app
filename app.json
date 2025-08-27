@@ -4,7 +4,7 @@
     "slug": "pet-go-chi",
     "version": "1.0.2",
     "orientation": "portrait",
-    "icon": "./assets/images/icons-stuff/icon.png",
+    "icon": "../assets/images/icons-stuff/icon.png",
     "scheme": "petgochi",
     "userInterfaceStyle": "automatic",
     "newArchEnabled": true,
@@ -15,7 +15,7 @@
     },
     "android": {
       "adaptiveIcon": {
-        "foregroundImage": "./assets/images/adaptive-icon.png",
+        "foregroundImage": "../assets/images/icons-stuff/icon.PNG",
         "backgroundColor": "#ffffff"
       },
       "edgeToEdgeEnabled": true,
@@ -31,7 +31,7 @@
       [
         "expo-splash-screen",
         {
-          "image": "./assets/images/icons-stuff/icon.PNG",
+          "image": "../assets/images/icons-stuff/icon.PNG",
           "imageWidth": 200,
           "resizeMode": "contain",
           "backgroundColor": "#ffffff"

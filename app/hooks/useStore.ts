@@ -23,7 +23,22 @@ const createReferenceMaps = () => {
 
 const { defaultOutfitsById, defaultFoodsById } = createReferenceMaps();
 
-let globalStore = {
+interface StoreState {
+  coins: number;
+  outfits: typeof OUTFITS;
+  foods: typeof FOODS;
+  foodQuantities: Record<string, number>;
+  equippedOutfits: {
+    hat: string | null;
+    jacket: string | null;
+    shirt: string | null;
+    pants: string | null;
+    shoes: string | null;
+  };
+  _isInitialized: boolean;
+}
+
+const defaultStoreState: StoreState = {
   coins: 100,
   outfits: OUTFITS,
   foods: FOODS,
@@ -37,8 +52,11 @@ let globalStore = {
     shirt: null,
     pants: null,
     shoes: null,
-  }
+  },
+  _isInitialized: false
 };
+
+let globalStore: StoreState = { ...defaultStoreState };
 
 const listeners = new Set<() => void>();
 
@@ -48,8 +66,10 @@ const notifyListeners = () => {
 
 const saveStore = async () => {
   try {
+    const dataToSave = { ...globalStore };
+    delete dataToSave._isInitialized; // Don't save internal flag
     await AsyncStorage.setItem(STORAGE_KEY, JSON.stringify({
-      ...globalStore,
+      ...dataToSave,
       _version: STORE_VERSION,
     }));
   } catch (error) {
@@ -57,15 +77,15 @@ const saveStore = async () => {
   }
 };
 
-const migrateData = (oldData: any) => {
-  if (!oldData) return globalStore;
+const migrateData = (oldData: any): StoreState | null => {
+  if (!oldData) return null;
 
   if (oldData._version === 3) {
     return {
-      ...globalStore,
-      coins: oldData.coins || globalStore.coins,
-      foodQuantities: oldData.foodQuantities || globalStore.foodQuantities,
-      equippedOutfits: oldData.equippedOutfits || globalStore.equippedOutfits,
+      ...defaultStoreState,
+      coins: oldData.coins || defaultStoreState.coins,
+      foodQuantities: oldData.foodQuantities || defaultStoreState.foodQuantities,
+      equippedOutfits: oldData.equippedOutfits || defaultStoreState.equippedOutfits,
       outfits: oldData.outfits?.map((outfit: any) => ({
         ...defaultOutfitsById[outfit.id],
         ...outfit,
@@ -74,14 +94,15 @@ const migrateData = (oldData: any) => {
       foods: oldData.foods?.map((food: any) => ({
         ...defaultFoodsById[food.id],
         ...food
-      })) || FOODS
+      })) || FOODS,
+      _isInitialized: true
     };
   }
 
   return null;
 };
 
-// Load initial data
+// Load initial data - this runs once when the module loads
 (async () => {
   try {
     const savedData = await AsyncStorage.getItem(STORAGE_KEY);
@@ -95,15 +116,16 @@ const migrateData = (oldData: any) => {
           await saveStore();
         } else {
           await AsyncStorage.removeItem(STORAGE_KEY);
+          globalStore = { ...defaultStoreState, _isInitialized: true };
         }
         return;
       }
 
       globalStore = {
-        ...globalStore,
-        coins: saved.coins ?? globalStore.coins,
-        foodQuantities: saved.foodQuantities ?? globalStore.foodQuantities,
-        equippedOutfits: saved.equippedOutfits ?? globalStore.equippedOutfits,
+        ...defaultStoreState,
+        coins: saved.coins ?? defaultStoreState.coins,
+        foodQuantities: saved.foodQuantities ?? defaultStoreState.foodQuantities,
+        equippedOutfits: saved.equippedOutfits ?? defaultStoreState.equippedOutfits,
         outfits: saved.outfits?.map((outfit: any) => ({
           ...defaultOutfitsById[outfit.id],
           ...outfit
@@ -111,36 +133,52 @@ const migrateData = (oldData: any) => {
         foods: saved.foods?.map((food: any) => ({
           ...defaultFoodsById[food.id],
           ...food
-        })) ?? FOODS
+        })) ?? FOODS,
+        _isInitialized: true
       };
+    } else {
+      globalStore = { ...defaultStoreState, _isInitialized: true };
     }
   } catch (error) {
     console.error('Error loading store:', error);
     await AsyncStorage.removeItem(STORAGE_KEY);
+    globalStore = { ...defaultStoreState, _isInitialized: true };
   }
 })();
 
 const useStore = () => {
-  const [state, setState] = useState(globalStore);
+  const [state, setState] = useState<StoreState>(globalStore);
+  const [isLoading, setIsLoading] = useState(!globalStore._isInitialized);
 
   useEffect(() => {
     const listener = () => {
       setState({ ...globalStore });
+      setIsLoading(!globalStore._isInitialized);
     };
 
     listeners.add(listener);
+    
+    // Initial check in case store was already loaded
+    if (globalStore._isInitialized && isLoading) {
+      setIsLoading(false);
+    }
+
     return () => {
       listeners.delete(listener);
     };
-  }, []);
+  }, [isLoading]);
 
-  const updateStore = (updater: (store: typeof globalStore) => typeof globalStore) => {
+  const updateStore = (updater: (store: StoreState) => StoreState) => {
+    if (!globalStore._isInitialized) return;
+    
     globalStore = updater(globalStore);
     notifyListeners();
-    saveStore(); // Save immediately after update
+    saveStore();
   };
 
   const addCoins = (amount: number) => {
+    if (!globalStore._isInitialized) return 0;
+    
     updateStore(store => ({
       ...store,
       coins: store.coins + amount
@@ -149,6 +187,8 @@ const useStore = () => {
   };
 
   const purchaseItem = (itemId: string, quantity: number = 1) => {
+    if (!globalStore._isInitialized) return;
+    
     updateStore(store => {
       const item = [...store.outfits, ...store.foods].find(o => o.id === itemId);
       if (!item || store.coins < item.price * quantity) return store;
@@ -178,6 +218,8 @@ const useStore = () => {
   };
 
   const consumeFood = (itemId: string) => {
+    if (!globalStore._isInitialized) return;
+    
     updateStore(store => {
       const currentQuantity = store.foodQuantities[itemId] || 0;
       if (currentQuantity <= 0) return store;
@@ -193,6 +235,8 @@ const useStore = () => {
   };
 
   const equipOutfit = (outfitId: string, type?: string) => {
+    if (!globalStore._isInitialized) return;
+    
     updateStore(store => {
       if (outfitId === '') {
         if (type) {
@@ -237,7 +281,8 @@ const useStore = () => {
   };
 
   const earnCoins = (amount: number) => {
-    if (amount <= 0) return 0;
+    if (!globalStore._isInitialized || amount <= 0) return 0;
+    
     const actualAmount = Math.floor(amount);
     updateStore(store => ({
       ...store,
@@ -252,6 +297,7 @@ const useStore = () => {
     foods: state.foods,
     foodQuantities: state.foodQuantities,
     equippedOutfits: state.equippedOutfits,
+    isLoading,
     purchaseItem,
     consumeFood,
     equipOutfit,
